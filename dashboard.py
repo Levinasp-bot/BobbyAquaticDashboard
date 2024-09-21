@@ -11,8 +11,7 @@ folder_path_2 = "./data/Bobby Aquatic 2"
 sheet_name_2 = 'Penjualan'
 penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
-# Melakukan prediksi untuk masing-masing cabang
-daily_profit_1, hw_forecast_future_1, hw_model_1 = forecast_profit_1(penjualan_data_1)
+daily_profit_1, hw_forecast_future_1, best_seasonal_period_1, best_mae_1 = forecast_profit_1(penjualan_data_1)
 daily_profit_2, hw_forecast_future_2, hw_model_2 = forecast_profit_2(penjualan_data_2)
 
 # Membuat tabs untuk masing-masing cabang

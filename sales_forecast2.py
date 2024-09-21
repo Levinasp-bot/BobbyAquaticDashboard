@@ -5,6 +5,7 @@ from sklearn.metrics import mean_absolute_error
 import streamlit as st
 import matplotlib.pyplot as plt
 
+@st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
     dataframes = []
     for file in os.listdir(folder_path):
@@ -14,46 +15,44 @@ def load_all_excel_files(folder_path, sheet_name):
             dataframes.append(df)
     return pd.concat(dataframes, ignore_index=True)
 
-# Fungsi untuk melakukan analisis prediksi
-def forecast_profit(data, seasonal_periods=259, forecast_horizon=365):
+@st.cache_data
+def forecast_profit(data, seasonal_min=7, seasonal_max=365, forecast_horizon=365):
     # Mengambil hanya kolom tanggal dan laba dari data penjualan
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
-
     daily_profit = daily_profit.groupby('TANGGAL').sum()
-
     daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
+    daily_profit = daily_profit.asfreq('D').interpolate()
 
-    # Menetapkan frekuensi
-    daily_profit = daily_profit.asfreq('D', fill_value=0)
-
-    # Membagi data 
+    # Membagi data
     train_size = int(len(daily_profit) * 0.9)
     train, test = daily_profit[:train_size], daily_profit[train_size:]
 
     best_mae = float('inf')
     best_forecast = None
+    best_seasonal_period = None
+    best_model = None
 
-    try:
-        # Menentukan model Holt-Winters pada data training
-        hw_model = ExponentialSmoothing(train, trend='add', seasonal='add', seasonal_periods=seasonal_periods).fit()
-        
-        # Prediksi untuk data testing
-        hw_forecast_test = hw_model.forecast(len(test))
-        
-        mae_test = mean_absolute_error(test, hw_forecast_test)
-        
-        best_mae = mae_test
-        best_forecast = hw_forecast_test
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    # Loop untuk mencari seasonal period terbaik
+    for seasonal_periods in range(seasonal_min, seasonal_max + 1):
+        try:
+            hw_model = ExponentialSmoothing(train, trend='add', seasonal='add', seasonal_periods=seasonal_periods).fit()
+            hw_forecast_test = hw_model.forecast(len(test))
+            mae_test = mean_absolute_error(test, hw_forecast_test)
+
+            if mae_test < best_mae:
+                best_mae = mae_test
+                best_forecast = hw_forecast_test
+                best_seasonal_period = seasonal_periods
+                best_model = hw_model
+        except Exception as e:
+            print(f"Error with seasonal period {seasonal_periods}: {e}")
 
     # Prediksi 365 hari ke depan dengan model terbaik
-    hw_forecast_future = hw_model.forecast(forecast_horizon)
+    hw_forecast_future = best_model.forecast(forecast_horizon)
     
-    return daily_profit, hw_forecast_future, hw_model
+    return daily_profit, hw_forecast_future, best_seasonal_period, best_mae
 
-# Fungsi untuk menampilkan dashboard prediksi
 def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=365, key_suffix=''):
     st.title(f"Dashboard Prediksi Laba Bobby Aquatic {key_suffix}")
 
@@ -65,15 +64,12 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=365, key_s
     )
 
     if selected_years:
-        # Plot Data Historis dan Prediksi Masa Depan
         fig, ax = plt.subplots(figsize=(12, 6))
 
-        # Plot data historis berdasarkan tahun yang dipilih
         for year in selected_years:
             filtered_data = daily_profit[daily_profit.index.year == year]
             filtered_data['LABA'].plot(ax=ax, label=f'Data Historis {year}', color='blue')
 
-        # Plot prediksi masa depan hanya jika tahun terbaru dipilih
         if max(selected_years) == daily_profit.index.year.max():
             last_date = daily_profit.index[-1]
             forecast_dates = pd.date_range(start=last_date, periods=forecast_horizon + 1)[1:]

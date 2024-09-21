@@ -16,15 +16,14 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dataframes, ignore_index=True)
 
 @st.cache_data
-def forecast_profit(data, seasonal_min=7, seasonal_max=365, forecast_horizon=365):
-    # Mengambil hanya kolom tanggal dan laba dari data penjualan
+def forecast_profit_2(data, seasonal_min=7, seasonal_max=365, forecast_horizon=365):
+    # Isi fungsi sama dengan forecast_profit_1
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
     daily_profit = daily_profit.groupby('TANGGAL').sum()
     daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
     daily_profit = daily_profit.asfreq('D').interpolate()
 
-    # Membagi data
     train_size = int(len(daily_profit) * 0.9)
     train, test = daily_profit[:train_size], daily_profit[train_size:]
 
@@ -33,7 +32,6 @@ def forecast_profit(data, seasonal_min=7, seasonal_max=365, forecast_horizon=365
     best_seasonal_period = None
     best_model = None
 
-    # Loop untuk mencari seasonal period terbaik
     for seasonal_periods in range(seasonal_min, seasonal_max + 1):
         try:
             hw_model = ExponentialSmoothing(train, trend='add', seasonal='add', seasonal_periods=seasonal_periods).fit()
@@ -48,7 +46,6 @@ def forecast_profit(data, seasonal_min=7, seasonal_max=365, forecast_horizon=365
         except Exception as e:
             print(f"Error with seasonal period {seasonal_periods}: {e}")
 
-    # Prediksi 365 hari ke depan dengan model terbaik
     hw_forecast_future = best_model.forecast(forecast_horizon)
     
     return daily_profit, hw_forecast_future, best_seasonal_period, best_mae

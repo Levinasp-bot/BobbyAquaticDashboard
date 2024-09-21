@@ -2,6 +2,9 @@ import streamlit as st
 from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1, show_dashboard as show_dashboard_1
 from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2, show_dashboard as show_dashboard_2
 
+# Mengatur layout agar wide mode
+st.set_page_config(layout="wide")
+
 folder_path_1 = "./data/Bobby Aquatic 1"
 sheet_name_1 = 'Penjualan'
 penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)

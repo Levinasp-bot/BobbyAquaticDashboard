@@ -1,0 +1,6 @@
+streamlit==1.14.0
+pandas
+matplotlib
+statsmodels
+scikit-learn
+openpyxl

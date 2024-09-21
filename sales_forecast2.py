@@ -5,7 +5,7 @@ from sklearn.metrics import mean_absolute_error
 import streamlit as st
 import matplotlib.pyplot as plt
 
-@st.cache_data
+@st.cache
 def load_all_excel_files(folder_path, sheet_name):
     dataframes = []
     for file in os.listdir(folder_path):
@@ -15,7 +15,7 @@ def load_all_excel_files(folder_path, sheet_name):
             dataframes.append(df)
     return pd.concat(dataframes, ignore_index=True)
 
-@st.cache_data
+@st.cache
 def forecast_profit_2(data, seasonal_min=350, seasonal_max=365, forecast_horizon=365):
     # Isi fungsi sama dengan forecast_profit_1
     daily_profit = data[['TANGGAL', 'LABA']].copy()

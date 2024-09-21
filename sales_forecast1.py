@@ -16,7 +16,7 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dataframes, ignore_index=True)
 
 @st.cache
-def forecast_profit(data, seasonal_min=350, seasonal_max=365, forecast_horizon=365):
+def forecast_profit(data, seasonal_min=7, seasonal_max=365, forecast_horizon=365):
     # Mengambil hanya kolom tanggal dan laba dari data penjualan
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])

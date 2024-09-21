@@ -25,7 +25,8 @@ def forecast_profit(data, seasonal_periods=275, forecast_horizon=365):
     daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
 
     # Menetapkan frekuensi
-    daily_profit = daily_profit.asfreq('D', fill_value=0)
+    # Instead of filling missing data with 0, try forward filling
+    daily_profit = daily_profit.asfreq('D').fillna(method='ffill')
 
     # Membagi data 
     train_size = int(len(daily_profit) * 0.9)

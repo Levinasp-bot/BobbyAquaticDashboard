@@ -26,8 +26,8 @@ def process_rfm(data):
     
     rfm = data.groupby('KODE BARANG').agg({
         'TANGGAL': lambda x: (reference_date - x.max()).days,  # Recency
-        'NAMA BARANG': 'count',  # Frequency
-        'TOTAL HR JUAL': 'sum'  # Monetary
+        'NAMA BARANG': 'count',  
+        'TOTAL HR JUAL': 'sum'  
     }).reset_index()
     
     rfm.columns = ['KODE BARANG', 'Recency', 'Frequency', 'Monetary']
@@ -37,14 +37,19 @@ def process_rfm(data):
 def find_optimal_k(rfm_scaled):
     if rfm_scaled.shape[0] <= 1:
         st.error("Data tidak cukup untuk menemukan jumlah cluster. Pastikan data tidak kosong.")
-        return None  # Kembali tanpa nilai jika data tidak valid
+        return None  
 
     model = KMeans(random_state=1)
-    visualizer = KElbowVisualizer(model, k=(2, 10))
-    visualizer.fit(rfm_scaled)
-    optimal_k = visualizer.elbow_value_  # Get the optimal K from elbow method
-    return optimal_k
-
+    visualizer = KElbowVisualizer(model, k=(2, 10), timings=True)
+    
+    try:
+        visualizer.fit(rfm_scaled)
+        visualizer.show()
+        optimal_k = visualizer.elbow_value_  # Get the optimal K from elbow method
+        return optimal_k
+    except Exception as e:
+        st.error(f"Error during Elbow Method visualization: {str(e)}")
+        return None
 
 @st.cache
 def cluster_rfm(rfm_scaled, n_clusters):
@@ -70,26 +75,21 @@ def plot_3d_clusters(rfm_scaled, cluster_labels):
 def show_dashboard(data, key_suffix=''):
     st.subheader("Data Overview")
     st.write(data)
-    
-    # Process RFM
+
     rfm = process_rfm(data)
-    
-    # Standardize the RFM data
+
     scaler = StandardScaler()
     rfm_scaled = scaler.fit_transform(rfm[['Recency', 'Frequency', 'Monetary']])
-    
-    # Cek data yang dinormalisasi
+
     if rfm_scaled.shape[0] > 0:
         # Find optimal K
         st.subheader(f"Elbow Method Result - Optimal K{key_suffix}")
         optimal_k = find_optimal_k(rfm_scaled)
         if optimal_k is not None:
             st.write(f"Optimal number of clusters: {optimal_k}")
-            
-            # Perform clustering
+
             cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
             
-            # Plot 3D Clusters
             st.subheader(f"3D Clustering Visualization{key_suffix}")
             cluster_plot = plot_3d_clusters(rfm_scaled, cluster_labels)
             st.pyplot(cluster_plot)

@@ -10,7 +10,7 @@ from yellowbrick.cluster import KElbowVisualizer
 
 @st.cache
 def load_all_excel_files(folder_path, sheet_name):
-    all_files = glob.glob(os.path.join(folder_path, "*.xlsx"))
+    all_files = glob.glob(os.path.join(folder_path, "*.xlsm"))
     dfs = []
     for file in all_files:
         df = pd.read_excel(file, sheet_name=sheet_name)

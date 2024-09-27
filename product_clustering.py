@@ -35,11 +35,16 @@ def process_rfm(data):
 
 @st.cache
 def find_optimal_k(rfm_scaled):
+    if rfm_scaled.shape[0] <= 1:
+        st.error("Data tidak cukup untuk menemukan jumlah cluster. Pastikan data tidak kosong.")
+        return None  # Kembali tanpa nilai jika data tidak valid
+
     model = KMeans(random_state=1)
-    visualizer = KElbowVisualizer(model, k=(2,10))
+    visualizer = KElbowVisualizer(model, k=(2, 10))
     visualizer.fit(rfm_scaled)
     optimal_k = visualizer.elbow_value_  # Get the optimal K from elbow method
     return optimal_k
+
 
 @st.cache
 def cluster_rfm(rfm_scaled, n_clusters):
@@ -73,15 +78,20 @@ def show_dashboard(data, key_suffix=''):
     scaler = StandardScaler()
     rfm_scaled = scaler.fit_transform(rfm[['Recency', 'Frequency', 'Monetary']])
     
-    # Find optimal K
-    st.subheader(f"Elbow Method Result - Optimal K{key_suffix}")
-    optimal_k = find_optimal_k(rfm_scaled)
-    st.write(f"Optimal number of clusters: {optimal_k}")
-    
-    # Perform clustering
-    cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
-    
-    # Plot 3D Clusters
-    st.subheader(f"3D Clustering Visualization{key_suffix}")
-    cluster_plot = plot_3d_clusters(rfm_scaled, cluster_labels)
-    st.pyplot(cluster_plot)
+    # Cek data yang dinormalisasi
+    if rfm_scaled.shape[0] > 0:
+        # Find optimal K
+        st.subheader(f"Elbow Method Result - Optimal K{key_suffix}")
+        optimal_k = find_optimal_k(rfm_scaled)
+        if optimal_k is not None:
+            st.write(f"Optimal number of clusters: {optimal_k}")
+            
+            # Perform clustering
+            cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
+            
+            # Plot 3D Clusters
+            st.subheader(f"3D Clustering Visualization{key_suffix}")
+            cluster_plot = plot_3d_clusters(rfm_scaled, cluster_labels)
+            st.pyplot(cluster_plot)
+    else:
+        st.error("Tidak ada data yang valid untuk clustering.")

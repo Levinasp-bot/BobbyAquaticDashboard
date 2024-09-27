@@ -1,7 +1,7 @@
 import streamlit as st
 from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1, show_dashboard as show_forecast_dashboard_1
 from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2, show_dashboard as show_forecast_dashboard_2
-from product_clustering import load_all_excel_files as load_clustering_data, show_clustering_dashboard
+from product_clustering import load_all_excel_files as load_clustering_data, show_dashboard
 
 st.set_page_config(layout="wide")
 
@@ -26,7 +26,7 @@ with tab1:
     
     # Show Clustering
     st.subheader("Clustering Analysis")
-    show_clustering_dashboard(penjualan_data_1, key_suffix='cabang1')
+    show_dashboard(penjualan_data_1, key_suffix='cabang1')
 
 with tab2:
     st.header("Dashboard Cabang 2: Bobby Aquatic 2")
@@ -37,4 +37,4 @@ with tab2:
     
     # Show Clustering
     st.subheader("Clustering Analysis")
-    show_clustering_dashboard(penjualan_data_2, key_suffix='cabang2')
+    show_dashboard(penjualan_data_2, key_suffix='cabang2')

@@ -15,7 +15,7 @@ def load_all_excel_files(folder_path, sheet_name):
     for file in all_files:
         df = pd.read_excel(file, sheet_name=sheet_name)
         if 'KODE BARANG' in df.columns:
-            df = df.loc[:, ~df.columns.duplicated()]  # Remove duplicate columns
+            df = df.loc[:, ~df.columns.duplicated()] 
         dfs.append(df)
     return pd.concat(dfs, ignore_index=True)
 
@@ -89,7 +89,7 @@ def show_dashboard(data, key_suffix=''):
             st.write(f"Optimal number of clusters: {optimal_k}")
 
             cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
-            
+
             st.subheader(f"3D Clustering Visualization{key_suffix}")
             cluster_plot = plot_3d_clusters(rfm_scaled, cluster_labels)
             st.pyplot(cluster_plot)

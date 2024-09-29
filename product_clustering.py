@@ -1,11 +1,10 @@
 import glob
 import os
 import pandas as pd
-import numpy as np
-import plotly.express as px
-import streamlit as st
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
+import streamlit as st
+import plotly.express as px
 
 @st.cache
 def load_all_excel_files(folder_path, sheet_name):
@@ -33,28 +32,46 @@ def process_rfm(data):
     return rfm
 
 @st.cache
+def find_optimal_k(rfm_scaled):
+    if rfm_scaled.shape[0] <= 1:
+        st.error("Data tidak cukup untuk menemukan jumlah cluster. Pastikan data tidak kosong.")
+        return None  
+
+    model = KMeans(random_state=1)
+    visualizer = KElbowVisualizer(model, k=(2, 10), timings=True)
+    
+    try:
+        visualizer.fit(rfm_scaled)
+        visualizer.show()
+        optimal_k = visualizer.elbow_value_  # Get the optimal K from elbow method
+        return optimal_k
+    except Exception as e:
+        st.error(f"Error during Elbow Method visualization: {str(e)}")
+        return None
+
+@st.cache
 def cluster_rfm(rfm_scaled, n_clusters):
     kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
     kmeans.fit(rfm_scaled)
     return kmeans.labels_
 
-def plot_pie_chart(cluster_labels, rfm):
-    cluster_counts = pd.Series(cluster_labels).value_counts()
-    
-    # Create a pie chart using Plotly
-    fig = px.pie(cluster_counts, values=cluster_counts.values, names=cluster_counts.index,
-                 title="Cluster Distribution", hole=0.3)
-    
-    st.plotly_chart(fig)
-
-    # Return the cluster labels with the rfm data for later use
+def plot_interactive_pie_chart(rfm, cluster_labels):
     rfm['Cluster'] = cluster_labels
-    return rfm
+    cluster_counts = rfm['Cluster'].value_counts().reset_index()
+    cluster_counts.columns = ['Cluster', 'Count']
 
-def display_cluster_members(rfm, cluster_selected):
-    st.subheader(f"Cluster {cluster_selected} Members")
-    cluster_data = rfm[rfm['Cluster'] == cluster_selected]
-    st.write(cluster_data)
+    fig = px.pie(cluster_counts, values='Count', names='Cluster', title='Cluster Distribution', hole=0.3)
+
+    fig.update_traces(textinfo='percent+label', pull=[0.05]*len(cluster_counts))
+
+    selected_cluster = st.plotly_chart(fig, use_container_width=True)
+
+    return selected_cluster, rfm
+
+def show_cluster_table(rfm, cluster_label):
+    st.subheader(f"Cluster {cluster_label} Members")
+    cluster_data = rfm[rfm['Cluster'] == cluster_label]
+    st.dataframe(cluster_data)
 
 def show_dashboard(data, key_suffix=''):
     st.subheader("Data Overview")
@@ -66,17 +83,19 @@ def show_dashboard(data, key_suffix=''):
     rfm_scaled = scaler.fit_transform(rfm[['Recency', 'Frequency', 'Monetary']])
 
     if rfm_scaled.shape[0] > 0:
-        # Define the number of clusters (can use KMeans Elbow method here)
-        n_clusters = 3  # Example fixed number of clusters
-        cluster_labels = cluster_rfm(rfm_scaled, n_clusters)
+        # Find optimal K
+        st.subheader(f"Elbow Method Result - Optimal K{key_suffix}")
+        optimal_k = find_optimal_k(rfm_scaled)
+        if optimal_k is not None:
+            st.write(f"Optimal number of clusters: {optimal_k}")
 
-        st.subheader(f"Cluster Distribution Visualization{key_suffix}")
-        rfm_with_clusters = plot_pie_chart(cluster_labels, rfm)
+            cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
 
-        # Let the user click on the pie chart and display corresponding cluster members
-        cluster_selected = st.selectbox("Select Cluster to view members", sorted(rfm_with_clusters['Cluster'].unique()))
+            st.subheader(f"Cluster Distribution Visualization{key_suffix}")
+            selected_cluster, rfm_with_clusters = plot_interactive_pie_chart(rfm, cluster_labels)
 
-        # Show the table of members in the selected cluster
-        display_cluster_members(rfm_with_clusters, cluster_selected)
+            # Interactivity: Select a cluster from the pie chart
+            cluster_to_show = st.selectbox('Select a cluster to view its members:', sorted(rfm_with_clusters['Cluster'].unique()))
+            show_cluster_table(rfm_with_clusters, cluster_to_show)
     else:
         st.error("Tidak ada data yang valid untuk clustering.")

@@ -6,6 +6,17 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 
 @st.cache
+def load_all_excel_files(folder_path, sheet_name):
+    all_files = glob.glob(os.path.join(folder_path, "*.xlsm"))
+    dfs = []
+    for file in all_files:
+        df = pd.read_excel(file, sheet_name=sheet_name)
+        if 'KODE BARANG' in df.columns:
+            df = df.loc[:, ~df.columns.duplicated()] 
+        dfs.append(df)
+    return pd.concat(dfs, ignore_index=True)
+    
+@st.cache
 def process_rfm(data):
     data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])
     reference_date = data['TANGGAL'].max()

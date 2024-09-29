@@ -57,20 +57,17 @@ def cluster_rfm(rfm_scaled, n_clusters):
     kmeans.fit(rfm_scaled)
     return kmeans.labels_
 
-def plot_3d_clusters(rfm_scaled, cluster_labels):
-    fig = plt.figure(figsize=(7, 7))
-    ax = fig.add_subplot(111, projection='3d')
-    
-    scatter = ax.scatter(rfm_scaled[:, 0], rfm_scaled[:, 1], rfm_scaled[:, 2], c=cluster_labels, s=50, cmap='Set1', edgecolor='k')
-    
-    ax.grid(True)
-    ax.set_xlabel('Recency')
-    ax.set_ylabel('Frequency')
-    ax.set_zlabel('Monetary')
-    ax.set_title('3D View of Clusters')
-    
-    plt.show()
-    return fig
+def plot_pie_chart(cluster_labels):
+    unique, counts = np.unique(cluster_labels, return_counts=True)
+    cluster_distribution = dict(zip(unique, counts))
+
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.pie(cluster_distribution.values(), labels=cluster_distribution.keys(), autopct='%1.1f%%', startangle=90, colors=sns.color_palette('Set2'))
+
+    ax.set_title('Cluster Distribution')
+    plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.1), ncol=3)
+    plt.tight_layout()
+    st.pyplot(fig)
 
 def show_dashboard(data, key_suffix=''):
     st.subheader("Data Overview")
@@ -90,8 +87,7 @@ def show_dashboard(data, key_suffix=''):
 
             cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
 
-            st.subheader(f"3D Clustering Visualization{key_suffix}")
-            cluster_plot = plot_3d_clusters(rfm_scaled, cluster_labels)
-            st.pyplot(cluster_plot)
+            st.subheader(f"Cluster Distribution Visualization{key_suffix}")
+            plot_pie_chart(cluster_labels)
     else:
         st.error("Tidak ada data yang valid untuk clustering.")

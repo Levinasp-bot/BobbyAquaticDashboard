@@ -1,3 +1,5 @@
+import glob
+import os
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -15,7 +17,7 @@ def load_all_excel_files(folder_path, sheet_name):
             df = df.loc[:, ~df.columns.duplicated()] 
         dfs.append(df)
     return pd.concat(dfs, ignore_index=True)
-    
+
 @st.cache
 def process_rfm(data):
     data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])

@@ -8,3 +8,4 @@ seaborn
 yellowbrick
 setuptools
 numpy
+plotly

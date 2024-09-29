@@ -77,8 +77,7 @@ def show_dashboard(data, key_suffix=''):
         # Find optimal K
         optimal_k = find_optimal_k(rfm_scaled)
         if optimal_k is not None:
-            st.write(f"Optimal number of clusters: {optimal_k}")
-
+            # Cluster the data without displaying the optimal_k
             cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
 
             st.subheader(f"Cluster Distribution Visualization{key_suffix}")

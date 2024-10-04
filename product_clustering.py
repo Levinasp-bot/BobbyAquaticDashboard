@@ -56,7 +56,7 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
     # Mendefinisikan legend kustom untuk setiap kategori
     custom_legends = {
         'Ikan': {0: 'Ikan Kualitas Tinggi', 1: 'Ikan Kualitas Menengah', 2: 'Ikan Kualitas Rendah', 3: 'Ikan Spesial'},
-        'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium'}
+        'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium', 4: 'Aksesoris Premium'}
     }
 
     # Menghapus angka dari legend dan hanya menggunakan variabel linguistik

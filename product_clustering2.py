@@ -59,6 +59,12 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
         'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium'}
     }
 
+    # Menghapus angka dari legend dan hanya menggunakan variabel linguistik
+    for i, cluster_count in enumerate(cluster_counts.iterrows()):
+        cluster_index = cluster_count[1]['Cluster']
+        custom_label = custom_legends[category_name].get(cluster_index, f'Cluster {cluster_index}')
+        fig.data[i].name = custom_label  # Update the name of each trace with custom label
+
     # Menambahkan legend kustom
     fig.update_layout(
         legend=dict(
@@ -72,13 +78,8 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
         )
     )
     
-    # Menghapus angka dari legend dan hanya menggunakan variabel linguistik
-    for trace in fig.data:
-        if trace.name:  # Pastikan trace.name tidak None
-            cluster_index = int(trace.name.split(' ')[-1])
-            trace.name = custom_legends[category_name].get(cluster_index, f'Cluster {cluster_index}')  # Mengupdate nama legend dengan keterangan
-    
     return fig
+
 
 def show_cluster_table(rfm, cluster_label, key_suffix):
     st.subheader(f"Cluster {cluster_label} Members")

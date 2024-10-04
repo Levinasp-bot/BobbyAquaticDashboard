@@ -39,17 +39,27 @@ def find_optimal_k(rfm_scaled):
     
     try:
         visualizer.fit(rfm_scaled)
-        optimal_k = visualizer.elbow_value_  # Get the optimal K from elbow method
+        optimal_k = visualizer.elbow_value_  
         return optimal_k
     except Exception as e:
         st.error(f"Error during Elbow Method: {str(e)}")
         return None
 
 @st.cache
-def cluster_rfm(rfm_scaled, n_clusters):
-    kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
-    kmeans.fit(rfm_scaled)
-    return kmeans.labels_
+def process_rfm(data):
+    data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])
+    reference_date = data['TANGGAL'].max()
+    
+    # Assuming 'KATEGORI' is available in the original data
+    rfm = data.groupby(['KODE BARANG', 'KATEGORI']).agg({
+        'TANGGAL': lambda x: (reference_date - x.max()).days,  # Recency
+        'NAMA BARANG': 'count',  
+        'TOTAL HR JUAL': 'sum'  
+    }).reset_index()
+    
+    rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
+    return rfm
+
 
 def plot_interactive_pie_chart(rfm, cluster_labels):
     rfm['Cluster'] = cluster_labels
@@ -68,23 +78,39 @@ def show_cluster_table(rfm, cluster_label):
     st.dataframe(cluster_data)
 
 def show_dashboard(data, key_suffix=''):
+    # Process RFM for the entire dataset
     rfm = process_rfm(data)
 
+    # Filter RFM data by category
+    rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
+    rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
+
+    # Initialize StandardScaler
     scaler = StandardScaler()
-    rfm_scaled = scaler.fit_transform(rfm[['Recency', 'Frequency', 'Monetary']])
 
-    if rfm_scaled.shape[0] > 0:
-        # Find optimal K
-        optimal_k = find_optimal_k(rfm_scaled)
-        if optimal_k is not None:
-            # Cluster the data without displaying the optimal_k
-            cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
+    # Function to process clustering and plotting for each category
+    def process_category(rfm_category, category_name):
+        if rfm_category.shape[0] > 0:
+            # Scale the RFM data
+            rfm_scaled = scaler.fit_transform(rfm_category[['Recency', 'Frequency', 'Monetary']])
+            # Find optimal K
+            optimal_k = find_optimal_k(rfm_scaled)
+            if optimal_k is not None:
+                # Cluster the data
+                cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
+                # Add cluster labels to the dataframe
+                rfm_category['Cluster'] = cluster_labels
 
-            st.subheader(f"Cluster Distribution Visualization{key_suffix}")
-            rfm_with_clusters = plot_interactive_pie_chart(rfm, cluster_labels)
+                st.subheader(f"Cluster Distribution for {category_name} Visualization{key_suffix}")
+                rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels)
 
-            # Interactivity: Select a cluster from the pie chart
-            cluster_to_show = st.selectbox('Select a cluster to view its members:', sorted(rfm_with_clusters['Cluster'].unique()))
-            show_cluster_table(rfm_with_clusters, cluster_to_show)
-    else:
-        st.error("Tidak ada data yang valid untuk clustering.")
+                # Interactivity: Select a cluster from the pie chart
+                cluster_to_show = st.selectbox(f'Select a cluster for {category_name}:', sorted(rfm_with_clusters['Cluster'].unique()))
+                show_cluster_table(rfm_with_clusters, cluster_to_show)
+        else:
+            st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
+
+    # Process clustering for both categories
+    process_category(rfm_ikan, 'Ikan')
+    process_category(rfm_aksesoris, 'Aksesoris')
+

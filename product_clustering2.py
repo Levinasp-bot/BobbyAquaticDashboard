@@ -39,14 +39,14 @@ def cluster_rfm(rfm_scaled, n_clusters):
     return kmeans.labels_
 
 # Fungsi untuk membuat pie chart dengan legend kustom
-def plot_interactive_pie_chart(rfm, cluster_labels, col1, key_suffix, category_name):
+def plot_interactive_pie_chart(rfm, cluster_labels, col1, category_name):
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
 
     # Membuat pie chart dengan plotly.graph_objects
     fig = go.Figure(data=[go.Pie(
-        labels=cluster_counts['Cluster'],
+        labels=cluster_counts['Cluster'].map(lambda x: f'Cluster {x}'),  # Menampilkan label cluster
         values=cluster_counts['Count'],
         title='Cluster Distribution',
         hole=0.3,
@@ -104,14 +104,16 @@ def show_dashboard(data, key_suffix=''):
             # Membuat dua kolom
             col1, col2 = st.columns(2)
 
-            # Selectbox untuk memilih cluster di kolom kiri
+            # Pie chart di kolom kiri
+            col1.subheader(f"Cluster Distribution for {category_name} Visualization")
+
+            # Selectbox untuk memilih cluster di atas chart
             cluster_to_show = col1.selectbox(f'Select a cluster for {category_name}:', 
                                              sorted(rfm_category['Cluster'].unique()), 
                                              key=f'selectbox_{category_name}_{key_suffix}')
 
-            # Pie chart di kolom kiri
-            col1.subheader(f"Cluster Distribution for {category_name} Visualization")
-            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels, col1, key_suffix, category_name)
+            # Menampilkan pie chart
+            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels, col1, category_name)
 
             # Tabel detail di kolom kanan
             show_cluster_table(rfm_with_clusters, cluster_to_show, col2, key_suffix)

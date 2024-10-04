@@ -39,7 +39,7 @@ def cluster_rfm(rfm_scaled, n_clusters):
     return kmeans.labels_
 
 # Fungsi untuk membuat pie chart
-def plot_interactive_pie_chart(rfm, cluster_labels, col1):
+def plot_interactive_pie_chart(rfm, cluster_labels, col1, key_suffix):
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
@@ -86,12 +86,12 @@ def show_dashboard(data, key_suffix=''):
 
             # Pie chart di kolom kiri
             col1.subheader(f"Cluster Distribution for {category_name} Visualization")
-            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels, col1)
+            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels, col1, key_suffix)
 
             # Selectbox untuk memilih cluster di kolom kiri
             cluster_to_show = col1.selectbox(f'Select a cluster for {category_name}:', 
                                              sorted(rfm_with_clusters['Cluster'].unique()), 
-                                             key=f'selectbox_{category_name}_{key_suffix}')
+                                             key=f'selectbox_{category_name}_{key_suffix}_{cluster_labels}')
 
             # Tabel detail di kolom kanan
             show_cluster_table(rfm_with_clusters, cluster_to_show, col2, key_suffix)

@@ -1,7 +1,8 @@
 import streamlit as st
 from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1, show_dashboard as show_dashboard_1
 from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2, show_dashboard as show_dashboard_2
-from product_clustering import load_all_excel_files as load_cluster_data, show_dashboard as show_cluster_dashboard
+from product_clustering import load_all_excel_files as load_cluster_data_1, show_dashboard as show_cluster_dashboard_1
+from product_clustering2 import load_all_excel_files as load_cluster_data_2, show_dashboard as show_cluster_dashboard_2
 
 # Mengatur layout agar wide mode
 st.set_page_config(layout="wide")
@@ -53,11 +54,11 @@ elif st.session_state.page == "product":
     # Load and show clustering data for Bobby Aquatic 1 and 2
     folder_path_1 = "./data/Bobby Aquatic 1"
     sheet_name_1 = 'Penjualan'
-    cluster_data_1 = load_cluster_data(folder_path_1, sheet_name_1)
+    cluster_data_1 = load_cluster_data_1(folder_path_1, sheet_name_1)
 
     folder_path_2 = "./data/Bobby Aquatic 2"
     sheet_name_2 = 'Penjualan'
-    cluster_data_2 = load_cluster_data(folder_path_2, sheet_name_2)
+    cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name_2)
 
     # Tabs for Bobby Aquatic 1 and 2
     tab1, tab2 = st.tabs(["Bobby Aquatic 1", "Bobby Aquatic 2"])
@@ -65,9 +66,9 @@ elif st.session_state.page == "product":
     # Bobby Aquatic 1 clustering
     with tab1:
         st.header("Product Clustering for Bobby Aquatic 1")
-        show_cluster_dashboard(cluster_data_1, key_suffix='cabang1')
+        show_cluster_dashboard_1(cluster_data_1, key_suffix='cabang1')
 
     # Bobby Aquatic 2 clustering
     with tab2:
         st.header("Product Clustering for Bobby Aquatic 2")
-        show_cluster_dashboard(cluster_data_2, key_suffix='cabang2')
+        show_cluster_dashboard_2(cluster_data_2, key_suffix='cabang2')

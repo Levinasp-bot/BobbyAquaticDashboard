@@ -78,6 +78,7 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     st.subheader(f"Cluster: {custom_label} Members")
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, key=f"cluster_table_{cluster_label}_{key_suffix}")
+
 def process_category(rfm_category, category_name, n_clusters, custom_legends, key_suffix=''):
     if rfm_category.shape[0] > 0:
         # Scale the RFM data
@@ -97,11 +98,11 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         # Create two columns with 2/3 for chart and 1/3 for the table
         col1, col2 = st.columns([2, 1])  # Resize: 2 for chart, 1 for table
 
-        # Selectbox with custom label for selecting cluster, unique key for each category and key_suffix
+        # Use the category_name and key_suffix for uniqueness
         selected_custom_label = col1.selectbox(
             f'Select a cluster for {category_name}:', 
             options=[custom_label_map[cluster] for cluster in available_clusters], 
-            key=f'selectbox_{category_name}_{key_suffix}'
+            key=f'selectbox_{category_name}_{key_suffix}_{str(hash(category_name))}'
         )
 
         # Find the numeric cluster corresponding to the custom label
@@ -115,6 +116,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
+
 
 def show_dashboard(data, key_suffix=''):
     # Process RFM for the entire dataset

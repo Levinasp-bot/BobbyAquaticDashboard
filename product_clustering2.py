@@ -39,14 +39,14 @@ def cluster_rfm(rfm_scaled, n_clusters):
     return kmeans.labels_
 
 # Fungsi untuk membuat pie chart dengan legend kustom
-def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
+def plot_interactive_pie_chart(rfm, cluster_labels, col1, key_suffix, category_name):
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
 
     # Membuat pie chart dengan plotly.graph_objects
     fig = go.Figure(data=[go.Pie(
-        labels=cluster_counts['Cluster'].map(lambda x: f'Cluster {x}'),  # Menampilkan label cluster
+        labels=cluster_counts['Cluster'],
         values=cluster_counts['Count'],
         title='Cluster Distribution',
         hole=0.3,
@@ -67,12 +67,13 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
                            x=1.1, y=(1 - (list(custom_legends[category_name].keys()).index(cluster) * 0.1)),
                            showarrow=False)
 
-    return fig
+    col1.plotly_chart(fig, use_container_width=True)
+    return rfm
 
-def show_cluster_table(rfm, cluster_label, key_suffix):
-    st.subheader(f"Cluster {cluster_label} Members")
+def show_cluster_table(rfm, cluster_label, col2, key_suffix):
+    col2.subheader(f"Cluster {cluster_label} Members")
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
-    st.dataframe(cluster_data, key=f"cluster_table_{cluster_label}_{key_suffix}")
+    col2.dataframe(cluster_data, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def show_dashboard(data, key_suffix=''):
     # Process RFM for the entire dataset
@@ -89,7 +90,7 @@ def show_dashboard(data, key_suffix=''):
     k_ikan = 4  # Nilai k untuk kategori 'Ikan'
     k_aksesoris = 4  # Nilai k untuk kategori 'Aksesoris'
 
-    def process_category(rfm_category, category_name, n_clusters):
+    def process_category(rfm_category, category_name, n_clusters, key_suffix):
         if rfm_category.shape[0] > 0:
             # Scale the RFM data
             rfm_scaled = scaler.fit_transform(rfm_category[['Recency', 'Frequency', 'Monetary']])
@@ -103,23 +104,20 @@ def show_dashboard(data, key_suffix=''):
             # Membuat dua kolom
             col1, col2 = st.columns(2)
 
-            # Pie chart di kolom kiri
-            col1.subheader(f"Cluster Distribution for {category_name} Visualization")
-
-            # Selectbox untuk memilih cluster di atas chart
+            # Selectbox untuk memilih cluster di kolom kiri
             cluster_to_show = col1.selectbox(f'Select a cluster for {category_name}:', 
                                              sorted(rfm_category['Cluster'].unique()), 
-                                             key=f'selectbox_{category_name}')
+                                             key=f'selectbox_{category_name}_{key_suffix}')
 
-            # Menampilkan pie chart
-            fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name)
-            col1.plotly_chart(fig, use_container_width=True)
+            # Pie chart di kolom kiri
+            col1.subheader(f"Cluster Distribution for {category_name} Visualization")
+            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels, col1, key_suffix, category_name)
 
             # Tabel detail di kolom kanan
-            show_cluster_table(rfm_category, cluster_to_show, key_suffix=f'{category_name.lower()}_{cluster_to_show}')
+            show_cluster_table(rfm_with_clusters, cluster_to_show, col2, key_suffix)
         else:
             st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
     # Process clustering for 'Ikan' and 'Aksesoris' with predefined k values
-    process_category(rfm_ikan, 'Ikan', n_clusters=k_ikan)
-    process_category(rfm_aksesoris, 'Aksesoris', n_clusters=k_aksesoris)
+    process_category(rfm_ikan, 'Ikan', k_ikan, key_suffix='ikan')
+    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, key_suffix='aksesoris')

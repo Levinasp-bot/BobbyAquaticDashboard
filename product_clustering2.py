@@ -76,7 +76,9 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     st.subheader(f"Cluster: {custom_label} Members")
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
-    st.dataframe(cluster_data, key=f"cluster_table_{cluster_label}_{key_suffix}")
+    
+    # Adjust the width and height of the dataframe to fit better
+    st.dataframe(cluster_data, width=400, height=300, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, custom_legends, key_suffix=''):
     if rfm_category.shape[0] > 0:
@@ -89,12 +91,13 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         available_clusters = sorted(rfm_category['Cluster'].unique())
         custom_label_map = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
 
-        col1, col2 = st.columns([1, 1])  # Adjusted layout for side-by-side display
+        # Adjust layout for side-by-side display
+        col1, col2 = st.columns([1, 1])  # Adjusted layout ratio for pie chart and table
 
         selected_custom_label = col1.selectbox(
             f'Select a cluster for {category_name}:', 
             options=[custom_label_map[cluster] for cluster in available_clusters], 
-            key=f'selectbox_{category_name}_{key_suffix}'  # Unique key based on category and suffix
+            key=f'selectbox_{category_name}_{key_suffix}_{str(hash(category_name))}'
         )
 
         selected_cluster_num = {v: k for k, v in custom_label_map.items()}[selected_custom_label]

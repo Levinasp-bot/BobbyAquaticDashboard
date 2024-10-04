@@ -78,7 +78,6 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     st.subheader(f"Cluster: {custom_label} Members")
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, key=f"cluster_table_{cluster_label}_{key_suffix}")
-
 def process_category(rfm_category, category_name, n_clusters, custom_legends, key_suffix=''):
     if rfm_category.shape[0] > 0:
         # Scale the RFM data
@@ -98,7 +97,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         # Create two columns with 2/3 for chart and 1/3 for the table
         col1, col2 = st.columns([2, 1])  # Resize: 2 for chart, 1 for table
 
-        # Selectbox with custom label for selecting cluster
+        # Selectbox with custom label for selecting cluster, unique key for each category and key_suffix
         selected_custom_label = col1.selectbox(
             f'Select a cluster for {category_name}:', 
             options=[custom_label_map[cluster] for cluster in available_clusters], 

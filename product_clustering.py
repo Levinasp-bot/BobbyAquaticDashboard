@@ -91,7 +91,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         # Adjust layout for side-by-side display
         col1, col2 = st.columns([1, 1])  # Adjusted layout ratio for pie chart and table
 
-        # Create a unique key using category_name, key_suffix, and cluster information
+        # Create a unique key for the selectbox
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(available_clusters)))}'
 
         selected_custom_label = col1.selectbox(
@@ -102,14 +102,16 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
 
         selected_cluster_num = {v: k for k, v in custom_label_map.items()}[selected_custom_label]
 
+        # Create a unique key for the plotly chart
+        plot_key = f'plotly_chart_{category_name}_{key_suffix}'
+        
         fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-        col1.plotly_chart(fig, use_container_width=True)
+        col1.plotly_chart(fig, use_container_width=True, key=plot_key)  # Use unique key for plotly chart
 
         show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
-# ... kode sebelumnya tetap
 
 def show_dashboard(data, key_suffix=''):
     rfm = process_rfm(data)

@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans
 import streamlit as st
 import plotly.graph_objects as go
 
-
+@st.cache
 def load_all_excel_files(folder_path, sheet_name):
     all_files = glob.glob(os.path.join(folder_path, "*.xlsm"))
     dfs = []
@@ -88,18 +88,29 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         available_clusters = sorted(rfm_category['Cluster'].unique())
         custom_label_map = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
 
-        # Calculate Total Products Sold and Average RFM
-        total_products_sold = rfm_category['Frequency'].sum()
+        # Calculate Total Fish Sold or Total Accessories Sold
+        if category_name == 'Ikan':
+            total_fish_sold = rfm_category['Frequency'].sum()
+            total_accessories_sold = 0  # Not applicable for fish category
+        elif category_name == 'Aksesoris':
+            total_accessories_sold = rfm_category['Frequency'].sum()
+            total_fish_sold = 0  # Not applicable for accessories category
+
         average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
 
         # Adjust layout for side-by-side display
         col1, col2 = st.columns(2)  # Create two equal columns
 
-        # Display total products sold and average RFM
+        # Display total fish sold or total accessories sold and average RFM
         with col1:
-            st.markdown("### Total Products Sold")
-            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
-                         f"<strong>{total_products_sold}</strong></div>", unsafe_allow_html=True)
+            if category_name == 'Ikan':
+                st.markdown("### Total Fish Sold")
+                st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
+                             f"<strong>{total_fish_sold}</strong></div>", unsafe_allow_html=True)
+            else:
+                st.markdown("### Total Accessories Sold")
+                st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
+                             f"<strong>{total_accessories_sold}</strong></div>", unsafe_allow_html=True)
         
         with col2:
             st.markdown("### Average RFM")

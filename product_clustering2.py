@@ -38,7 +38,6 @@ def cluster_rfm(rfm_scaled, n_clusters):
     kmeans.fit(rfm_scaled)
     return kmeans.labels_
 
-# Fungsi untuk membuat pie chart dengan legend kustom
 def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()

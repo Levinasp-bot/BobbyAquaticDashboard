@@ -6,8 +6,21 @@ from product_clustering import load_all_excel_files as load_cluster_data, show_d
 # Mengatur layout agar wide mode
 st.set_page_config(layout="wide")
 
-# Sidebar navigation
-menu = st.sidebar.selectbox("Pilih Menu", ["Sales", "Product"])
+# CSS untuk memperkecil ukuran sidebar
+st.markdown(
+    """
+    <style>
+    /* Mengatur lebar sidebar */
+    .css-1d391kg {
+        width: 200px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Sidebar dengan radio button untuk navigasi
+menu = st.sidebar.radio("Menu", ["Sales", "Product"])
 
 # Load data for Bobby Aquatic 1 and 2
 folder_path_1 = "./data/Bobby Aquatic 1"

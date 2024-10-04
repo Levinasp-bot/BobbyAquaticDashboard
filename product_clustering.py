@@ -56,17 +56,8 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
     # Mendefinisikan legend kustom untuk setiap kategori
     custom_legends = {
         'Ikan': {0: 'Ikan Kualitas Tinggi', 1: 'Ikan Kualitas Menengah', 2: 'Ikan Kualitas Rendah', 3: 'Ikan Spesial'},
-        'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium', 4: 'Aksesoris Premium'}
+        'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium'}
     }
-
-    # Menghapus angka dari legend dan hanya menggunakan variabel linguistik
-    for i in range(len(cluster_counts)):
-        cluster_index = cluster_counts['Cluster'].iloc[i]
-        if cluster_index in custom_legends[category_name]:
-            custom_label = custom_legends[category_name][cluster_index]
-            fig.data[i].name = custom_label  # Update the name of each trace with custom label
-        else:
-            fig.data[i].name = f'Cluster {cluster_index}'  # Fallback to default name if no custom label
 
     # Menambahkan legend kustom
     fig.update_layout(
@@ -81,9 +72,13 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
         )
     )
     
+    # Menghapus angka dari legend dan hanya menggunakan variabel linguistik
+    for trace in fig.data:
+        if trace.name:  # Pastikan trace.name tidak None
+            cluster_index = int(trace.name.split(' ')[-1])
+            trace.name = custom_legends[category_name].get(cluster_index, f'Cluster {cluster_index}')  # Mengupdate nama legend dengan keterangan
+    
     return fig
-
-
 
 def show_cluster_table(rfm, cluster_label, key_suffix):
     st.subheader(f"Cluster {cluster_label} Members")
@@ -129,8 +124,7 @@ def show_dashboard(data, key_suffix=''):
             col1.plotly_chart(fig, use_container_width=True)
 
             # Tabel detail di kolom kanan
-            with col2:
-                show_cluster_table(rfm_category, cluster_to_show, key_suffix=f'{category_name.lower()}_{cluster_to_show}')
+            show_cluster_table(rfm_category, cluster_to_show, key_suffix=f'{category_name.lower()}_{cluster_to_show}')
         else:
             st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 

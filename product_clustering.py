@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import streamlit as st
-import plotly.express as px
+import plotly.graph_objects as go
 
 @st.cache
 def load_all_excel_files(folder_path, sheet_name):
@@ -38,14 +38,34 @@ def cluster_rfm(rfm_scaled, n_clusters):
     kmeans.fit(rfm_scaled)
     return kmeans.labels_
 
-# Fungsi untuk membuat pie chart
-def plot_interactive_pie_chart(rfm, cluster_labels, col1, key_suffix):
+# Fungsi untuk membuat pie chart dengan legend kustom
+def plot_interactive_pie_chart(rfm, cluster_labels, col1, key_suffix, category_name):
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
 
-    fig = px.pie(cluster_counts, values='Count', names='Cluster', title='Cluster Distribution', hole=0.3)
-    fig.update_traces(textinfo='percent+label', pull=[0.05]*len(cluster_counts))
+    # Membuat pie chart dengan plotly.graph_objects
+    fig = go.Figure(data=[go.Pie(
+        labels=cluster_counts['Cluster'],
+        values=cluster_counts['Count'],
+        title='Cluster Distribution',
+        hole=0.3,
+        textinfo='percent+label',
+        pull=[0.05]*len(cluster_counts)
+    )])
+
+    # Mendefinisikan legend kustom untuk setiap kategori
+    custom_legends = {
+        'Ikan': {0: 'Ikan Kualitas Tinggi', 1: 'Ikan Kualitas Menengah', 2: 'Ikan Kualitas Rendah', 3: 'Ikan Spesial'},
+        'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium'}
+    }
+
+    # Menambahkan legend kustom
+    for cluster in custom_legends[category_name]:
+        description = custom_legends[category_name][cluster]
+        fig.add_annotation(text=description, xref='paper', yref='paper', 
+                           x=1.1, y=(1 - (list(custom_legends[category_name].keys()).index(cluster) * 0.1)),
+                           showarrow=False)
 
     col1.plotly_chart(fig, use_container_width=True)
     return rfm
@@ -84,14 +104,14 @@ def show_dashboard(data, key_suffix=''):
             # Membuat dua kolom
             col1, col2 = st.columns(2)
 
-            # Pie chart di kolom kiri
-            col1.subheader(f"Cluster Distribution for {category_name} Visualization")
-            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels, col1, key_suffix)
-
             # Selectbox untuk memilih cluster di kolom kiri
             cluster_to_show = col1.selectbox(f'Select a cluster for {category_name}:', 
-                                             sorted(rfm_with_clusters['Cluster'].unique()), 
-                                             key=f'selectbox_{category_name}_{key_suffix}_{cluster_labels}')
+                                             sorted(rfm_category['Cluster'].unique()), 
+                                             key=f'selectbox_{category_name}_{key_suffix}')
+
+            # Pie chart di kolom kiri
+            col1.subheader(f"Cluster Distribution for {category_name} Visualization")
+            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels, col1, key_suffix, category_name)
 
             # Tabel detail di kolom kanan
             show_cluster_table(rfm_with_clusters, cluster_to_show, col2, key_suffix)

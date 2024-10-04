@@ -125,12 +125,17 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
 
         # Create a unique key for the plotly chart
         plot_key = f'plotly_chart_{category_name}_{key_suffix}'
-        
-        fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-        st.plotly_chart(fig, use_container_width=True, key=plot_key)  # Pie chart in the first column
 
-        # Move the table to the second column
-        show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
+        # Create columns for chart and table
+        chart_col, table_col = st.columns(2)  # Create two equal columns for chart and table
+
+        with chart_col:
+            fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
+            st.plotly_chart(fig, use_container_width=True, key=plot_key)  # Pie chart in the first column
+
+        with table_col:
+            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
+
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 

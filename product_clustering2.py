@@ -39,7 +39,7 @@ def cluster_rfm(rfm_scaled, n_clusters):
     return kmeans.labels_
 
 # Fungsi untuk membuat pie chart
-def plot_interactive_pie_chart(rfm, cluster_labels):
+def plot_interactive_pie_chart(rfm, cluster_labels, col1):
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
@@ -47,13 +47,13 @@ def plot_interactive_pie_chart(rfm, cluster_labels):
     fig = px.pie(cluster_counts, values='Count', names='Cluster', title='Cluster Distribution', hole=0.3)
     fig.update_traces(textinfo='percent+label', pull=[0.05]*len(cluster_counts))
 
-    st.plotly_chart(fig, use_container_width=True)
+    col1.plotly_chart(fig, use_container_width=True)
     return rfm
 
-def show_cluster_table(rfm, cluster_label):
-    st.subheader(f"Cluster {cluster_label} Members")
+def show_cluster_table(rfm, cluster_label, col2, key_suffix):
+    col2.subheader(f"Cluster {cluster_label} Members")
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
-    st.dataframe(cluster_data)
+    col2.dataframe(cluster_data, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def show_dashboard(data, key_suffix=''):
     # Process RFM for the entire dataset
@@ -81,14 +81,20 @@ def show_dashboard(data, key_suffix=''):
             # Add cluster labels to the dataframe
             rfm_category['Cluster'] = cluster_labels
 
-            st.subheader(f"Cluster Distribution for {category_name} Visualization{key_suffix}")
-            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels)
+            # Membuat dua kolom
+            col1, col2 = st.columns(2)
 
-            # Interactivity: Select a cluster from the dropdown
-            cluster_to_show = st.selectbox(f'Select a cluster for {category_name}:', 
-                                           sorted(rfm_with_clusters['Cluster'].unique()), 
-                                           key=f'selectbox_{category_name}_{key_suffix}')
-            show_cluster_table(rfm_with_clusters, cluster_to_show)
+            # Pie chart di kolom kiri
+            col1.subheader(f"Cluster Distribution for {category_name} Visualization")
+            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels, col1)
+
+            # Selectbox untuk memilih cluster di kolom kiri
+            cluster_to_show = col1.selectbox(f'Select a cluster for {category_name}:', 
+                                             sorted(rfm_with_clusters['Cluster'].unique()), 
+                                             key=f'selectbox_{category_name}_{key_suffix}')
+
+            # Tabel detail di kolom kanan
+            show_cluster_table(rfm_with_clusters, cluster_to_show, col2, key_suffix)
         else:
             st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 

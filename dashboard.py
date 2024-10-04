@@ -17,9 +17,9 @@ def switch_page(page_name):
 
 # Sidebar untuk navigasi antara Sales dan Product
 with st.sidebar:
-    if st.button('Sales', key="sales_button"):
+    if st.button('Penjualan', key="sales_button"):
         switch_page("sales")
-    if st.button('Product', key="product_button"):
+    if st.button('Produk', key="product_button"):
         switch_page("product")
 
 # Menampilkan konten berdasarkan halaman yang dipilih
@@ -42,12 +42,12 @@ if st.session_state.page == "sales":
 
     # Bobby Aquatic 1 dashboard
     with tab1:
-        st.header("Dashboard Cabang 1: Bobby Aquatic 1 - Sales Forecast")
+        st.header("Dashboard Cabang 1: Bobby Aquatic 1 - Peramalan Penjualan")
         show_dashboard_1(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
 
     # Bobby Aquatic 2 dashboard
     with tab2:
-        st.header("Dashboard Cabang 2: Bobby Aquatic 2 - Sales Forecast")
+        st.header("Dashboard Cabang 2: Bobby Aquatic 2 - Peramalan Penjualan")
         show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
 
 elif st.session_state.page == "product":
@@ -65,10 +65,14 @@ elif st.session_state.page == "product":
 
     # Bobby Aquatic 1 clustering
     with tab1:
-        st.header("Product Clustering for Bobby Aquatic 1")
+        st.header("Klaster Produk untuk Bobby Aquatic 1")
+        # Filter di samping header
+        product_filter_1 = st.selectbox("Filter Produk", options=["Semua", "Filter 1", "Filter 2"], key='filter1')
         show_cluster_dashboard_1(cluster_data_1, key_suffix='cabang1')
 
     # Bobby Aquatic 2 clustering
     with tab2:
-        st.header("Product Clustering for Bobby Aquatic 2")
+        st.header("Klaster Produk untuk Bobby Aquatic 2")
+        # Filter di samping header
+        product_filter_2 = st.selectbox("Filter Produk", options=["Semua", "Filter 1", "Filter 2"], key='filter2')
         show_cluster_dashboard_2(cluster_data_2, key_suffix='cabang2')

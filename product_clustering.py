@@ -48,36 +48,27 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
     cluster_counts['Cluster'] = cluster_counts['Cluster'].map(custom_legend_mapped)
 
-    # Create a pie chart with adjusted layout for the legend
     fig = go.Figure(data=[go.Pie(
         labels=cluster_counts['Cluster'],
         values=cluster_counts['Count'],
         hole=0.3,
         textinfo='percent+label',
-        pull=[0.05] * len(cluster_counts),
-        legendgroup='group1'  # Grouping for better layout
+        pull=[0.05] * len(cluster_counts)
     )])
 
     fig.update_layout(
         legend=dict(
             itemsizing='constant',
-            orientation='h',  # Horizontal orientation
-            yanchor='top',
-            y=1.1,  # Adjust the vertical position of the legend
+            orientation='h',
+            yanchor='bottom',
+            y=1.02,
             xanchor='center',
             x=0.5,
-            traceorder='normal',
-            title_text='Clusters',
-            title_font=dict(size=12),
-            font=dict(size=10),  # Font size of legend
-            itemclick='toggleothers',  # Click behavior for legend items
-        ),
-        height=400,  # Adjust height of the figure
-        width=400    # Adjust width of the figure
+            traceorder='normal'
+        )
     )
 
     return fig
-
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     st.subheader(f"Cluster: {custom_label} Members")
@@ -95,12 +86,12 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         available_clusters = sorted(rfm_category['Cluster'].unique())
         custom_label_map = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
 
-        col1, col2 = st.columns([2, 1])  # Adjusted layout for side-by-side display
+        col1, col2 = st.columns([1, 1])  # Adjusted layout for side-by-side display
 
         selected_custom_label = col1.selectbox(
             f'Select a cluster for {category_name}:', 
             options=[custom_label_map[cluster] for cluster in available_clusters], 
-            key=f'selectbox_{category_name}_{key_suffix}'  # Unique key based on category and suffix
+            key=f'selectbox_{category_name}_{key_suffix}_{str(hash(category_name))}'
         )
 
         selected_cluster_num = {v: k for k, v in custom_label_map.items()}[selected_custom_label]

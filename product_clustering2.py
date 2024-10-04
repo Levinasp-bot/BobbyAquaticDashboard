@@ -48,6 +48,7 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
     cluster_counts['Cluster'] = cluster_counts['Cluster'].map(custom_legend_mapped)
 
+    # Adjusting pie chart size and legend for better display
     fig = go.Figure(data=[go.Pie(
         labels=cluster_counts['Cluster'],
         values=cluster_counts['Count'],
@@ -65,7 +66,9 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
             xanchor='center',
             x=0.5,
             traceorder='normal'
-        )
+        ),
+        height=400,  # Adjust height of the figure
+        width=400    # Adjust width of the figure
     )
 
     return fig
@@ -91,7 +94,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         selected_custom_label = col1.selectbox(
             f'Select a cluster for {category_name}:', 
             options=[custom_label_map[cluster] for cluster in available_clusters], 
-            key=f'selectbox_{category_name}_{key_suffix}_{str(hash(category_name))}'
+            key=f'selectbox_{category_name}_{key_suffix}'  # Unique key based on category and suffix
         )
 
         selected_cluster_num = {v: k for k, v in custom_label_map.items()}[selected_custom_label]

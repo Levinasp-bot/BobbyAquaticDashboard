@@ -61,8 +61,8 @@ elif st.session_state.page == "product":
     cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name_2)
 
     # Mendapatkan tahun dari data (misalnya, tahun 2021, 2022, 2023, 2024)
-    years_1 = sorted(cluster_data_1['TANGGAL'].dt.year.unique())  # Gantilah 'TANGGAL' dengan kolom yang sesuai
-    years_2 = sorted(cluster_data_2['TANGGAL'].dt.year.unique())  # Gantilah 'TANGGAL' dengan kolom yang sesuai
+    years_1 = sorted(cluster_data_1['TANGGAL'].dt.year.dropna().astype(int).unique())  # Convert years to integer and remove NaNs
+    years_2 = sorted(cluster_data_2['TANGGAL'].dt.year.dropna().astype(int).unique())  # Convert years to integer and remove NaNs
 
     # Tabs for Bobby Aquatic 1 and 2
     tab1, tab2 = st.tabs(["Bobby Aquatic 1", "Bobby Aquatic 2"])
@@ -71,7 +71,7 @@ elif st.session_state.page == "product":
     with tab1:
         st.header("Klaster Produk untuk Bobby Aquatic 1")
         # Filter di samping header berdasarkan tahun dengan multiselect
-        selected_years_1 = st.multiselect("Pilih Tahun", options=years_1, default=years_1)  # Menampilkan semua tahun sebagai default
+        selected_years_1 = st.multiselect("Pilih Tahun", options=years_1, default=years_1, key='years_1')  # Unique key
         # Filter data berdasarkan tahun yang dipilih
         if selected_years_1:
             filtered_data_1 = cluster_data_1[cluster_data_1['TANGGAL'].dt.year.isin(selected_years_1)]  # Gantilah 'TANGGAL' dengan kolom yang sesuai
@@ -83,7 +83,7 @@ elif st.session_state.page == "product":
     with tab2:
         st.header("Klaster Produk untuk Bobby Aquatic 2")
         # Filter di samping header berdasarkan tahun dengan multiselect
-        selected_years_2 = st.multiselect("Pilih Tahun", options=years_2, default=years_2)  # Menampilkan semua tahun sebagai default
+        selected_years_2 = st.multiselect("Pilih Tahun", options=years_2, default=years_2, key='years_2')  # Unique key
         # Filter data berdasarkan tahun yang dipilih
         if selected_years_2:
             filtered_data_2 = cluster_data_2[cluster_data_2['TANGGAL'].dt.year.isin(selected_years_2)]  # Gantilah 'TANGGAL' dengan kolom yang sesuai

@@ -6,11 +6,29 @@ from product_clustering import load_all_excel_files as load_cluster_data, show_d
 # Mengatur layout agar wide mode
 st.set_page_config(layout="wide")
 
-# CSS untuk membuat tombol sidebar menyerupai pilihan di gambar
+# URL handling to switch between Sales and Product
+query_params = st.experimental_get_query_params()
+page = query_params.get("page", ["sales"])[0]  # Default to 'sales' if no page is specified
+
+# CSS untuk membuat tombol sidebar, menandai tombol aktif
 st.markdown(
-    """
+    f"""
     <style>
-    .custom-button {
+    .custom-button {{
+        background-color: #E0E0E0;
+        color: black;
+        font-weight: bold;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }}
+    .custom-button:hover {{
+        background-color: #D3D3D3;
+        color: black;
+        cursor: pointer;
+    }}
+    .custom-button-active {{
         background-color: #4285f4;
         color: white;
         font-weight: bold;
@@ -18,24 +36,19 @@ st.markdown(
         padding: 10px;
         border-radius: 5px;
         margin-bottom: 10px;
-    }
-    .custom-button:hover {
-        background-color: #357ae8;
-        color: white;
-        cursor: pointer;
-    }
+    }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Sidebar buttons (tombol seperti gambar)
-menu = st.sidebar.markdown('<div class="custom-button"><a href="?page=sales" style="text-decoration: none; color: white;">Sales</a></div>', unsafe_allow_html=True)
-menu = st.sidebar.markdown('<div class="custom-button"><a href="?page=product" style="text-decoration: none; color: white;">Product</a></div>', unsafe_allow_html=True)
+# Menentukan tombol mana yang aktif berdasarkan halaman yang dipilih
+sales_class = "custom-button-active" if page == "sales" else "custom-button"
+product_class = "custom-button-active" if page == "product" else "custom-button"
 
-# URL handling to switch between Sales and Product
-query_params = st.experimental_get_query_params()
-page = query_params.get("page", ["sales"])[0]
+# Sidebar buttons (tombol seperti gambar dengan warna berbeda berdasarkan status aktif)
+st.sidebar.markdown(f'<div class="{sales_class}"><a href="?page=sales" style="text-decoration: none; color: white;">Sales</a></div>', unsafe_allow_html=True)
+st.sidebar.markdown(f'<div class="{product_class}"><a href="?page=product" style="text-decoration: none; color: white;">Product</a></div>', unsafe_allow_html=True)
 
 # Load data for Bobby Aquatic 1 and 2
 folder_path_1 = "./data/Bobby Aquatic 1"
@@ -46,6 +59,7 @@ folder_path_2 = "./data/Bobby Aquatic 2"
 sheet_name_2 = 'Penjualan'
 penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
+# Menampilkan konten berdasarkan halaman yang dipilih
 if page == "sales":
     # Forecast data for Bobby Aquatic 1 and 2
     daily_profit_1, hw_forecast_future_1, best_seasonal_period_1, best_mae_1 = forecast_profit_1(penjualan_data_1)

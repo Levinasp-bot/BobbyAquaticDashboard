@@ -51,4 +51,55 @@ sales_class = "custom-button-active" if st.session_state.page == "sales" else "c
 product_class = "custom-button-active" if st.session_state.page == "product" else "custom-button"
 
 # Sidebar buttons (tombol di sidebar yang menampilkan halaman)
-st.sidebar.markdown(f'<div class="{sales_class}"><button onclick="window.location.reload();">{st.session_state.page=="sales"}</button><div class="{product_class}"><button onclick="window
+with st.sidebar:
+    if st.button('Sales', key='sales_button'):
+        switch_page('sales')
+    if st.button('Product', key='product_button'):
+        switch_page('product')
+
+# Menampilkan halaman berdasarkan pilihan
+if st.session_state.page == "sales":
+    # Load data for Bobby Aquatic 1 and 2
+    folder_path_1 = "./data/Bobby Aquatic 1"
+    sheet_name_1 = 'Penjualan'
+    penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
+
+    folder_path_2 = "./data/Bobby Aquatic 2"
+    sheet_name_2 = 'Penjualan'
+    penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
+
+    # Forecast data for Bobby Aquatic 1 and 2
+    daily_profit_1, hw_forecast_future_1, best_seasonal_period_1, best_mae_1 = forecast_profit_1(penjualan_data_1)
+    daily_profit_2, hw_forecast_future_2, best_seasonal_period_2, best_mae_2 = forecast_profit_2(penjualan_data_2)
+
+    # Membagi dashboard Bobby Aquatic 1 dan 2 tepat di tengah
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.header("Dashboard Cabang 1: Bobby Aquatic 1")
+        show_dashboard_1(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
+
+    with col2:
+        st.header("Dashboard Cabang 2: Bobby Aquatic 2")
+        show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
+
+elif st.session_state.page == "product":
+    # Load clustering data for Bobby Aquatic 1 and 2
+    folder_path_1 = "./data/Bobby Aquatic 1"
+    sheet_name_1 = 'Penjualan'
+    cluster_data_1 = load_cluster_data(folder_path_1, sheet_name_1)
+
+    folder_path_2 = "./data/Bobby Aquatic 2"
+    sheet_name_2 = 'Penjualan'
+    cluster_data_2 = load_cluster_data(folder_path_2, sheet_name_2)
+
+    # Membagi dashboard clustering Bobby Aquatic 1 dan 2 tepat di tengah
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.header("Product Clustering for Bobby Aquatic 1")
+        show_cluster_dashboard(cluster_data_1, key_suffix='cabang1')
+
+    with col2:
+        st.header("Product Clustering for Bobby Aquatic 2")
+        show_cluster_dashboard(cluster_data_2, key_suffix='cabang2')

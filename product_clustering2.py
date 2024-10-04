@@ -67,8 +67,8 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
             x=0.5,
             traceorder='normal'
         ),
-        height=300,  # Adjust height of the figure
-        width=300    # Adjust width of the figure
+        height=400,  # Adjust height of the figure
+        width=400    # Adjust width of the figure
     )
 
     return fig

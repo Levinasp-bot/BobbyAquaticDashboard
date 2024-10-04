@@ -74,8 +74,9 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
     
     # Menghapus angka dari legend dan hanya menggunakan variabel linguistik
     for trace in fig.data:
-        cluster_index = int(trace.name.split(' ')[-1])
-        trace.name = custom_legends[category_name].get(cluster_index, f'Cluster {cluster_index}')  # Mengupdate nama legend dengan keterangan
+        if trace.name:  # Pastikan trace.name tidak None
+            cluster_index = int(trace.name.split(' ')[-1])
+            trace.name = custom_legends[category_name].get(cluster_index, f'Cluster {cluster_index}')  # Mengupdate nama legend dengan keterangan
     
     return fig
 

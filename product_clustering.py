@@ -5,7 +5,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import streamlit as st
 import plotly.express as px
-from yellowbrick.cluster import KElbowVisualizer
 
 @st.cache
 def load_all_excel_files(folder_path, sheet_name):
@@ -32,19 +31,6 @@ def process_rfm(data):
     
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
-
-@st.cache
-def find_optimal_k(rfm_scaled):
-    model = KMeans(random_state=1)
-    visualizer = KElbowVisualizer(model, k=(2, 10), timings=True)
-    
-    try:
-        visualizer.fit(rfm_scaled)
-        optimal_k = visualizer.elbow_value_  
-        return optimal_k
-    except Exception as e:
-        st.error(f"Error during Elbow Method: {str(e)}")
-        return None
 
 @st.cache
 def cluster_rfm(rfm_scaled, n_clusters):
@@ -79,28 +65,36 @@ def show_dashboard(data, key_suffix=''):
     # Initialize StandardScaler
     scaler = StandardScaler()
 
-    # Function to process clustering and plotting for each category
-    def process_category(rfm_category, category_name):
+    # Definisikan jumlah cluster secara manual untuk tiap kategori
+    k_ikan = 4  # Nilai k untuk kategori 'Ikan'
+    k_aksesoris = 5  # Nilai k untuk kategori 'Aksesoris'
+
+    # Karakteristik tiap cluster dapat dijelaskan dalam bentuk komentar:
+    # Misal, untuk kategori 'Ikan' kita ingin mendefinisikan:
+    # Cluster 0: Low Frequency, High Monetary
+    # Cluster 1: High Frequency, Medium Monetary
+    # Cluster 2: Medium Frequency, Low Monetary
+
+    def process_category(rfm_category, category_name, n_clusters):
         if rfm_category.shape[0] > 0:
             # Scale the RFM data
             rfm_scaled = scaler.fit_transform(rfm_category[['Recency', 'Frequency', 'Monetary']])
-            # Find optimal K
-            optimal_k = find_optimal_k(rfm_scaled)
-            if optimal_k is not None:
-                # Cluster the data
-                cluster_labels = cluster_rfm(rfm_scaled, optimal_k)
-                # Add cluster labels to the dataframe
-                rfm_category['Cluster'] = cluster_labels
+            
+            # Cluster the data with defined k
+            cluster_labels = cluster_rfm(rfm_scaled, n_clusters)
+            
+            # Add cluster labels to the dataframe
+            rfm_category['Cluster'] = cluster_labels
 
-                st.subheader(f"Cluster Distribution for {category_name} Visualization{key_suffix}")
-                rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels)
+            st.subheader(f"Cluster Distribution for {category_name} Visualization{key_suffix}")
+            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels)
 
-                # Interactivity: Select a cluster from the pie chart
-                cluster_to_show = st.selectbox(f'Select a cluster for {category_name}:', sorted(rfm_with_clusters['Cluster'].unique()))
-                show_cluster_table(rfm_with_clusters, cluster_to_show)
+            # Interactivity: Select a cluster from the pie chart
+            cluster_to_show = st.selectbox(f'Select a cluster for {category_name}:', sorted(rfm_with_clusters['Cluster'].unique()))
+            show_cluster_table(rfm_with_clusters, cluster_to_show)
         else:
             st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
-    # Process clustering for both categories
-    process_category(rfm_ikan, 'Ikan')
-    process_category(rfm_aksesoris, 'Aksesoris')
+    # Process clustering for 'Ikan' and 'Aksesoris' with predefined k values
+    process_category(rfm_ikan, 'Ikan', k_ikan)
+    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris)

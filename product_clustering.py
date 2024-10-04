@@ -109,6 +109,8 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
+# ... kode sebelumnya tetap
+
 def show_dashboard(data, key_suffix=''):
     rfm = process_rfm(data)
 
@@ -122,6 +124,10 @@ def show_dashboard(data, key_suffix=''):
         'Ikan': {0: 'Ikan Kualitas Tinggi', 1: 'Ikan Kualitas Menengah', 2: 'Ikan Kualitas Rendah', 3: 'Ikan Spesial'},
         'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium'}
     }
+
+    process_category(rfm_ikan, 'Ikan', k_ikan, custom_legends['Ikan'], key_suffix='ikan_file1')  # Kunci unik untuk file 1
+    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, custom_legends['Aksesoris'], key_suffix='aksesoris_file1')  # Kunci unik untuk file 1
+
 
     process_category(rfm_ikan, 'Ikan', k_ikan, custom_legends['Ikan'], key_suffix='ikan')
     process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, custom_legends['Aksesoris'], key_suffix='aksesoris')

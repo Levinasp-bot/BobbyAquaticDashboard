@@ -43,40 +43,37 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
 
-    # Membuat pie chart dengan plotly.graph_objects
+    # Define custom legends
+    custom_legends = {
+        'Ikan': {0: 'Ikan Kualitas Tinggi', 1: 'Ikan Kualitas Menengah', 2: 'Ikan Kualitas Rendah', 3: 'Ikan Spesial'},
+        'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium'}
+    }
+
+    # Apply the custom legends mapping
+    cluster_counts['Cluster'] = cluster_counts['Cluster'].map(custom_legends[category_name])
+
+    # Create the pie chart with custom labels
     fig = go.Figure(data=[go.Pie(
-        labels=cluster_counts['Cluster'].map(lambda x: f'Cluster {x}'),  # Menampilkan label cluster
+        labels=cluster_counts['Cluster'],  # Use custom labels here
         values=cluster_counts['Count'],
         hole=0.3,
         textinfo='percent+label',
         pull=[0.05]*len(cluster_counts)
     )])
 
-    # Mendefinisikan legend kustom untuk setiap kategori
-    custom_legends = {
-        'Ikan': {0: 'Ikan Kualitas Tinggi', 1: 'Ikan Kualitas Menengah', 2: 'Ikan Kualitas Rendah', 3: 'Ikan Spesial'},
-        'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium'}
-    }
-
-    # Menambahkan legend kustom
+    # Customize the legend
     fig.update_layout(
         legend=dict(
             itemsizing='constant',
             orientation='h',  # Horizontal
             yanchor='bottom',
-            y=1.02,  # Menempatkan legend di atas chart
+            y=1.02,  # Position legend at the top
             xanchor='center',
             x=0.5,
             traceorder='normal'
         )
     )
-    
-    # Menghapus angka dari legend dan hanya menggunakan variabel linguistik
-    for trace in fig.data:
-        if trace.name:  # Pastikan trace.name tidak None
-            cluster_index = int(trace.name.split(' ')[-1])
-            trace.name = custom_legends[category_name].get(cluster_index, f'Cluster {cluster_index}')  # Mengupdate nama legend dengan keterangan
-    
+
     return fig
 
 def show_cluster_table(rfm, cluster_label, key_suffix):

@@ -14,71 +14,24 @@ if 'page' not in st.session_state:
 def switch_page(page_name):
     st.session_state.page = page_name
 
-# CSS untuk membuat tombol sidebar dan menandai tombol aktif
-st.markdown(
-    f"""
-    <style>
-    .custom-button {{
-        background-color: #E0E0E0;
-        color: black;
-        font-weight: bold;
-        text-align: center;
-        padding: 15px 20px;
-        border-radius: 5px;
-        margin-bottom: 10px;
-        font-size: 16px;
-        display: block;
-        width: 100%;
-        cursor: pointer;
-        border: none;
-    }}
-    .custom-button:hover {{
-        background-color: #D3D3D3;
-        color: black;
-    }}
-    .custom-button-active {{
-        background-color: #4285f4;
-        color: white;
-        font-weight: bold;
-        text-align: center;
-        padding: 15px 20px;
-        border-radius: 5px;
-        margin-bottom: 10px;
-        font-size: 16px;
-        display: block;
-        width: 100%;
-        cursor: pointer;
-        border: none;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# Menentukan tombol mana yang aktif berdasarkan halaman yang dipilih
-sales_class = "custom-button-active" if st.session_state.page == "sales" else "custom-button"
-product_class = "custom-button-active" if st.session_state.page == "product" else "custom-button"
-
-# Sidebar buttons (tombol di sidebar yang menampilkan halaman)
+# Sidebar untuk navigasi antara Sales dan Product
 with st.sidebar:
-    st.markdown(f'<button class="{sales_class}" onClick="window.location.href = \'/?page=sales\'">Sales</button>', unsafe_allow_html=True)
-    st.markdown(f'<button class="{product_class}" onClick="window.location.href = \'/?page=product\'">Product</button>', unsafe_allow_html=True)
-
-# Menangkap halaman yang dipilih dari query parameters
-query_params = st.experimental_get_query_params()
-page = query_params.get("page", ["sales"])[0]  # Default ke 'sales' jika tidak ada yang dipilih
-
-# Load data for Bobby Aquatic 1 and 2
-folder_path_1 = "./data/Bobby Aquatic 1"
-sheet_name_1 = 'Penjualan'
-penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
-
-folder_path_2 = "./data/Bobby Aquatic 2"
-sheet_name_2 = 'Penjualan'
-penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
+    if st.button('Sales', key="sales_button"):
+        switch_page("sales")
+    if st.button('Product', key="product_button"):
+        switch_page("product")
 
 # Menampilkan konten berdasarkan halaman yang dipilih
-if page == "sales":
+if st.session_state.page == "sales":
+    # Load data for Bobby Aquatic 1 and 2
+    folder_path_1 = "./data/Bobby Aquatic 1"
+    sheet_name_1 = 'Penjualan'
+    penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
+
+    folder_path_2 = "./data/Bobby Aquatic 2"
+    sheet_name_2 = 'Penjualan'
+    penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
+
     # Forecast data for Bobby Aquatic 1 and 2
     daily_profit_1, hw_forecast_future_1, best_seasonal_period_1, best_mae_1 = forecast_profit_1(penjualan_data_1)
     daily_profit_2, hw_forecast_future_2, best_seasonal_period_2, best_mae_2 = forecast_profit_2(penjualan_data_2)
@@ -96,9 +49,14 @@ if page == "sales":
         st.header("Dashboard Cabang 2: Bobby Aquatic 2 - Sales Forecast")
         show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
 
-elif page == "product":
+elif st.session_state.page == "product":
     # Load and show clustering data for Bobby Aquatic 1 and 2
+    folder_path_1 = "./data/Bobby Aquatic 1"
+    sheet_name_1 = 'Penjualan'
     cluster_data_1 = load_cluster_data(folder_path_1, sheet_name_1)
+
+    folder_path_2 = "./data/Bobby Aquatic 2"
+    sheet_name_2 = 'Penjualan'
     cluster_data_2 = load_cluster_data(folder_path_2, sheet_name_2)
 
     # Tabs for Bobby Aquatic 1 and 2

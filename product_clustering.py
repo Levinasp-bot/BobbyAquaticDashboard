@@ -48,30 +48,36 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
     cluster_counts['Cluster'] = cluster_counts['Cluster'].map(custom_legend_mapped)
 
-    # Adjusting pie chart size and legend for better display
+    # Create a pie chart with adjusted layout for the legend
     fig = go.Figure(data=[go.Pie(
         labels=cluster_counts['Cluster'],
         values=cluster_counts['Count'],
         hole=0.3,
         textinfo='percent+label',
-        pull=[0.05] * len(cluster_counts)
+        pull=[0.05] * len(cluster_counts),
+        legendgroup='group1'  # Grouping for better layout
     )])
 
     fig.update_layout(
         legend=dict(
             itemsizing='constant',
-            orientation='h',
-            yanchor='bottom',
-            y=1.02,
+            orientation='h',  # Horizontal orientation
+            yanchor='top',
+            y=1.1,  # Adjust the vertical position of the legend
             xanchor='center',
             x=0.5,
-            traceorder='normal'
+            traceorder='normal',
+            title_text='Clusters',
+            title_font=dict(size=12),
+            font=dict(size=10),  # Font size of legend
+            itemclick='toggleothers',  # Click behavior for legend items
         ),
         height=400,  # Adjust height of the figure
         width=400    # Adjust width of the figure
     )
 
     return fig
+
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     st.subheader(f"Cluster: {custom_label} Members")

@@ -93,7 +93,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         custom_label_map = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
 
         # Adjust layout for side-by-side display
-        col1, col2 = st.columns([1, 1])  # Adjusted layout ratio for pie chart and table
+        col1, col2 = st.columns(2)  # Create two equal columns
 
         # Create a unique key for the selectbox
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(available_clusters)))}'
@@ -110,9 +110,11 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         plot_key = f'plotly_chart_{category_name}_{key_suffix}'
         
         fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-        col1.plotly_chart(fig, use_container_width=True, key=plot_key)  # Use unique key for plotly chart
+        col1.plotly_chart(fig, use_container_width=True, key=plot_key)  # Pie chart in the first column
 
-        show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
+        # Move the table to the second column
+        with col2:
+            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 

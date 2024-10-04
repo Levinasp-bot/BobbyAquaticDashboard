@@ -73,7 +73,7 @@ elif st.session_state.page == "product":
         # Filter di samping header berdasarkan tahun
         selected_year_1 = st.selectbox("Pilih Tahun", options=years_1, index=0, key='filter1')
         # Filter data berdasarkan tahun yang dipilih
-        filtered_data_1 = cluster_data_1[cluster_data_1['Tanggal'].dt.year == selected_year_1]  # Gantilah 'Tanggal' dengan kolom yang sesuai
+        filtered_data_1 = cluster_data_1[cluster_data_1['TANGGAL'].dt.year == selected_year_1]  # Gantilah 'Tanggal' dengan kolom yang sesuai
         show_cluster_dashboard_1(filtered_data_1, key_suffix='cabang1')
 
     # Bobby Aquatic 2 clustering
@@ -82,5 +82,5 @@ elif st.session_state.page == "product":
         # Filter di samping header berdasarkan tahun
         selected_year_2 = st.selectbox("Pilih Tahun", options=years_2, index=0, key='filter2')
         # Filter data berdasarkan tahun yang dipilih
-        filtered_data_2 = cluster_data_2[cluster_data_2['Tanggal'].dt.year == selected_year_2]  # Gantilah 'Tanggal' dengan kolom yang sesuai
+        filtered_data_2 = cluster_data_2[cluster_data_2['TANGGAL'].dt.year == selected_year_2]  # Gantilah 'Tanggal' dengan kolom yang sesuai
         show_cluster_dashboard_2(filtered_data_2, key_suffix='cabang2')

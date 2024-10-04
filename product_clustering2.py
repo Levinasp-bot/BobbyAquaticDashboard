@@ -79,7 +79,7 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     
     # Adjust the width and height of the dataframe to fit better
-    st.dataframe(cluster_data, width=400, height=300, key=f"cluster_table_{cluster_label}_{key_suffix}")
+    st.dataframe(cluster_data, width=400, height=400, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, custom_legends, key_suffix=''):
     if rfm_category.shape[0] > 0:
@@ -92,13 +92,30 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         available_clusters = sorted(rfm_category['Cluster'].unique())
         custom_label_map = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
 
+        # Calculate Total Products Sold and Average RFM
+        total_products_sold = rfm_category['Frequency'].sum()
+        average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
+
         # Adjust layout for side-by-side display
         col1, col2 = st.columns(2)  # Create two equal columns
+
+        # Display total products sold and average RFM
+        with col1:
+            st.markdown("### Total Products Sold")
+            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
+                         f"<strong>{total_products_sold}</strong></div>", unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("### Average RFM")
+            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
+                         f"<strong>Recency: {average_rfm['Recency']:.2f}</strong><br>"
+                         f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"
+                         f"<strong>Monetary: {average_rfm['Monetary']:.2f}</strong></div>", unsafe_allow_html=True)
 
         # Create a unique key for the selectbox
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(available_clusters)))}'
 
-        selected_custom_label = col1.selectbox(
+        selected_custom_label = st.selectbox(
             f'Select a cluster for {category_name}:',
             options=[custom_label_map[cluster] for cluster in available_clusters],
             key=unique_key
@@ -110,11 +127,10 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         plot_key = f'plotly_chart_{category_name}_{key_suffix}'
         
         fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-        col1.plotly_chart(fig, use_container_width=True, key=plot_key)  # Pie chart in the first column
+        st.plotly_chart(fig, use_container_width=True, key=plot_key)  # Pie chart in the first column
 
         # Move the table to the second column
-        with col2:
-            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
+        show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 

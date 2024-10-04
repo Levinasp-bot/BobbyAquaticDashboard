@@ -48,6 +48,7 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
     cluster_counts['Cluster'] = cluster_counts['Cluster'].map(custom_legend_mapped)
 
+    # Adjusting pie chart size and legend for better display
     fig = go.Figure(data=[go.Pie(
         labels=cluster_counts['Cluster'],
         values=cluster_counts['Count'],
@@ -65,17 +66,20 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
             xanchor='center',
             x=0.5,
             traceorder='normal'
-        )
+        ),
+        height=300,  # Adjust height of the figure
+        width=300    # Adjust width of the figure
     )
 
     return fig
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
-    st.subheader(f"Cluster: {custom_label} Members")
+    # Reduce the font size of the subheader for the table title
+    st.subheader(f"Cluster: {custom_label} Members", size=10)
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     
     # Adjust the width and height of the dataframe to fit better
-    st.dataframe(cluster_data, width=400, height=300, key=f"cluster_table_{cluster_label}_{key_suffix}")
+    st.dataframe(cluster_data, width=350, height=250, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, custom_legends, key_suffix=''):
     if rfm_category.shape[0] > 0:

@@ -5,7 +5,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import streamlit as st
 import plotly.express as px
-import plotly.graph_objects as go
 
 @st.cache
 def load_all_excel_files(folder_path, sheet_name):
@@ -39,8 +38,8 @@ def cluster_rfm(rfm_scaled, n_clusters):
     kmeans.fit(rfm_scaled)
     return kmeans.labels_
 
-# Fungsi untuk membuat pie chart interaktif
-def plot_interactive_pie_chart(rfm, cluster_labels, key):
+# Fungsi untuk membuat pie chart
+def plot_interactive_pie_chart(rfm, cluster_labels):
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
@@ -48,25 +47,12 @@ def plot_interactive_pie_chart(rfm, cluster_labels, key):
     fig = px.pie(cluster_counts, values='Count', names='Cluster', title='Cluster Distribution', hole=0.3)
     fig.update_traces(textinfo='percent+label', pull=[0.05]*len(cluster_counts))
 
-    # Tambahkan interaktivitas pada pie chart
-    fig.update_traces(hoverinfo='label+percent', 
-                      hovertemplate='<b>Cluster %{label}</b>: %{percent}', 
-                      textinfo='label+percent')
-
-    # Deteksi event ketika sektor di-klik
-    fig.data[0].on_click(lambda trace, points, selector: update_cluster_selection(points.point_inds[0], key))
-
     st.plotly_chart(fig, use_container_width=True)
     return rfm
 
-# Fungsi untuk memperbarui cluster yang dipilih dalam session_state
-def update_cluster_selection(selected_cluster, key):
-    st.session_state[key] = selected_cluster
-
-def show_cluster_table(rfm, key):
-    selected_cluster = st.session_state.get(key, 0)
-    st.subheader(f"Cluster {selected_cluster} Members")
-    cluster_data = rfm[rfm['Cluster'] == selected_cluster]
+def show_cluster_table(rfm, cluster_label):
+    st.subheader(f"Cluster {cluster_label} Members")
+    cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data)
 
 def show_dashboard(data, key_suffix=''):
@@ -96,10 +82,13 @@ def show_dashboard(data, key_suffix=''):
             rfm_category['Cluster'] = cluster_labels
 
             st.subheader(f"Cluster Distribution for {category_name} Visualization{key_suffix}")
-            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels, key=f'cluster_{category_name}')
+            rfm_with_clusters = plot_interactive_pie_chart(rfm_category, cluster_labels)
 
-            # Tampilkan tabel sesuai cluster yang di-klik di pie chart
-            show_cluster_table(rfm_with_clusters, key=f'cluster_{category_name}')
+            # Interactivity: Select a cluster from the dropdown
+            cluster_to_show = st.selectbox(f'Select a cluster for {category_name}:', 
+                                           sorted(rfm_with_clusters['Cluster'].unique()), 
+                                           key=f'selectbox_{category_name}_{key_suffix}')
+            show_cluster_table(rfm_with_clusters, cluster_to_show)
         else:
             st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 

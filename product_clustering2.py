@@ -112,12 +112,12 @@ def show_dashboard(data, key_suffix=''):
             rfm_category['Cluster'] = cluster_labels
 
             # Membuat dua kolom
-            col1, col2 = st.columns(2)
+            col1, col2 = st.columns([2, 1])  # 2/3 untuk chart, 1/3 untuk tabel
 
             # Selectbox untuk memilih cluster di atas chart
             cluster_to_show = col1.selectbox(f'Select a cluster for {category_name}:', 
                                              sorted(rfm_category['Cluster'].unique()), 
-                                             key=f'selectbox_{category_name}')
+                                             key=f'selectbox_{category_name}_{key_suffix}')  # Menambahkan key_suffix untuk menghindari duplikat
 
             # Pie chart di kolom kiri
             fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name)

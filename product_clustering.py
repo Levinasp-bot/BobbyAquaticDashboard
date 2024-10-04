@@ -91,7 +91,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         custom_label_map = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
 
         # Adjust layout for side-by-side display
-        col1, col2 = st.columns([1, 1])  # Adjusted layout ratio for pie chart and table
+        col1, col2 = st.columns([1, 2])  # Adjusted layout ratio for pie chart and table
 
         selected_custom_label = col1.selectbox(
             f'Select a cluster for {category_name}:', 

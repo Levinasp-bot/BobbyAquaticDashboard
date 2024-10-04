@@ -93,8 +93,9 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         # Adjust layout for side-by-side display
         col1, col2 = st.columns([1, 1])  # Adjusted layout ratio for pie chart and table
 
-        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(category_name + key_suffix))}'
-        
+        # Create a unique key using category_name, key_suffix, and cluster information
+        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(available_clusters)))}'
+
         selected_custom_label = col1.selectbox(
             f'Select a cluster for {category_name}:',
             options=[custom_label_map[cluster] for cluster in available_clusters],

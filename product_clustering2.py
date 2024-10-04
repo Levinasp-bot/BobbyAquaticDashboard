@@ -96,7 +96,8 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         # Adjust layout for side-by-side display
         col1, col2 = st.columns([1, 1])  # Adjusted layout ratio for pie chart and table
 
-        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(category_name + key_suffix))}'
+        # Create a unique key using category_name, key_suffix, and cluster information
+        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(available_clusters)))}'
 
         selected_custom_label = col1.selectbox(
             f'Select a cluster for {category_name}:',
@@ -112,6 +113,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
+
 
 def show_dashboard(data, key_suffix=''):
     rfm = process_rfm(data)

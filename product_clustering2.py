@@ -109,16 +109,16 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         # Display total fish sold or total accessories sold and average RFM
         with col1:
             if category_name == 'Ikan':
-                st.markdown("### Total Fish Sold")
+                st.markdown("### Total Ikan Terjual")
                 st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
                              f"<strong>{total_fish_sold}</strong></div>", unsafe_allow_html=True)
             else:
-                st.markdown("### Total Accessories Sold")
+                st.markdown("### Total Aksesoris Terjual")
                 st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
                              f"<strong>{total_accessories_sold}</strong></div>", unsafe_allow_html=True)
         
         with col2:
-            st.markdown("### Average RFM")
+            st.markdown("### Rata - rata RFM")
             st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
                          f"<strong>Recency: {average_rfm['Recency']:.2f}</strong><br>"
                          f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"

@@ -60,19 +60,27 @@ elif st.session_state.page == "product":
     sheet_name_2 = 'Penjualan'
     cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name_2)
 
+    # Mendapatkan tahun dari data (misalnya, tahun 2021, 2022, 2023, 2024)
+    years_1 = sorted(cluster_data_1['TANGGAL'].dt.year.unique())  # Gantilah 'Tanggal' dengan kolom yang sesuai
+    years_2 = sorted(cluster_data_2['TANGGAL'].dt.year.unique())  # Gantilah 'Tanggal' dengan kolom yang sesuai
+
     # Tabs for Bobby Aquatic 1 and 2
     tab1, tab2 = st.tabs(["Bobby Aquatic 1", "Bobby Aquatic 2"])
 
     # Bobby Aquatic 1 clustering
     with tab1:
         st.header("Klaster Produk untuk Bobby Aquatic 1")
-        # Filter di samping header
-        product_filter_1 = st.selectbox("Filter Produk", options=["Semua", "Filter 1", "Filter 2"], key='filter1')
-        show_cluster_dashboard_1(cluster_data_1, key_suffix='cabang1')
+        # Filter di samping header berdasarkan tahun
+        selected_year_1 = st.selectbox("Pilih Tahun", options=years_1, index=0, key='filter1')
+        # Filter data berdasarkan tahun yang dipilih
+        filtered_data_1 = cluster_data_1[cluster_data_1['Tanggal'].dt.year == selected_year_1]  # Gantilah 'Tanggal' dengan kolom yang sesuai
+        show_cluster_dashboard_1(filtered_data_1, key_suffix='cabang1')
 
     # Bobby Aquatic 2 clustering
     with tab2:
         st.header("Klaster Produk untuk Bobby Aquatic 2")
-        # Filter di samping header
-        product_filter_2 = st.selectbox("Filter Produk", options=["Semua", "Filter 1", "Filter 2"], key='filter2')
-        show_cluster_dashboard_2(cluster_data_2, key_suffix='cabang2')
+        # Filter di samping header berdasarkan tahun
+        selected_year_2 = st.selectbox("Pilih Tahun", options=years_2, index=0, key='filter2')
+        # Filter data berdasarkan tahun yang dipilih
+        filtered_data_2 = cluster_data_2[cluster_data_2['Tanggal'].dt.year == selected_year_2]  # Gantilah 'Tanggal' dengan kolom yang sesuai
+        show_cluster_dashboard_2(filtered_data_2, key_suffix='cabang2')

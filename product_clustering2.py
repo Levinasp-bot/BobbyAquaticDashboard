@@ -79,7 +79,7 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     
     # Adjust the width and height of the dataframe to fit better
-    st.dataframe(cluster_data, width=400, height=400, key=f"cluster_table_{cluster_label}_{key_suffix}")
+    st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, custom_legends, key_suffix=''):
     if rfm_category.shape[0] > 0:

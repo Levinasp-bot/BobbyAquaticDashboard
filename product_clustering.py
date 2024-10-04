@@ -124,7 +124,8 @@ def show_dashboard(data, key_suffix=''):
             col1.plotly_chart(fig, use_container_width=True)
 
             # Tabel detail di kolom kanan
-            show_cluster_table(rfm_category, cluster_to_show, key_suffix=f'{category_name.lower()}_{cluster_to_show}')
+            with col2:
+                show_cluster_table(rfm_category, cluster_to_show, key_suffix=f'{category_name.lower()}_{cluster_to_show}')
         else:
             st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 

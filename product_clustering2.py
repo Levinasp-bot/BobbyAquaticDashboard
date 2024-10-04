@@ -6,7 +6,6 @@ from sklearn.cluster import KMeans
 import streamlit as st
 import plotly.graph_objects as go
 
-@st.cache
 def load_all_excel_files(folder_path, sheet_name):
     all_files = glob.glob(os.path.join(folder_path, "*.xlsm"))
     dfs = []
@@ -17,7 +16,7 @@ def load_all_excel_files(folder_path, sheet_name):
         dfs.append(df)
     return pd.concat(dfs, ignore_index=True)
 
-@st.cache
+
 def process_rfm(data):
     data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])
     reference_date = data['TANGGAL'].max()
@@ -32,7 +31,7 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
-@st.cache
+
 def cluster_rfm(rfm_scaled, n_clusters):
     kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
     kmeans.fit(rfm_scaled)

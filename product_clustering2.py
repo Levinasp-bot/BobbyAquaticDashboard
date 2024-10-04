@@ -136,5 +136,6 @@ def show_dashboard(data, key_suffix=''):
     }
 
     # Process clustering for 'Ikan' and 'Aksesoris' with predefined k values
-    process_category(rfm_ikan, 'Ikan', k_ikan, custom_legends['Ikan'])
-    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, custom_legends['Aksesoris'])
+    process_category(rfm_ikan, 'Ikan', k_ikan, custom_legends['Ikan'], key_suffix='ikan')
+    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, custom_legends['Aksesoris'], key_suffix='aksesoris')
+

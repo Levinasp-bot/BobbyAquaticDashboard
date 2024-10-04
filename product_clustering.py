@@ -23,13 +23,14 @@ def process_rfm(data):
     data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])
     reference_date = data['TANGGAL'].max()
     
-    rfm = data.groupby('KODE BARANG').agg({
+    # Group by KODE BARANG and KATEGORI
+    rfm = data.groupby(['KODE BARANG', 'KATEGORI']).agg({
         'TANGGAL': lambda x: (reference_date - x.max()).days,  # Recency
         'NAMA BARANG': 'count',  
         'TOTAL HR JUAL': 'sum'  
     }).reset_index()
     
-    rfm.columns = ['KODE BARANG', 'Recency', 'Frequency', 'Monetary']
+    rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
 @st.cache
@@ -46,20 +47,10 @@ def find_optimal_k(rfm_scaled):
         return None
 
 @st.cache
-def process_rfm(data):
-    data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])
-    reference_date = data['TANGGAL'].max()
-    
-    # Assuming 'KATEGORI' is available in the original data
-    rfm = data.groupby(['KODE BARANG', 'KATEGORI']).agg({
-        'TANGGAL': lambda x: (reference_date - x.max()).days,  # Recency
-        'NAMA BARANG': 'count',  
-        'TOTAL HR JUAL': 'sum'  
-    }).reset_index()
-    
-    rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
-    return rfm
-
+def cluster_rfm(rfm_scaled, n_clusters):
+    kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
+    kmeans.fit(rfm_scaled)
+    return kmeans.labels_
 
 def plot_interactive_pie_chart(rfm, cluster_labels):
     rfm['Cluster'] = cluster_labels
@@ -113,4 +104,3 @@ def show_dashboard(data, key_suffix=''):
     # Process clustering for both categories
     process_category(rfm_ikan, 'Ikan')
     process_category(rfm_aksesoris, 'Aksesoris')
-

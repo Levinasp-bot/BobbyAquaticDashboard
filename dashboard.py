@@ -42,12 +42,12 @@ if st.session_state.page == "sales":
 
     # Bobby Aquatic 1 dashboard
     with tab1:
-        st.header("Dashboard Cabang 1: Bobby Aquatic 1 - Peramalan Penjualan")
+        st.header("Dashboard Penjualan Bobby Aquatic 1")
         show_dashboard_1(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
 
     # Bobby Aquatic 2 dashboard
     with tab2:
-        st.header("Dashboard Cabang 2: Bobby Aquatic 2 - Peramalan Penjualan")
+        st.header("Dashboard Penjualan Bobby Aquatic 1")
         show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
 
 elif st.session_state.page == "product":

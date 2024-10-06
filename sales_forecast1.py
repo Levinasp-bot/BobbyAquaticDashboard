@@ -38,7 +38,7 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     return daily_profit, hw_forecast_future
 
 def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_suffix=''):
-    st.title(f"Dashboard Prediksi Laba Bobby Aquatic {key_suffix}")
+    st.title(f"Trend Penjualan dan Prediksi Laba {key_suffix}")
 
     # Filter berdasarkan tahun
     st.subheader("Filter berdasarkan Tahun")
@@ -60,7 +60,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
     # Ensure forecast is connected to the actual data
     last_actual_date = daily_profit.index[-1]
     forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')[1:]
-    
+
     # Plot forecast as a continuation of the actual data
     fig.add_trace(go.Scatter(x=forecast_dates, y=hw_forecast_future, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
@@ -71,4 +71,22 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         hovermode='x'
     )
 
+    # Tampilkan Chart
     st.plotly_chart(fig)
+
+    # Hitung dan tampilkan informasi tambahan di atas chart
+    gross_income = daily_profit['LABA'].sum()
+    predicted_profit_next_week = hw_forecast_future.iloc[0]  # Prediksi laba untuk minggu depan
+    last_week_profit = daily_profit['LABA'].iloc[-1]  # Laba minggu terakhir
+    profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
+
+    # Menampilkan informasi tambahan
+    st.markdown("### Informasi Laba dan Prediksi")
+    st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px; margin: 10px 0;'>"
+                 f"<strong>Gross Income:</strong> {gross_income:,.2f} </div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px; margin: 10px 0;'>"
+                 f"<strong>Laba Minggu Terakhir:</strong> {last_week_profit:,.2f} </div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px; margin: 10px 0;'>"
+                 f"<strong>Prediksi Laba untuk Minggu Depan:</strong> {predicted_profit_next_week:,.2f} </div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px; margin: 10px 0;'>"
+                 f"<strong>Persentase Kenaikan/Penurunan Laba:</strong> {profit_change_percentage:.2f}% </div>", unsafe_allow_html=True)

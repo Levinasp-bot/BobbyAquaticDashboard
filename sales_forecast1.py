@@ -66,7 +66,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
                                  index=list(daily_profit.index) + list(forecast_dates))
 
     # Plot the combined data as a single trace
-    fig.add_trace(go.Scatter(x=combined_values.index, y=combined_values.values, mode='lines', name='Data Historis dan Prediksi', line=dict(color='green')))
+    #fig.add_trace(go.Scatter(x=combined_values.index, y=combined_values.values, mode='lines', name='Data Historis dan Prediksi', line=dict(color='green')))
 
     fig.update_layout(
         title='Data Historis dan Prediksi Laba',

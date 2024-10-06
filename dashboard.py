@@ -1,74 +1,92 @@
-import os
-import pandas as pd
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import streamlit as st
-import plotly.graph_objects as go
+from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1, show_dashboard as show_dashboard_1
+from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2, show_dashboard as show_dashboard_2
+from product_clustering import load_all_excel_files as load_cluster_data_1, show_dashboard as show_cluster_dashboard_1
+from product_clustering2 import load_all_excel_files as load_cluster_data_2, show_dashboard as show_cluster_dashboard_2
 
-@st.cache
-def load_all_excel_files(folder_path, sheet_name):
-    dataframes = []
-    for file in os.listdir(folder_path):
-        if file.endswith('.xlsm'):
-            file_path = os.path.join(folder_path, file)
-            df = pd.read_excel(file_path, sheet_name=sheet_name)
-            dataframes.append(df)
-    return pd.concat(dataframes, ignore_index=True)
+# Mengatur layout agar wide mode
+st.set_page_config(layout="wide")
 
-@st.cache
-def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
-    # Mengambil hanya kolom tanggal dan laba dari data penjualan
-    daily_profit = data[['TANGGAL', 'LABA']].copy()
-    daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
-    daily_profit = daily_profit.groupby('TANGGAL').sum()
-    daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
+# Inisialisasi session state untuk halaman jika belum ada
+if 'page' not in st.session_state:
+    st.session_state.page = 'sales'  # Set default page
 
-    # Resample data ke frekuensi mingguan dan interpolasi nilai yang hilang
-    weekly_profit = daily_profit.asfreq('W').interpolate()
+# Fungsi untuk mengganti halaman
+def switch_page(page_name):
+    st.session_state.page = page_name
 
-    # Membagi data menjadi train dan test
-    train_size = int(len(weekly_profit) * 0.9)
-    train, test = weekly_profit[:train_size], weekly_profit[train_size:]
+# Sidebar untuk navigasi antara Sales dan Product
+with st.sidebar:
+    if st.button('Penjualan', key="sales_button"):
+        switch_page("sales")
+    if st.button('Produk', key="product_button"):
+        switch_page("product")
 
-    # Train model Holt-Winters
-    hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
+# Menampilkan konten berdasarkan halaman yang dipilih
+if st.session_state.page == "sales":
+    # Load data for Bobby Aquatic 1 and 2
+    folder_path_1 = "./data/Bobby Aquatic 1"
+    sheet_name_1 = 'Penjualan'
+    penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
 
-    # Forecasting untuk horizon mendatang
-    hw_forecast_future = hw_model.forecast(forecast_horizon)
+    folder_path_2 = "./data/Bobby Aquatic 2"
+    sheet_name_2 = 'Penjualan'
+    penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
-    return weekly_profit, hw_forecast_future
+    # Forecast data for Bobby Aquatic 1 and 2
+    daily_profit_1, hw_forecast_future_1, best_seasonal_period_1, best_mae_1 = forecast_profit_1(penjualan_data_1)
+    daily_profit_2, hw_forecast_future_2, best_seasonal_period_2, best_mae_2 = forecast_profit_2(penjualan_data_2)
 
-def show_dashboard(weekly_profit, hw_forecast_future, forecast_horizon=13, key_suffix=''):
-    st.title(f"Dashboard Prediksi Laba Bobby Aquatic {key_suffix}")
+    # Tabs for Bobby Aquatic 1 and 2
+    tab1, tab2 = st.tabs(["Bobby Aquatic 1", "Bobby Aquatic 2"])
 
-    # Filter berdasarkan tahun
-    st.subheader("Filter berdasarkan Tahun")
-    selected_years = st.multiselect(
-        "Pilih Tahun",
-        weekly_profit.index.year.unique(),
-        key=f"multiselect_{key_suffix}"
-    )
+    # Bobby Aquatic 1 dashboard
+    with tab1:
+        st.header("Dashboard Cabang 1: Bobby Aquatic 1 - Peramalan Penjualan")
+        show_dashboard_1(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
 
-    # Prepare data for plotting
-    fig = go.Figure()
+    # Bobby Aquatic 2 dashboard
+    with tab2:
+        st.header("Dashboard Cabang 2: Bobby Aquatic 2 - Peramalan Penjualan")
+        show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
 
-    # Plot historical data
-    if selected_years:
-        for year in selected_years:
-            filtered_data = weekly_profit[weekly_profit.index.year == year]
-            fig.add_trace(go.Scatter(x=filtered_data.index, y=filtered_data['LABA'], mode='lines', name=f'Data Historis {year}'))
+elif st.session_state.page == "product":
+    # Load and show clustering data for Bobby Aquatic 1 and 2
+    folder_path_1 = "./data/Bobby Aquatic 1"
+    sheet_name_1 = 'Penjualan'
+    cluster_data_1 = load_cluster_data_1(folder_path_1, sheet_name_1)
 
-    # Ensure forecast is connected to the actual data
-    last_actual_date = weekly_profit.index[-1]
-    forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')[1:]
+    folder_path_2 = "./data/Bobby Aquatic 2"
+    sheet_name_2 = 'Penjualan'
+    cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name_2)
 
-    # Plot forecast as a continuation of the actual data
-    fig.add_trace(go.Scatter(x=forecast_dates, y=hw_forecast_future, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
+    # Mendapatkan tahun dari data (misalnya, tahun 2021, 2022, 2023, 2024)
+    years_1 = sorted(cluster_data_1['TANGGAL'].dt.year.dropna().astype(int).unique())  # Convert years to integer and remove NaNs
+    years_2 = sorted(cluster_data_2['TANGGAL'].dt.year.dropna().astype(int).unique())  # Convert years to integer and remove NaNs
 
-    fig.update_layout(
-        title='Data Historis dan Prediksi Laba',
-        xaxis_title='Tanggal',
-        yaxis_title='Laba',
-        hovermode='x'
-    )
+    # Tabs for Bobby Aquatic 1 and 2
+    tab1, tab2 = st.tabs(["Bobby Aquatic 1", "Bobby Aquatic 2"])
 
-    st.plotly_chart(fig)
+    # Bobby Aquatic 1 clustering
+    with tab1:
+        st.header("Klaster Produk untuk Bobby Aquatic 1")
+        # Filter di samping header berdasarkan tahun dengan multiselect
+        selected_years_1 = st.multiselect("Pilih Tahun", options=years_1, default=years_1, key='years_1')  # Unique key
+        # Filter data berdasarkan tahun yang dipilih
+        if selected_years_1:
+            filtered_data_1 = cluster_data_1[cluster_data_1['TANGGAL'].dt.year.isin(selected_years_1)]  # Gantilah 'TANGGAL' dengan kolom yang sesuai
+        else:
+            filtered_data_1 = cluster_data_1  # Tampilkan semua data jika tidak ada filter yang dipilih
+        show_cluster_dashboard_1(filtered_data_1, key_suffix='cabang1')
+
+    # Bobby Aquatic 2 clustering
+    with tab2:
+        st.header("Klaster Produk untuk Bobby Aquatic 2")
+        # Filter di samping header berdasarkan tahun dengan multiselect
+        selected_years_2 = st.multiselect("Pilih Tahun", options=years_2, default=years_2, key='years_2')  # Unique key
+        # Filter data berdasarkan tahun yang dipilih
+        if selected_years_2:
+            filtered_data_2 = cluster_data_2[cluster_data_2['TANGGAL'].dt.year.isin(selected_years_2)]  # Gantilah 'TANGGAL' dengan kolom yang sesuai
+        else:
+            filtered_data_2 = cluster_data_2  # Tampilkan semua data jika tidak ada filter yang dipilih
+        show_cluster_dashboard_2(filtered_data_2, key_suffix='cabang2')

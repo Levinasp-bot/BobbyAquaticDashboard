@@ -72,11 +72,3 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
     )
 
     st.plotly_chart(fig)
-
-# Load data and run the dashboard
-folder_path = "path_to_your_folder"
-sheet_name = "your_sheet_name"
-data = load_all_excel_files(folder_path, sheet_name)
-daily_profit, hw_forecast_future = forecast_profit(data)
-
-show_dashboard(daily_profit, hw_forecast_future)

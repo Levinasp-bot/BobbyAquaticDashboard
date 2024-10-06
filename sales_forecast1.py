@@ -81,25 +81,12 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         """, unsafe_allow_html=True)
 
     with col2:
-        # Set default selected year to 2024
-        default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
-
-        # Move the year filter inside the chart column
-        selected_years = st.multiselect(
-            "Pilih Tahun",
-            daily_profit.index.year.unique(),
-            default=default_years,  # Set the default value here
-            key=f"multiselect_{key_suffix}",
-            help="Pilih tahun yang ingin ditampilkan"
-        )
-
         fig = go.Figure()
 
-        if selected_years:
-            for year in selected_years:
-                filtered_data = daily_profit[daily_profit.index.year == year]
-                fig.add_trace(go.Scatter(x=filtered_data.index, y=filtered_data['LABA'], mode='lines', name=f'Data Historis {year}'))
+        # Gabungkan semua data historis menjadi satu line
+        fig.add_trace(go.Scatter(x=daily_profit.index, y=daily_profit['LABA'], mode='lines', name='Data Historis'))
 
+        # Tambahkan prediksi masa depan
         last_actual_date = daily_profit.index[-1]
         forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')[1:]
 

@@ -39,8 +39,18 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
     selected_years = st.multiselect(
         "Pilih Tahun",
         daily_profit.index.year.unique(),
-        key=f"multiselect_{key_suffix}"
+        key=f"multiselect_{key_suffix}",
+        help="Pilih tahun yang ingin ditampilkan"
     )
+
+    # Adjust filter dropdown width
+    st.markdown("""
+        <style>
+            div[role="combobox"] > div[role="alert"] {
+                width: 80%;
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 3])
 
@@ -49,16 +59,17 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         predicted_profit_next_week = hw_forecast_future.iloc[0]
         profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
-        info_style = """
-        <div style='border: 1px solid #ccc; padding: 10px; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;'>
-            <h2 style='margin: 0; font-size: 30px;'>%s</h2>
-            <p style='font-size: 12px; margin: 0;'>%s</p>
-        </div>
-        """
+        # Add arrows based on profit change
+        if profit_change_percentage > 0:
+            arrow = "🡅"
+            color = "green"
+        else:
+            arrow = "🡇"
+            color = "red"
 
-        st.markdown(info_style % (f"{last_week_profit:,.2f}", "Laba Minggu Terakhir"), unsafe_allow_html=True)
-        st.markdown(info_style % (f"{predicted_profit_next_week:,.2f}", "Prediksi Laba Minggu Depan"), unsafe_allow_html=True)
-        st.markdown(info_style % (f"{profit_change_percentage:.2f}%", "Persentase Perubahan"), unsafe_allow_html=True)
+        st.metric(label="Laba Minggu Terakhir", value=f"{last_week_profit:,.2f}")
+        st.metric(label="Prediksi Laba Minggu Depan", value=f"{predicted_profit_next_week:,.2f}")
+        st.markdown(f"<p style='font-size:24px; color:{color};'>{arrow} {profit_change_percentage:.2f}%</p>", unsafe_allow_html=True)
 
     with col2:
         fig = go.Figure()

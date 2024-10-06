@@ -35,6 +35,22 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
 def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_suffix=''):
     st.title(f"Trend Penjualan dan Prediksi Laba {key_suffix}")
 
+    selected_years = st.multiselect(
+        "Pilih Tahun",
+        daily_profit.index.year.unique(),
+        key=f"multiselect_{key_suffix}",
+        help="Pilih tahun yang ingin ditampilkan"
+    )
+
+    # Adjust filter dropdown width
+    st.markdown("""
+        <style>
+            div[role="combobox"] > div[role="alert"] {
+                width: 80%;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -50,28 +66,23 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
             arrow = "🡇"
             color = "red"
 
-        # Create box for Laba and Prediksi Laba
-        with st.container():
-            st.markdown("<h3 style='text-align: center;'>Laba dan Prediksi</h3>", unsafe_allow_html=True)
-            laba_col, pred_col = st.columns(2)
+        # Display with box outline
+        st.markdown("""
+            <style>
+                .boxed {
+                    border: 2px solid #dcdcdc;
+                    padding: 10px;
+                    margin-bottom: 10px;
+                    border-radius: 5px;
+                }
+            </style>
+        """, unsafe_allow_html=True)
 
-            with laba_col:
-                st.metric(label="Laba Minggu Terakhir", value=f"{last_week_profit:,.2f}")
-
-            with pred_col:
-                st.metric(label="Prediksi Laba Minggu Depan", value=f"{predicted_profit_next_week:,.2f}")
-
-            st.markdown(f"<p style='font-size:24px; color:{color}; text-align:center;'>{arrow} {profit_change_percentage:.2f}%</p>", unsafe_allow_html=True)
+        st.markdown(f"<div class='boxed'><strong>Laba Minggu Terakhir</strong><br>{last_week_profit:,.2f}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='boxed'><strong>Prediksi Laba Minggu Depan</strong><br>{predicted_profit_next_week:,.2f}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='boxed' style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</div>", unsafe_allow_html=True)
 
     with col2:
-        selected_years = st.multiselect(
-            "Pilih Tahun",
-            daily_profit.index.year.unique(),
-            default=[2024],  # Set default to 2024
-            key=f"multiselect_{key_suffix}",
-            help="Pilih tahun yang ingin ditampilkan"
-        )
-
         fig = go.Figure()
 
         if selected_years:
@@ -92,12 +103,3 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         )
 
         st.plotly_chart(fig)
-
-    # Adjust filter dropdown width to match chart
-    st.markdown("""
-        <style>
-            div[role="combobox"] > div[role="alert"] {
-                width: 100%;
-            }
-        </style>
-    """, unsafe_allow_html=True)

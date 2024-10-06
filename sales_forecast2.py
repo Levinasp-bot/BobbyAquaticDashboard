@@ -50,14 +50,20 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
             arrow = "🡇"
             color = "red"
 
-        # Add boxes for Laba and Prediksi Laba with space
-        st.metric(label="Laba Minggu Terakhir", value=f"{last_week_profit:,.2f}")
-        st.metric(label="Prediksi Laba Minggu Depan", value=f"{predicted_profit_next_week:,.2f}")
-        st.markdown(f"<p style='font-size:24px; color:{color};'>{arrow} {profit_change_percentage:.2f}%</p>", unsafe_allow_html=True)
+        # Create box for Laba and Prediksi Laba
+        with st.container():
+            st.markdown("<h3 style='text-align: center;'>Laba dan Prediksi</h3>", unsafe_allow_html=True)
+            laba_col, pred_col = st.columns(2)
+
+            with laba_col:
+                st.metric(label="Laba Minggu Terakhir", value=f"{last_week_profit:,.2f}")
+
+            with pred_col:
+                st.metric(label="Prediksi Laba Minggu Depan", value=f"{predicted_profit_next_week:,.2f}")
+
+            st.markdown(f"<p style='font-size:24px; color:{color}; text-align:center;'>{arrow} {profit_change_percentage:.2f}%</p>", unsafe_allow_html=True)
 
     with col2:
-        # Default selection for 2024
-        st.subheader("Filter berdasarkan Tahun")
         selected_years = st.multiselect(
             "Pilih Tahun",
             daily_profit.index.year.unique(),
@@ -95,4 +101,3 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
             }
         </style>
     """, unsafe_allow_html=True)
-

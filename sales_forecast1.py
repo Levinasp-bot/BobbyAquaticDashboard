@@ -71,10 +71,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         hovermode='x'
     )
 
-    # Tampilkan Chart
-    st.plotly_chart(fig)
-
-    # Hitung dan tampilkan informasi tambahan di atas chart
+    # Hitung informasi tambahan
     gross_income = daily_profit['LABA'].sum()
     predicted_profit_next_week = hw_forecast_future.iloc[0]  # Prediksi laba untuk minggu depan
     last_week_profit = daily_profit['LABA'].iloc[-1]  # Laba minggu terakhir
@@ -83,18 +80,25 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
     # Menampilkan informasi tambahan dalam layout horizontal
     col1, col2, col3, col4 = st.columns(4)
 
+    # Style untuk informasi
+    info_style = """
+    <div style='border: 1px solid #ccc; padding: 10px; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;'>
+        <h2 style='margin: 0;'>%s</h2>
+        <p style='font-size: 12px; margin: 0;'>%s</p>
+    </div>
+    """
+
     with col1:
-        st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px;'>"
-                     f"<strong>Gross Income:</strong> {gross_income:,.2f} </div>", unsafe_allow_html=True)
+        st.markdown(info_style % (f"{gross_income:,.2f}", "Gross Income"), unsafe_allow_html=True)
 
     with col2:
-        st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px;'>"
-                     f"<strong>Laba Minggu Terakhir:</strong> {last_week_profit:,.2f} </div>", unsafe_allow_html=True)
+        st.markdown(info_style % (f"{last_week_profit:,.2f}", "Laba Minggu Terakhir"), unsafe_allow_html=True)
 
     with col3:
-        st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px;'>"
-                     f"<strong>Prediksi Laba untuk Minggu Depan:</strong> {predicted_profit_next_week:,.2f} </div>", unsafe_allow_html=True)
+        st.markdown(info_style % (f"{predicted_profit_next_week:,.2f}", "Prediksi Laba untuk Minggu Depan"), unsafe_allow_html=True)
 
     with col4:
-        st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px;'>"
-                     f"<strong>Persentase Kenaikan/Penurunan Laba:</strong> {profit_change_percentage:.2f}% </div>", unsafe_allow_html=True)
+        st.markdown(info_style % (f"{profit_change_percentage:.2f}%", "Persentase Kenaikan/Penurunan Laba"), unsafe_allow_html=True)
+
+    # Tampilkan Chart
+    st.plotly_chart(fig)

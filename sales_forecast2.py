@@ -33,8 +33,6 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
     return daily_profit, hw_forecast_future
 
 def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_suffix=''):
-    st.title(f"Trend Penjualan dan Prediksi Laba {key_suffix}")
-
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -50,7 +48,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
             arrow = "🡇"
             color = "red"
 
-        # Display with box outline for combined prediction and percentage
+        # Display with box outline and larger font for profit numbers
         st.markdown("""
             <style>
                 .boxed {
@@ -58,16 +56,26 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
                     padding: 10px;
                     margin-bottom: 10px;
                     border-radius: 5px;
+                    text-align: center;
+                }
+                .profit-value {
+                    font-size: 36px;
+                    font-weight: bold;
+                }
+                .profit-label {
+                    font-size: 14px;
                 }
             </style>
         """, unsafe_allow_html=True)
 
         st.markdown(f"""
             <div class='boxed'>
-                <strong>Laba Minggu Terakhir</strong><br>{last_week_profit:,.2f}
+                <span class="profit-label">Laba Minggu Terakhir</span><br>
+                <span class="profit-value">{last_week_profit:,.2f}</span>
             </div>
             <div class='boxed'>
-                <strong>Prediksi Laba Minggu Depan</strong><br>{predicted_profit_next_week:,.2f}
+                <span class="profit-label">Prediksi Laba Minggu Depan</span><br>
+                <span class="profit-value">{predicted_profit_next_week:,.2f}</span>
                 <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
             </div>
         """, unsafe_allow_html=True)

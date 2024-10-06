@@ -35,22 +35,6 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
 def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_suffix=''):
     st.title(f"Trend Penjualan dan Prediksi Laba {key_suffix}")
 
-    selected_years = st.multiselect(
-        "Pilih Tahun",
-        daily_profit.index.year.unique(),
-        key=f"multiselect_{key_suffix}",
-        help="Pilih tahun yang ingin ditampilkan"
-    )
-
-    # Adjust filter dropdown width
-    st.markdown("""
-        <style>
-            div[role="combobox"] > div[role="alert"] {
-                width: 80%;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -66,7 +50,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
             arrow = "🡇"
             color = "red"
 
-        # Display with box outline
+        # Display with box outline for combined prediction and percentage
         st.markdown("""
             <style>
                 .boxed {
@@ -78,11 +62,25 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
             </style>
         """, unsafe_allow_html=True)
 
-        st.markdown(f"<div class='boxed'><strong>Laba Minggu Terakhir</strong><br>{last_week_profit:,.2f}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='boxed'><strong>Prediksi Laba Minggu Depan</strong><br>{predicted_profit_next_week:,.2f}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='boxed' style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</div>", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class='boxed'>
+                <strong>Laba Minggu Terakhir</strong><br>{last_week_profit:,.2f}
+            </div>
+            <div class='boxed'>
+                <strong>Prediksi Laba Minggu Depan</strong><br>{predicted_profit_next_week:,.2f}
+                <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
+            </div>
+        """, unsafe_allow_html=True)
 
     with col2:
+        # Move the year filter inside the chart column
+        selected_years = st.multiselect(
+            "Pilih Tahun",
+            daily_profit.index.year.unique(),
+            key=f"multiselect_{key_suffix}",
+            help="Pilih tahun yang ingin ditampilkan"
+        )
+
         fig = go.Figure()
 
         if selected_years:

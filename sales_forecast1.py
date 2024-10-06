@@ -32,7 +32,7 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     # Train the Holt-Winters model
     hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
 
-    # Forecasting
+    # Forecasting mulai dari minggu setelah data historis terakhir
     hw_forecast_future = hw_model.forecast(forecast_horizon)
 
     return daily_profit, hw_forecast_future
@@ -57,11 +57,12 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
             filtered_data = daily_profit[daily_profit.index.year == year]
             fig.add_trace(go.Scatter(x=filtered_data.index, y=filtered_data['LABA'], mode='lines', name=f'Data Historis {year}'))
 
-    # Plot forecast if the most recent year is selected
-    if max(selected_years, default=0) == daily_profit.index.year.max():
-        last_date = daily_profit.index[-1]
-        forecast_dates = pd.date_range(start=last_date, periods=forecast_horizon + 1)[1:]
-        fig.add_trace(go.Scatter(x=forecast_dates, y=hw_forecast_future, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
+    # Ensure forecast is connected to the actual data
+    last_actual_date = daily_profit.index[-1]
+    forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')[1:]
+    
+    # Plot forecast as a continuation of the actual data
+    fig.add_trace(go.Scatter(x=forecast_dates, y=hw_forecast_future, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
     fig.update_layout(
         title='Data Historis dan Prediksi Laba',

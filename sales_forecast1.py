@@ -62,7 +62,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
     forecast_dates = pd.date_range(start=last_actual_date + pd.Timedelta(weeks=1), periods=forecast_horizon)
 
     # Combine the last actual point with the forecast values
-    combined_dates = pd.concat([daily_profit.index, forecast_dates])
+    combined_dates = pd.Series(pd.concat([daily_profit.index, forecast_dates]))
     combined_values = pd.concat([daily_profit['LABA'], pd.Series(hw_forecast_future, index=forecast_dates)])
 
     # Plot combined data as a single trace

@@ -49,7 +49,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
             color = "red"
 
         # Display with box outline and larger font for profit numbers
-        st.markdown("""
+        st.markdown(""" 
             <style>
                 .boxed {
                     border: 2px solid #dcdcdc;
@@ -81,10 +81,14 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         """, unsafe_allow_html=True)
 
     with col2:
+        # Set default selected year to 2024
+        default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
+
         # Move the year filter inside the chart column
         selected_years = st.multiselect(
             "Pilih Tahun",
             daily_profit.index.year.unique(),
+            default=default_years,  # Set the default value here
             key=f"multiselect_{key_suffix}",
             help="Pilih tahun yang ingin ditampilkan"
         )

@@ -80,13 +80,21 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
     last_week_profit = daily_profit['LABA'].iloc[-1]  # Laba minggu terakhir
     profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
-    # Menampilkan informasi tambahan
-    st.markdown("### Informasi Laba dan Prediksi")
-    st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px; margin: 10px 0;'>"
-                 f"<strong>Gross Income:</strong> {gross_income:,.2f} </div>", unsafe_allow_html=True)
-    st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px; margin: 10px 0;'>"
-                 f"<strong>Laba Minggu Terakhir:</strong> {last_week_profit:,.2f} </div>", unsafe_allow_html=True)
-    st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px; margin: 10px 0;'>"
-                 f"<strong>Prediksi Laba untuk Minggu Depan:</strong> {predicted_profit_next_week:,.2f} </div>", unsafe_allow_html=True)
-    st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px; margin: 10px 0;'>"
-                 f"<strong>Persentase Kenaikan/Penurunan Laba:</strong> {profit_change_percentage:.2f}% </div>", unsafe_allow_html=True)
+    # Menampilkan informasi tambahan dalam layout horizontal
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px;'>"
+                     f"<strong>Gross Income:</strong> {gross_income:,.2f} </div>", unsafe_allow_html=True)
+
+    with col2:
+        st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px;'>"
+                     f"<strong>Laba Minggu Terakhir:</strong> {last_week_profit:,.2f} </div>", unsafe_allow_html=True)
+
+    with col3:
+        st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px;'>"
+                     f"<strong>Prediksi Laba untuk Minggu Depan:</strong> {predicted_profit_next_week:,.2f} </div>", unsafe_allow_html=True)
+
+    with col4:
+        st.markdown(f"<div style='border: 1px solid #ccc; padding: 10px;'>"
+                     f"<strong>Persentase Kenaikan/Penurunan Laba:</strong> {profit_change_percentage:.2f}% </div>", unsafe_allow_html=True)

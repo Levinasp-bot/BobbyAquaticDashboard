@@ -83,8 +83,8 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
     # Style untuk informasi
     info_style = """
     <div style='border: 1px solid #ccc; padding: 10px; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center;'>
-        <h2 style='margin: 0;'>%s</h2>
-        <p style='font-size: 12px; margin: 0;'>%s</p>
+        <h2 style='margin: 0; font-size: 20px;'>%s</h2>
+        <p style='font-size: 10px; margin: 0;'>%s</p>
     </div>
     """
 

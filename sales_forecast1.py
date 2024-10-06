@@ -37,7 +37,7 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_suffix=''):
+def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_suffix=''):
     st.title(f"Dashboard Prediksi Laba Bobby Aquatic {key_suffix}")
 
     # Filter berdasarkan tahun

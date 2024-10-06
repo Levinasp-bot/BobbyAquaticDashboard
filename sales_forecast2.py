@@ -35,23 +35,6 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
 def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_suffix=''):
     st.title(f"Trend Penjualan dan Prediksi Laba {key_suffix}")
 
-    st.subheader("Filter berdasarkan Tahun")
-    selected_years = st.multiselect(
-        "Pilih Tahun",
-        daily_profit.index.year.unique(),
-        key=f"multiselect_{key_suffix}",
-        help="Pilih tahun yang ingin ditampilkan"
-    )
-
-    # Adjust filter dropdown width
-    st.markdown("""
-        <style>
-            div[role="combobox"] > div[role="alert"] {
-                width: 80%;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -67,11 +50,22 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
             arrow = "🡇"
             color = "red"
 
+        # Add boxes for Laba and Prediksi Laba with space
         st.metric(label="Laba Minggu Terakhir", value=f"{last_week_profit:,.2f}")
         st.metric(label="Prediksi Laba Minggu Depan", value=f"{predicted_profit_next_week:,.2f}")
         st.markdown(f"<p style='font-size:24px; color:{color};'>{arrow} {profit_change_percentage:.2f}%</p>", unsafe_allow_html=True)
 
     with col2:
+        # Default selection for 2024
+        st.subheader("Filter berdasarkan Tahun")
+        selected_years = st.multiselect(
+            "Pilih Tahun",
+            daily_profit.index.year.unique(),
+            default=[2024],  # Set default to 2024
+            key=f"multiselect_{key_suffix}",
+            help="Pilih tahun yang ingin ditampilkan"
+        )
+
         fig = go.Figure()
 
         if selected_years:
@@ -92,3 +86,13 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         )
 
         st.plotly_chart(fig)
+
+    # Adjust filter dropdown width to match chart
+    st.markdown("""
+        <style>
+            div[role="combobox"] > div[role="alert"] {
+                width: 100%;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+

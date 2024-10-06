@@ -102,9 +102,12 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
 
         # Tambahkan prediksi masa depan
         last_actual_date = daily_profit.index[-1]
-        forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')[1:]
+        forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
 
-        fig.add_trace(go.Scatter(x=forecast_dates, y=hw_forecast_future, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
+        # Gabungkan prediksi dengan titik terakhir dari data historis
+        combined_forecast = pd.concat([daily_profit.iloc[[-1]]['LABA'], hw_forecast_future])
+
+        fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
         fig.update_layout(
             title='Data Historis dan Prediksi Laba',

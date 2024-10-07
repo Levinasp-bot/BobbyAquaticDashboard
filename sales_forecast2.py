@@ -4,7 +4,7 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import streamlit as st
 import plotly.graph_objects as go
 
-# Menggunakan @st.cache_data sesuai Streamlit terbaru
+# Using @st.cache_data for caching data
 @st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
     dataframes = []
@@ -17,7 +17,7 @@ def load_all_excel_files(folder_path, sheet_name):
 
 @st.cache_data
 def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
-    # Pastikan data hanya berisi tanggal dan laba yang sudah difilter
+    # Ensure data only contains date and profit
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
     daily_profit = daily_profit.groupby('TANGGAL').sum()
@@ -43,72 +43,41 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
         # Add arrows based on profit change
-        if profit_change_percentage > 0:
-            arrow = "🡅"
-            color = "green"
-        else:
-            arrow = "🡇"
-            color = "red"
-
-        st.markdown(""" 
-            <style>
-                .boxed {
-                    border: 2px solid #dcdcdc;
-                    padding: 10px;
-                    margin-bottom: 10px;
-                    border-radius: 5px;
-                    text-align: center;
-                }
-                .profit-value {
-                    font-size: 36px;
-                    font-weight: bold;
-                }
-                .profit-label {
-                    font-size: 14px;
-                }
-            </style>
-        """, unsafe_allow_html=True)
+        arrow = "🡅" if profit_change_percentage > 0 else "🡇"
+        color = "green" if profit_change_percentage > 0 else "red"
 
         st.markdown(f"""
-            <div class='boxed'>
-                <span class="profit-label">Laba Minggu Terakhir</span><br>
-                <span class="profit-value">{last_week_profit:,.2f}</span>
+            <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                <span style="font-size: 14px;">Laba Minggu Terakhir</span><br>
+                <span style="font-size: 36px; font-weight: bold;">{last_week_profit:,.2f}</span>
             </div>
-            <div class='boxed'>
-                <span class="profit-label">Prediksi Laba Minggu Depan</span><br>
-                <span class="profit-value">{predicted_profit_next_week:,.2f}</span>
+            <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                <span style="font-size: 14px;">Prediksi Laba Minggu Depan</span><br>
+                <span style="font-size: 36px; font-weight: bold;">{predicted_profit_next_week:,.2f}</span>
                 <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
             </div>
         """, unsafe_allow_html=True)
 
-    # Filter kategori (posisikan di luar col1 dan col2)
-    st.sidebar.title("Filter")
-
-    # Filter tahun (posisikan di bawah filter kategori)
-    default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
-    selected_years = st.sidebar.multiselect(
-        "Pilih Tahun",
-        daily_profit.index.year.unique(),
-        default=default_years,
-        key=f"multiselect_{key_suffix}",
-        help="Pilih tahun yang ingin ditampilkan"
-    )
-
     with col2:
-        fig = go.Figure()
+        # Filter tahun
+        default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
+        selected_years = st.multiselect(
+            "Pilih Tahun",
+            daily_profit.index.year.unique(),
+            default=default_years,
+            key=f"multiselect_{key_suffix}",
+            help="Pilih tahun yang ingin ditampilkan"
+        )
 
+        fig = go.Figure()
         if selected_years:
-            # Gabungkan data dari tahun yang dipilih menjadi satu garis
             combined_data = daily_profit[daily_profit.index.year.isin(selected_years)]
             fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data['LABA'], mode='lines', name='Data Historis'))
 
-        # Tambahkan prediksi masa depan
         last_actual_date = daily_profit.index[-1]
         forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
 
-        # Gabungkan prediksi dengan titik terakhir dari data historis
         combined_forecast = pd.concat([daily_profit.iloc[[-1]]['LABA'], hw_forecast_future])
-
         fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
         fig.update_layout(
@@ -119,3 +88,4 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         )
 
         st.plotly_chart(fig)
+

@@ -44,19 +44,24 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
 
     # Adding filter for category after the year filter
     available_categories = daily_profit['KATEGORI'].unique()
+    
+    # Inisialisasi selected_categories terlebih dahulu
     selected_categories = st.multiselect(
         "Pilih Kategori Produk",
         available_categories,
-        default=available_categories if not selected_categories else selected_categories,
+        default=available_categories,  # Default semua kategori
         key=f"category_select_{key_suffix}",
         help="Pilih kategori produk yang ingin ditampilkan"
     )
 
-    if not selected_categories:  # if no category selected, select all
+    if not selected_categories:  # Jika tidak ada kategori dipilih, pilih semua
         selected_categories = available_categories
 
-    # Filter data based on selected categories and years
-    filtered_profit = daily_profit[daily_profit['KATEGORI'].isin(selected_categories)]
+    # Filter data berdasarkan tahun dan kategori yang dipilih
+    filtered_profit = daily_profit[
+        (daily_profit['TANGGAL'].dt.year.isin(selected_years)) & 
+        (daily_profit['KATEGORI'].isin(selected_categories))
+    ]
 
     with col1:
         last_week_profit = filtered_profit['LABA'].iloc[-1]

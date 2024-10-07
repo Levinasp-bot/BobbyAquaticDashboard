@@ -23,97 +23,57 @@ with st.sidebar:
     if st.button('Produk', key="product_button"):
         switch_page("product")
 
-# Display content based on selected page
+# Tabs untuk Bobby Aquatic 1 dan 2
 if st.session_state.page == "sales":
-    # Load data for Bobby Aquatic 1 and 2
-    folder_path_1 = "./data/Bobby Aquatic 1"
-    sheet_name_1 = 'Penjualan'
-    penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
-
-    folder_path_2 = "./data/Bobby Aquatic 2"
-    sheet_name_2 = 'Penjualan'
-    penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
-
-    # Dapatkan kategori unik dari data
-    categories_1 = penjualan_data_1['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_1.columns else ['All']
-    categories_2 = penjualan_data_2['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_2.columns else ['All']
-
-    # Sidebar filters for Penjualan
-    with st.sidebar:
-        st.subheader("Filter Penjualan")
-        selected_category_1 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 1", options=['All'] + list(categories_1), key='category_select_cabang1')
-        selected_category_2 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 2", options=['All'] + list(categories_2), key='category_select_cabang2')
-
-    # Filter data based on category
-    if selected_category_1 != 'All':
-        filtered_penjualan_data_1 = penjualan_data_1[penjualan_data_1['KATEGORI'] == selected_category_1]
-    else:
-        filtered_penjualan_data_1 = penjualan_data_1
-
-    if selected_category_2 != 'All':
-        filtered_penjualan_data_2 = penjualan_data_2[penjualan_data_2['KATEGORI'] == selected_category_2]
-    else:
-        filtered_penjualan_data_2 = penjualan_data_2
-
-    # Forecast data untuk Bobby Aquatic 1 dan 2
-    daily_profit_1, hw_forecast_future_1 = forecast_profit_1(filtered_penjualan_data_1)
-    daily_profit_2, hw_forecast_future_2 = forecast_profit_2(filtered_penjualan_data_2)
-
-    # Tabs untuk Bobby Aquatic 1 dan 2
     tab1, tab2 = st.tabs(["Bobby Aquatic 1", "Bobby Aquatic 2"])
+    
+    # Filter only for the active tab
+    if tab1:
+        # Load data for Bobby Aquatic 1
+        folder_path_1 = "./data/Bobby Aquatic 1"
+        sheet_name_1 = 'Penjualan'
+        penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
 
-    # Bobby Aquatic 1 dashboard
-    with tab1:
+        # Get unique categories for Bobby Aquatic 1
+        categories_1 = penjualan_data_1['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_1.columns else ['All']
+
+        # Sidebar filters for Bobby Aquatic 1
+        with st.sidebar:
+            st.subheader("Filter Penjualan Bobby Aquatic 1")
+            selected_category_1 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 1", options=['All'] + list(categories_1), key='category_select_cabang1')
+
+        # Filter data based on category
+        if selected_category_1 != 'All':
+            filtered_penjualan_data_1 = penjualan_data_1[penjualan_data_1['KATEGORI'] == selected_category_1]
+        else:
+            filtered_penjualan_data_1 = penjualan_data_1
+
+        # Forecast and display data for Bobby Aquatic 1
+        daily_profit_1, hw_forecast_future_1 = forecast_profit_1(filtered_penjualan_data_1)
         st.header("Dashboard Penjualan Bobby Aquatic 1")
         show_dashboard_1(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
 
-    # Bobby Aquatic 2 dashboard
-    with tab2:
+    elif tab2:
+        # Load data for Bobby Aquatic 2
+        folder_path_2 = "./data/Bobby Aquatic 2"
+        sheet_name_2 = 'Penjualan'
+        penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
+
+        # Get unique categories for Bobby Aquatic 2
+        categories_2 = penjualan_data_2['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_2.columns else ['All']
+
+        # Sidebar filters for Bobby Aquatic 2
+        with st.sidebar:
+            st.subheader("Filter Penjualan Bobby Aquatic 2")
+            selected_category_2 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 2", options=['All'] + list(categories_2), key='category_select_cabang2')
+
+        # Filter data based on category
+        if selected_category_2 != 'All':
+            filtered_penjualan_data_2 = penjualan_data_2[penjualan_data_2['KATEGORI'] == selected_category_2]
+        else:
+            filtered_penjualan_data_2 = penjualan_data_2
+
+        # Forecast and display data for Bobby Aquatic 2
+        daily_profit_2, hw_forecast_future_2 = forecast_profit_2(filtered_penjualan_data_2)
         st.header("Dashboard Penjualan Bobby Aquatic 2")
         show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
-
-elif st.session_state.page == "product":
-    # Load data for Bobby Aquatic 1 and 2
-    folder_path_1 = "./data/Bobby Aquatic 1"
-    sheet_name_1 = 'Penjualan'
-    cluster_data_1 = load_cluster_data_1(folder_path_1, sheet_name_1)
-    
-    folder_path_2 = "./data/Bobby Aquatic 2"
-    sheet_name_2 = 'Penjualan'
-    cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name_2)
-
-    # Get unique years and categories from data
-    years_1 = sorted(cluster_data_1['TANGGAL'].dt.year.dropna().astype(int).unique())
-    years_2 = sorted(cluster_data_2['TANGGAL'].dt.year.dropna().astype(int).unique())
-    categories_1 = cluster_data_1['KATEGORI'].unique() if 'KATEGORI' in cluster_data_1.columns else ['All']
-    categories_2 = cluster_data_2['KATEGORI'].unique() if 'KATEGORI' in cluster_data_2.columns else ['All']
-
-    # Sidebar filters for Produk
-    with st.sidebar:
-        st.subheader("Filter Produk")
-        selected_years_1 = st.multiselect("Pilih Tahun untuk Bobby Aquatic 1", options=years_1, default=years_1, key='years_1_cabang1')
-        selected_category_1 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 1", options=['All'] + list(categories_1), key='category_cluster_cabang1')
-        selected_years_2 = st.multiselect("Pilih Tahun untuk Bobby Aquatic 2", options=years_2, default=years_2, key='years_2_cabang2')
-        selected_category_2 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 2", options=['All'] + list(categories_2), key='category_cluster_cabang2')
-
-    # Filter data based on selected years and category
-    filtered_data_1 = cluster_data_1[cluster_data_1['TANGGAL'].dt.year.isin(selected_years_1)]
-    if selected_category_1 != 'All':
-        filtered_data_1 = filtered_data_1[filtered_data_1['KATEGORI'] == selected_category_1]
-
-    filtered_data_2 = cluster_data_2[cluster_data_2['TANGGAL'].dt.year.isin(selected_years_2)]
-    if selected_category_2 != 'All':
-        filtered_data_2 = filtered_data_2[filtered_data_2['KATEGORI'] == selected_category_2]
-
-    # Tabs untuk Bobby Aquatic 1 dan 2
-    tab1, tab2 = st.tabs(["Bobby Aquatic 1", "Bobby Aquatic 2"])
-
-    # Bobby Aquatic 1 clustering
-    with tab1:
-        st.header("Klaster Produk untuk Bobby Aquatic 1")
-        show_cluster_dashboard_1(filtered_data_1, key_suffix='cabang1')
-
-    # Bobby Aquatic 2 clustering
-    with tab2:
-        st.header("Klaster Produk untuk Bobby Aquatic 2")
-        show_cluster_dashboard_2(filtered_data_2, key_suffix='cabang2')

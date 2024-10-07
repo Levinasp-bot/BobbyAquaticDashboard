@@ -16,17 +16,19 @@ def load_all_excel_files(folder_path, sheet_name):
 
 @st.cache
 def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
-    daily_profit = data[['TANGGAL', 'LABA']].copy()
+    daily_profit = data[['TANGGAL', 'LABA', 'KATEGORI']].copy()  # Ensure 'KATEGORI' is in the data
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
-    daily_profit = daily_profit.groupby('TANGGAL').sum()
-    daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
+    daily_profit = daily_profit.groupby(['TANGGAL', 'KATEGORI']).sum().reset_index()
 
-    daily_profit = daily_profit.resample('W').sum() / daily_profit.resample('W').count()
+    # Resample by weeks and interpolate missing values
+    daily_profit.set_index('TANGGAL', inplace=True)
+    daily_profit = daily_profit.groupby('KATEGORI').resample('W').mean().interpolate().reset_index()
 
+    # Splitting data for training
     train_size = int(len(daily_profit) * 0.9)
     train, test = daily_profit[:train_size], daily_profit[train_size:]
 
-    hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
+    hw_model = ExponentialSmoothing(train['LABA'], trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
 
     hw_forecast_future = hw_model.forecast(forecast_horizon)
 
@@ -35,39 +37,29 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
 def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
+    # Adding filter for category
+    available_categories = daily_profit['KATEGORI'].unique()
+    selected_categories = st.multiselect(
+        "Pilih Kategori Produk",
+        available_categories,
+        default=available_categories,
+        key=f"category_select_{key_suffix}",
+        help="Pilih kategori produk yang ingin ditampilkan"
+    )
+
+    # Filter data berdasarkan kategori yang dipilih
+    filtered_profit = daily_profit[daily_profit['KATEGORI'].isin(selected_categories)]
+
     with col1:
-        last_week_profit = daily_profit['LABA'].iloc[-1]
+        # Show the profit stats
+        last_week_profit = filtered_profit['LABA'].iloc[-1]
         predicted_profit_next_week = hw_forecast_future.iloc[0]
         profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
-        # Add arrows based on profit change
-        if profit_change_percentage > 0:
-            arrow = "🡅"
-            color = "green"
-        else:
-            arrow = "🡇"
-            color = "red"
+        arrow = "🡅" if profit_change_percentage > 0 else "🡇"
+        color = "green" if profit_change_percentage > 0 else "red"
 
-        # Display with box outline and larger font for profit numbers
-        st.markdown(""" 
-            <style>
-                .boxed {
-                    border: 2px solid #dcdcdc;
-                    padding: 10px;
-                    margin-bottom: 10px;
-                    border-radius: 5px;
-                    text-align: center;
-                }
-                .profit-value {
-                    font-size: 36px;
-                    font-weight: bold;
-                }
-                .profit-label {
-                    font-size: 14px;
-                }
-            </style>
-        """, unsafe_allow_html=True)
-
+        # Display profit stats
         st.markdown(f"""
             <div class='boxed'>
                 <span class="profit-label">Laba Minggu Terakhir</span><br>
@@ -81,14 +73,9 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         """, unsafe_allow_html=True)
 
     with col2:
-        # Set default selected year to 2024
-        default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
-
-        # Filter tahun masih ada, memungkinkan pengguna memilih beberapa tahun
         selected_years = st.multiselect(
             "Pilih Tahun",
-            daily_profit.index.year.unique(),
-            default=default_years,
+            filtered_profit['TANGGAL'].dt.year.unique(),
             key=f"multiselect_{key_suffix}",
             help="Pilih tahun yang ingin ditampilkan"
         )
@@ -97,15 +84,14 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
 
         if selected_years:
             # Gabungkan data dari tahun yang dipilih menjadi satu garis
-            combined_data = daily_profit[daily_profit.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data['LABA'], mode='lines', name='Data Historis'))
+            combined_data = filtered_profit[filtered_profit['TANGGAL'].dt.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(x=combined_data['TANGGAL'], y=combined_data['LABA'], mode='lines', name='Data Historis'))
 
         # Tambahkan prediksi masa depan
-        last_actual_date = daily_profit.index[-1]
+        last_actual_date = filtered_profit['TANGGAL'].max()
         forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
 
-        # Gabungkan prediksi dengan titik terakhir dari data historis
-        combined_forecast = pd.concat([daily_profit.iloc[[-1]]['LABA'], hw_forecast_future])
+        combined_forecast = pd.concat([filtered_profit.iloc[[-1]]['LABA'], hw_forecast_future])
 
         fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 

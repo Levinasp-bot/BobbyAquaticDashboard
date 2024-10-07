@@ -35,7 +35,7 @@ if st.session_state.page == "sales":
         st.header("Dashboard Penjualan Bobby Aquatic 1")
 
         # Filter for Bobby Aquatic 1
-        with st.expander("Filter Penjualan Bobby Aquatic 1", expanded=True):
+        with st.expander("", expanded=True):
             # Load data for Bobby Aquatic 1
             folder_path_1 = "./data/Bobby Aquatic 1"
             sheet_name_1 = 'Penjualan'
@@ -60,7 +60,7 @@ if st.session_state.page == "sales":
         st.header("Dashboard Penjualan Bobby Aquatic 2")
 
         # Filter for Bobby Aquatic 2
-        with st.expander("Filter Penjualan Bobby Aquatic 2", expanded=True):
+        with st.expander("", expanded=True):
             # Load data for Bobby Aquatic 2
             folder_path_2 = "./data/Bobby Aquatic 2"
             sheet_name_2 = 'Penjualan'
@@ -70,7 +70,7 @@ if st.session_state.page == "sales":
             categories_2 = penjualan_data_2['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_2.columns else ['All']
 
             # Filter for Bobby Aquatic 2
-            selected_category_2 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 2", options=['All'] + list(categories_2), key='category_select_cabang2')
+            selected_category_2 = st.selectbox("Pilih Kategori", options=['All'] + list(categories_2), key='category_select_cabang2')
 
         # Filter data based on selected category
         filtered_penjualan_data_2 = penjualan_data_2 if selected_category_2 == 'All' else penjualan_data_2[penjualan_data_2['KATEGORI'] == selected_category_2]
@@ -101,8 +101,8 @@ elif st.session_state.page == "product":
             categories_1 = cluster_data_1['KATEGORI'].unique() if 'KATEGORI' in cluster_data_1.columns else ['All']
 
             # Filters for Bobby Aquatic 1
-            selected_years_1 = st.multiselect("Pilih Tahun untuk Bobby Aquatic 1", options=years_1, default=years_1, key='years_1_cabang1')
-            selected_category_1 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 1", options=['All'] + list(categories_1), key='category_cluster_cabang1')
+            selected_years_1 = st.multiselect("Pilih Tahun", options=years_1, default=years_1, key='years_1_cabang1')
+            selected_category_1 = st.selectbox("Pilih Kategori", options=['All'] + list(categories_1), key='category_cluster_cabang1')
 
         # Filter data based on selected years and category
         filtered_data_1 = cluster_data_1[cluster_data_1['TANGGAL'].dt.year.isin(selected_years_1)]
@@ -127,8 +127,8 @@ elif st.session_state.page == "product":
             categories_2 = cluster_data_2['KATEGORI'].unique() if 'KATEGORI' in cluster_data_2.columns else ['All']
 
             # Filters for Bobby Aquatic 2
-            selected_years_2 = st.multiselect("Pilih Tahun untuk Bobby Aquatic 2", options=years_2, default=years_2, key='years_2_cabang2')
-            selected_category_2 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 2", options=['All'] + list(categories_2), key='category_cluster_cabang2')
+            selected_years_2 = st.multiselect("Pilih Tahun", options=years_2, default=years_2, key='years_2_cabang2')
+            selected_category_2 = st.selectbox("Pilih Kategori", options=['All'] + list(categories_2), key='category_cluster_cabang2')
 
         # Filter data based on selected years and category
         filtered_data_2 = cluster_data_2[cluster_data_2['TANGGAL'].dt.year.isin(selected_years_2)]

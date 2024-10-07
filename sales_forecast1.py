@@ -46,12 +46,12 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
 
     # Adding filter for category after the year filter
     available_categories = daily_profit['KATEGORI'].unique()
-
+    
     # Initialize selected_categories
     selected_categories = st.multiselect(
         "Pilih Kategori Produk",
         available_categories,
-        default=available_categories,  # Default to all categories
+        default=available_categories,  # Default all categories
         key=f"category_select_{key_suffix}",
         help="Pilih kategori produk yang ingin ditampilkan"
     )
@@ -65,13 +65,10 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         (daily_profit['KATEGORI'].isin(selected_categories))
     ]
 
-    # Aggregate profit across all categories by date
-    aggregated_profit = filtered_profit.groupby('TANGGAL').sum().reset_index()
-
     with col1:
         # Calculate profit changes
-        if not aggregated_profit.empty:
-            last_week_profit = aggregated_profit['LABA'].iloc[-1]
+        if not filtered_profit.empty:
+            last_week_profit = filtered_profit['LABA'].iloc[-1]
             predicted_profit_next_week = hw_forecast_future.iloc[0]
             profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
@@ -96,35 +93,26 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
     with col2:
         fig = go.Figure()
 
-        # Add a single line for aggregated historical data
-        fig.add_trace(go.Scatter(
-            x=aggregated_profit['TANGGAL'], 
-            y=aggregated_profit['LABA'], 
-            mode='lines', 
-            name='Data Historis - Semua Kategori'
-        ))
+        # If year is selected, plot filtered data
+        if selected_years and not filtered_profit.empty:
+            fig.add_trace(go.Scatter(x=filtered_profit['TANGGAL'], y=filtered_profit['LABA'], mode='lines', name='Data Historis'))
 
-        # Plot the forecast data
-        last_actual_date = aggregated_profit['TANGGAL'].max()
-        forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
+        # Plot forecast data
+        if not filtered_profit.empty:
+            last_actual_date = filtered_profit['TANGGAL'].max()
+            forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
 
-        # Combine the last actual data point with the forecast data
-        combined_forecast = pd.concat([aggregated_profit.iloc[[-1]]['LABA'], hw_forecast_future])
+            combined_forecast = pd.concat([filtered_profit.iloc[[-1]]['LABA'], hw_forecast_future])
 
-        fig.add_trace(go.Scatter(
-            x=forecast_dates, 
-            y=combined_forecast, 
-            mode='lines', 
-            name='Prediksi Masa Depan', 
-            line=dict(dash='dash')
-        ))
+            fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
         # Update chart layout
         fig.update_layout(
-            title='Data Historis dan Prediksi Laba (Semua Kategori)',
+            title='Data Historis dan Prediksi Laba',
             xaxis_title='Tanggal',
             yaxis_title='Laba',
             hovermode='x'
         )
 
         st.plotly_chart(fig)
+

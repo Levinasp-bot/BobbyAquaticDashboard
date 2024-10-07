@@ -23,12 +23,12 @@ with st.sidebar:
     if st.button('Produk', key="product_button"):
         switch_page("product")
 
-# Tabs untuk Bobby Aquatic 1 dan 2
+# Tabs for Bobby Aquatic 1 and Bobby Aquatic 2
 if st.session_state.page == "sales":
     tab1, tab2 = st.tabs(["Bobby Aquatic 1", "Bobby Aquatic 2"])
-    
-    # Filter only for the active tab
-    if tab1:
+
+    # Code for Bobby Aquatic 1
+    with tab1:
         # Load data for Bobby Aquatic 1
         folder_path_1 = "./data/Bobby Aquatic 1"
         sheet_name_1 = 'Penjualan'
@@ -53,7 +53,8 @@ if st.session_state.page == "sales":
         st.header("Dashboard Penjualan Bobby Aquatic 1")
         show_dashboard_1(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
 
-    elif tab2:
+    # Code for Bobby Aquatic 2
+    with tab2:
         # Load data for Bobby Aquatic 2
         folder_path_2 = "./data/Bobby Aquatic 2"
         sheet_name_2 = 'Penjualan'

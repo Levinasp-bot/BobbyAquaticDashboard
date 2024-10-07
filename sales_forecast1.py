@@ -81,17 +81,21 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
             </div>
         """, unsafe_allow_html=True)
 
+    # Filter kategori (posisikan di luar col1 dan col2)
+    st.sidebar.title("Filter")
+    selected_category = st.sidebar.selectbox("Pilih Kategori", ["Kategori 1", "Kategori 2", "Kategori 3"], key=f"selectbox_category_{key_suffix}")
+
+    # Filter tahun (posisikan di bawah filter kategori)
+    default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
+    selected_years = st.sidebar.multiselect(
+        "Pilih Tahun",
+        daily_profit.index.year.unique(),
+        default=default_years,
+        key=f"multiselect_{key_suffix}",
+        help="Pilih tahun yang ingin ditampilkan"
+    )
+
     with col2:
-        default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
-
-        selected_years = st.multiselect(
-            "Pilih Tahun",
-            daily_profit.index.year.unique(),
-            default=default_years,
-            key=f"multiselect_{key_suffix}",
-            help="Pilih tahun yang ingin ditampilkan"
-        )
-
         fig = go.Figure()
 
         if selected_years:
@@ -116,4 +120,3 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         )
 
         st.plotly_chart(fig)
-

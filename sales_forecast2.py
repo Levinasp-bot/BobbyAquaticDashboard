@@ -82,22 +82,10 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         """, unsafe_allow_html=True)
 
     with col2:
-        default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
-
-        selected_years = st.multiselect(
-            "Pilih Tahun",
-            daily_profit.index.year.unique(),
-            default=default_years,
-            key=f"multiselect_{key_suffix}",
-            help="Pilih tahun yang ingin ditampilkan"
-        )
-
         fig = go.Figure()
 
-        if selected_years:
-            # Gabungkan data dari tahun yang dipilih menjadi satu garis
-            combined_data = daily_profit[daily_profit.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data['LABA'], mode='lines', name='Data Historis'))
+        # Tambahkan data historis laba
+        fig.add_trace(go.Scatter(x=daily_profit.index, y=daily_profit['LABA'], mode='lines', name='Data Historis'))
 
         # Tambahkan prediksi masa depan
         last_actual_date = daily_profit.index[-1]
@@ -116,4 +104,3 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         )
 
         st.plotly_chart(fig)
-

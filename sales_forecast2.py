@@ -4,7 +4,8 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import streamlit as st
 import plotly.graph_objects as go
 
-@st.cache
+# Menggunakan @st.cache_data sesuai Streamlit terbaru
+@st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
     dataframes = []
     for file in os.listdir(folder_path):
@@ -14,8 +15,9 @@ def load_all_excel_files(folder_path, sheet_name):
             dataframes.append(df)
     return pd.concat(dataframes, ignore_index=True)
 
-@st.cache
+@st.cache_data
 def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
+    # Pastikan data hanya berisi tanggal dan laba yang sudah difilter
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
     daily_profit = daily_profit.groupby('TANGGAL').sum()
@@ -48,7 +50,6 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
             arrow = "🡇"
             color = "red"
 
-        # Display with box outline and larger font for profit numbers
         st.markdown(""" 
             <style>
                 .boxed {
@@ -81,10 +82,8 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         """, unsafe_allow_html=True)
 
     with col2:
-        # Set default selected year to 2024
         default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
 
-        # Filter tahun masih ada, memungkinkan pengguna memilih beberapa tahun
         selected_years = st.multiselect(
             "Pilih Tahun",
             daily_profit.index.year.unique(),
@@ -117,3 +116,4 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         )
 
         st.plotly_chart(fig)
+

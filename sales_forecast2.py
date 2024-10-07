@@ -17,7 +17,8 @@ def load_all_excel_files(folder_path, sheet_name):
 @st.cache
 def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
     daily_profit = data[['TANGGAL', 'LABA', 'KATEGORI']].copy()
-    daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
+    daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'], errors='coerce')
+    daily_profit = daily_profit.dropna(subset=['TANGGAL'])  # Drop rows with NaT in TANGGAL
     daily_profit = daily_profit.groupby(['TANGGAL', 'KATEGORI']).sum().reset_index()
 
     # Set index by Tanggal, and handle missing data
@@ -46,12 +47,10 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
 
     # Adding filter for category after the year filter
     available_categories = daily_profit['KATEGORI'].unique()
-
-    # Initialize selected_categories
     selected_categories = st.multiselect(
         "Pilih Kategori Produk",
         available_categories,
-        default=available_categories,  # Default to all categories
+        default=available_categories,
         key=f"category_select_{key_suffix}",
         help="Pilih kategori produk yang ingin ditampilkan"
     )
@@ -72,13 +71,16 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         # Calculate profit changes
         if not aggregated_profit.empty:
             last_week_profit = aggregated_profit['LABA'].iloc[-1]
-            predicted_profit_next_week = hw_forecast_future.iloc[0]
-            profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
+            predicted_profit_next_week = hw_forecast_future.iloc[0] if len(hw_forecast_future) > 0 else 0
+            
+            profit_change_percentage = (
+                (predicted_profit_next_week - last_week_profit) / last_week_profit * 100 
+                if last_week_profit else 0
+            )
 
             arrow = "🡅" if profit_change_percentage > 0 else "🡇"
             color = "green" if profit_change_percentage > 0 else "red"
 
-            # Display profit data
             st.markdown(f"""
                 <div class='boxed'>
                     <span class="profit-label">Laba Minggu Terakhir</span><br>
@@ -104,8 +106,11 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
             name='Data Historis - Semua Kategori'
         ))
 
-        # Plot the forecast data
         last_actual_date = aggregated_profit['TANGGAL'].max()
+        if pd.isna(last_actual_date):
+            st.error("Data tidak mencukupi untuk melakukan prediksi.")
+            return
+
         forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
 
         # Combine the last actual data point with the forecast data

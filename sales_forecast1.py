@@ -3,15 +3,9 @@ import pandas as pd
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import streamlit as st
 import plotly.graph_objects as go
-from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1, show_dashboard as show_dashboard_1
-from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2, show_dashboard as show_dashboard_2
-from product_clustering import load_all_excel_files as load_cluster_data_1, show_dashboard as show_cluster_dashboard_1
-from product_clustering2 import load_all_excel_files as load_cluster_data_2, show_dashboard as show_cluster_dashboard_2
 
-# Set wide mode layout (this must be the first Streamlit command)
-st.set_page_config(layout="wide")
-
-@st.cache
+# Menggunakan @st.cache_data sesuai Streamlit terbaru
+@st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
     dataframes = []
     for file in os.listdir(folder_path):
@@ -21,9 +15,9 @@ def load_all_excel_files(folder_path, sheet_name):
             dataframes.append(df)
     return pd.concat(dataframes, ignore_index=True)
 
-@st.cache
+@st.cache_data
 def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
-    # Ensure data contains only 'TANGGAL' and 'LABA'
+    # Pastikan data hanya berisi tanggal dan laba yang sudah difilter
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
     daily_profit = daily_profit.groupby('TANGGAL').sum()
@@ -90,22 +84,27 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
     with col2:
         default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
 
-        # Filter tahun dan kategori (misalnya produk, wilayah, dll.)
-        selected_years = st.multiselect("Pilih Tahun", daily_profit.index.year.unique(), default=default_years, key=f"multiselect_{key_suffix}")
-        selected_category = st.selectbox("Pilih Kategori", options=data['KATEGORI'].unique(), key=f"category_select_{key_suffix}")
-
-        # Filter data sesuai tahun dan kategori
-        filtered_data = daily_profit[daily_profit.index.year.isin(selected_years) & (data['KATEGORI'] == selected_category)]
+        selected_years = st.multiselect(
+            "Pilih Tahun",
+            daily_profit.index.year.unique(),
+            default=default_years,
+            key=f"multiselect_{key_suffix}",
+            help="Pilih tahun yang ingin ditampilkan"
+        )
 
         fig = go.Figure()
 
-        if not filtered_data.empty:
-            fig.add_trace(go.Scatter(x=filtered_data.index, y=filtered_data['LABA'], mode='lines', name='Data Historis'))
+        if selected_years:
+            # Gabungkan data dari tahun yang dipilih menjadi satu garis
+            combined_data = daily_profit[daily_profit.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data['LABA'], mode='lines', name='Data Historis'))
 
-        last_actual_date = filtered_data.index[-1] if not filtered_data.empty else daily_profit.index[-1]
+        # Tambahkan prediksi masa depan
+        last_actual_date = daily_profit.index[-1]
         forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
 
-        combined_forecast = pd.concat([filtered_data.iloc[[-1]]['LABA'], hw_forecast_future])
+        # Gabungkan prediksi dengan titik terakhir dari data historis
+        combined_forecast = pd.concat([daily_profit.iloc[[-1]]['LABA'], hw_forecast_future])
 
         fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
@@ -118,4 +117,3 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
 
         st.plotly_chart(fig)
 
-# Continue with the rest of your script...

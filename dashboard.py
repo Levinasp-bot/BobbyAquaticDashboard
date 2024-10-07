@@ -34,10 +34,8 @@ if st.session_state.page == "sales":
     with tab1:
         st.header("Dashboard Penjualan Bobby Aquatic 1")
 
-        # Sidebar filter for Bobby Aquatic 1
-        with st.sidebar:
-            st.subheader("Filter Penjualan Bobby Aquatic 1")
-
+        # Filter for Bobby Aquatic 1
+        with st.expander("Filter Penjualan Bobby Aquatic 1", expanded=True):
             # Load data for Bobby Aquatic 1
             folder_path_1 = "./data/Bobby Aquatic 1"
             sheet_name_1 = 'Penjualan'
@@ -46,7 +44,7 @@ if st.session_state.page == "sales":
             # Get unique categories from data
             categories_1 = penjualan_data_1['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_1.columns else ['All']
 
-            # Sidebar filter for Bobby Aquatic 1
+            # Filter for Bobby Aquatic 1
             selected_category_1 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 1", options=['All'] + list(categories_1), key='category_select_cabang1')
 
         # Filter data based on selected category
@@ -61,10 +59,8 @@ if st.session_state.page == "sales":
     with tab2:
         st.header("Dashboard Penjualan Bobby Aquatic 2")
 
-        # Sidebar filter for Bobby Aquatic 2
-        with st.sidebar:
-            st.subheader("Filter Penjualan Bobby Aquatic 2")
-
+        # Filter for Bobby Aquatic 2
+        with st.expander("Filter Penjualan Bobby Aquatic 2", expanded=True):
             # Load data for Bobby Aquatic 2
             folder_path_2 = "./data/Bobby Aquatic 2"
             sheet_name_2 = 'Penjualan'
@@ -73,7 +69,7 @@ if st.session_state.page == "sales":
             # Get unique categories from data
             categories_2 = penjualan_data_2['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_2.columns else ['All']
 
-            # Sidebar filter for Bobby Aquatic 2
+            # Filter for Bobby Aquatic 2
             selected_category_2 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 2", options=['All'] + list(categories_2), key='category_select_cabang2')
 
         # Filter data based on selected category
@@ -93,10 +89,8 @@ elif st.session_state.page == "product":
     with tab1:
         st.header("Klaster Produk untuk Bobby Aquatic 1")
 
-        # Sidebar filter for Bobby Aquatic 1
-        with st.sidebar:
-            st.subheader("Filter Produk Bobby Aquatic 1")
-
+        # Filter for Bobby Aquatic 1
+        with st.expander("Filter Produk Bobby Aquatic 1", expanded=True):
             # Load data for Bobby Aquatic 1
             folder_path_1 = "./data/Bobby Aquatic 1"
             sheet_name_1 = 'Penjualan'
@@ -106,7 +100,7 @@ elif st.session_state.page == "product":
             years_1 = sorted(cluster_data_1['TANGGAL'].dt.year.dropna().astype(int).unique())
             categories_1 = cluster_data_1['KATEGORI'].unique() if 'KATEGORI' in cluster_data_1.columns else ['All']
 
-            # Sidebar filters for Bobby Aquatic 1
+            # Filters for Bobby Aquatic 1
             selected_years_1 = st.multiselect("Pilih Tahun untuk Bobby Aquatic 1", options=years_1, default=years_1, key='years_1_cabang1')
             selected_category_1 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 1", options=['All'] + list(categories_1), key='category_cluster_cabang1')
 
@@ -121,10 +115,8 @@ elif st.session_state.page == "product":
     with tab2:
         st.header("Klaster Produk untuk Bobby Aquatic 2")
 
-        # Sidebar filter for Bobby Aquatic 2
-        with st.sidebar:
-            st.subheader("Filter Produk Bobby Aquatic 2")
-
+        # Filter for Bobby Aquatic 2
+        with st.expander("Filter Produk Bobby Aquatic 2", expanded=True):
             # Load data for Bobby Aquatic 2
             folder_path_2 = "./data/Bobby Aquatic 2"
             sheet_name_2 = 'Penjualan'
@@ -134,7 +126,7 @@ elif st.session_state.page == "product":
             years_2 = sorted(cluster_data_2['TANGGAL'].dt.year.dropna().astype(int).unique())
             categories_2 = cluster_data_2['KATEGORI'].unique() if 'KATEGORI' in cluster_data_2.columns else ['All']
 
-            # Sidebar filters for Bobby Aquatic 2
+            # Filters for Bobby Aquatic 2
             selected_years_2 = st.multiselect("Pilih Tahun untuk Bobby Aquatic 2", options=years_2, default=years_2, key='years_2_cabang2')
             selected_category_2 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 2", options=['All'] + list(categories_2), key='category_cluster_cabang2')
 

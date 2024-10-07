@@ -14,106 +14,117 @@ def load_all_excel_files(folder_path, sheet_name):
             dataframes.append(df)
     return pd.concat(dataframes, ignore_index=True)
 
-@st.cache
-def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
-    daily_profit = data[['TANGGAL', 'LABA']].copy()
-    daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
-    daily_profit = daily_profit.groupby('TANGGAL').sum()
-    daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
+def forecast_profit(data, category, seasonal_period=50, forecast_horizon=50):
+    # Filter data by category
+    category_data = data[data['KATEGORI'] == category].copy()
+    category_data['TANGGAL'] = pd.to_datetime(category_data['TANGGAL'])
+    
+    # Set index by Tanggal, and handle missing data
+    category_data.set_index('TANGGAL', inplace=True)
+    category_data = category_data.resample('W').mean().interpolate()
+    
+    # Train the Holt-Winters model and forecast
+    train_size = int(len(category_data) * 0.9)
+    train = category_data[:train_size]
+    
+    if len(train) < seasonal_period:
+        st.warning(f"Not enough data for category '{category}' to perform forecasting.")
+        return None, None
 
-    daily_profit = daily_profit.resample('W').mean().interpolate()
-
-    train_size = int(len(daily_profit) * 0.9)
-    train, test = daily_profit[:train_size], daily_profit[train_size:]
-
-    hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
-
+    hw_model = ExponentialSmoothing(train['LABA'], trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
     hw_forecast_future = hw_model.forecast(forecast_horizon)
+    
+    return category_data, hw_forecast_future
 
-    return daily_profit, hw_forecast_future
-
-def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_suffix=''):
+def show_dashboard(daily_profit, categories, forecast_horizon=50, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
-    with col1:
-        last_week_profit = daily_profit['LABA'].iloc[-1]
-        predicted_profit_next_week = hw_forecast_future.iloc[0]
-        profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
+    # Year filter
+    selected_years = st.multiselect(
+        "Pilih Tahun",
+        daily_profit['TANGGAL'].dt.year.unique(),
+        key=f"multiselect_{key_suffix}",
+        help="Pilih tahun yang ingin ditampilkan"
+    )
 
-        # Add arrows based on profit change
-        if profit_change_percentage > 0:
-            arrow = "🡅"
-            color = "green"
-        else:
-            arrow = "🡇"
-            color = "red"
+    # Category filter
+    available_categories = daily_profit['KATEGORI'].unique()
 
-        # Display with box outline and larger font for profit numbers
-        st.markdown(""" 
-            <style>
-                .boxed {
-                    border: 2px solid #dcdcdc;
-                    padding: 10px;
-                    margin-bottom: 10px;
-                    border-radius: 5px;
-                    text-align: center;
-                }
-                .profit-value {
-                    font-size: 36px;
-                    font-weight: bold;
-                }
-                .profit-label {
-                    font-size: 14px;
-                }
-            </style>
-        """, unsafe_allow_html=True)
+    selected_categories = st.multiselect(
+        "Pilih Kategori Produk",
+        available_categories,
+        default=available_categories,
+        key=f"category_select_{key_suffix}",
+        help="Pilih kategori produk yang ingin ditampilkan"
+    )
 
-        st.markdown(f"""
-            <div class='boxed'>
-                <span class="profit-label">Laba Minggu Terakhir</span><br>
-                <span class="profit-value">{last_week_profit:,.2f}</span>
-            </div>
-            <div class='boxed'>
-                <span class="profit-label">Prediksi Laba Minggu Depan</span><br>
-                <span class="profit-value">{predicted_profit_next_week:,.2f}</span>
-                <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
-            </div>
-        """, unsafe_allow_html=True)
+    if not selected_categories:
+        selected_categories = available_categories
 
-    with col2:
-        # Set default selected year to 2024
-        default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
+    # Filter data by selected years
+    filtered_profit = daily_profit[daily_profit['TANGGAL'].dt.year.isin(selected_years)]
 
-        # Filter tahun masih ada, memungkinkan pengguna memilih beberapa tahun
-        selected_years = st.multiselect(
-            "Pilih Tahun",
-            daily_profit.index.year.unique(),
-            default=default_years,
-            key=f"multiselect_{key_suffix}",
-            help="Pilih tahun yang ingin ditampilkan"
-        )
+    fig = go.Figure()
 
-        fig = go.Figure()
+    for category in selected_categories:
+        # Forecast for each selected category
+        category_data, hw_forecast_future = forecast_profit(filtered_profit, category, forecast_horizon=forecast_horizon)
 
-        if selected_years:
-            # Gabungkan data dari tahun yang dipilih menjadi satu garis
-            combined_data = daily_profit[daily_profit.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data['LABA'], mode='lines', name='Data Historis'))
+        if category_data is None:
+            continue
 
-        # Tambahkan prediksi masa depan
-        last_actual_date = daily_profit.index[-1]
+        # Historical data plot
+        fig.add_trace(go.Scatter(
+            x=category_data.index, 
+            y=category_data['LABA'], 
+            mode='lines', 
+            name=f'Data Historis - {category}'
+        ))
+
+        # Forecast data plot
+        last_actual_date = category_data.index.max()
         forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
 
-        # Gabungkan prediksi dengan titik terakhir dari data historis
-        combined_forecast = pd.concat([daily_profit.iloc[[-1]]['LABA'], hw_forecast_future])
+        combined_forecast = pd.concat([category_data.iloc[[-1]]['LABA'], hw_forecast_future])
+        fig.add_trace(go.Scatter(
+            x=forecast_dates, 
+            y=combined_forecast, 
+            mode='lines', 
+            name=f'Prediksi - {category}',
+            line=dict(dash='dash')
+        ))
 
-        fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
+    # Update layout
+    fig.update_layout(
+        title='Data Historis dan Prediksi Laba per Kategori',
+        xaxis_title='Tanggal',
+        yaxis_title='Laba',
+        hovermode='x'
+    )
 
-        fig.update_layout(
-            title='Data Historis dan Prediksi Laba',
-            xaxis_title='Tanggal',
-            yaxis_title='Laba',
-            hovermode='x'
-        )
-
+    with col2:
         st.plotly_chart(fig)
+
+    with col1:
+        if len(selected_categories) == 1:
+            category = selected_categories[0]
+            last_week_profit = category_data['LABA'].iloc[-1]
+            predicted_profit_next_week = hw_forecast_future.iloc[0]
+            profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
+
+            arrow = "🡅" if profit_change_percentage > 0 else "🡇"
+            color = "green" if profit_change_percentage > 0 else "red"
+
+            st.markdown(f"""
+                <div class='boxed'>
+                    <span class="profit-label">Laba Minggu Terakhir - {category}</span><br>
+                    <span class="profit-value">{last_week_profit:,.2f}</span>
+                </div>
+                <div class='boxed'>
+                    <span class="profit-label">Prediksi Laba Minggu Depan - {category}</span><br>
+                    <span class="profit-value">{predicted_profit_next_week:,.2f}</span>
+                    <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.write("Pilih satu kategori untuk melihat perubahan laba.")

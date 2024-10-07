@@ -59,6 +59,9 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         """, unsafe_allow_html=True)
 
     with col2:
+        # Filter kategori (assumed to be added here)
+        # Example: selected_categories = st.multiselect("Pilih Kategori", options=["Kategori 1", "Kategori 2"], key=f"kategori_{key_suffix}")
+
         # Filter tahun
         default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
         selected_years = st.multiselect(
@@ -88,4 +91,3 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         )
 
         st.plotly_chart(fig)
-

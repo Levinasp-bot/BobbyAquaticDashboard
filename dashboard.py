@@ -34,8 +34,10 @@ if st.session_state.page == "sales":
     penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
     # Forecast data for Bobby Aquatic 1 and 2
-    daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)
-    daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
+    category_1 = "default"  # Adjust this to the appropriate category if needed
+    category_2 = "default"  # Adjust this to the appropriate category if needed
+    daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1, category_1)
+    daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2, category_2)
 
     # Custom CSS for centered tabs
     st.markdown("""

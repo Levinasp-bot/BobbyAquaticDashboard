@@ -21,7 +21,7 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     daily_profit = daily_profit.groupby('TANGGAL').sum()
     daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
 
-    daily_profit = daily_profit.asfreq('W').interpolate()
+    daily_profit = daily_profit.resample('W').mean()
 
     train_size = int(len(daily_profit) * 0.9)
     train, test = daily_profit[:train_size], daily_profit[train_size:]

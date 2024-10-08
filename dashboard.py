@@ -39,7 +39,7 @@ if st.session_state.page == "sales":
         categories_1 = penjualan_data_1['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_1.columns else ['All']
 
         # Filter for Bobby Aquatic 1
-        selected_category_1 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 1", options=['All'] + list(categories_1), key='category_select_cabang1')
+        selected_category_1 = st.selectbox("Pilih Kategori", options=['All'] + list(categories_1), key='category_select_cabang1')
 
         # Filter data based on selected category
         filtered_penjualan_data_1 = penjualan_data_1 if selected_category_1 == 'All' else penjualan_data_1[penjualan_data_1['KATEGORI'] == selected_category_1]
@@ -62,7 +62,7 @@ if st.session_state.page == "sales":
         categories_2 = penjualan_data_2['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_2.columns else ['All']
 
         # Filter for Bobby Aquatic 2
-        selected_category_2 = st.selectbox("Pilih Kategori untuk Bobby Aquatic 2", options=['All'] + list(categories_2), key='category_select_cabang2')
+        selected_category_2 = st.selectbox("Pilih Kategori", options=['All'] + list(categories_2), key='category_select_cabang2')
 
         # Filter data based on selected category
         filtered_penjualan_data_2 = penjualan_data_2 if selected_category_2 == 'All' else penjualan_data_2[penjualan_data_2['KATEGORI'] == selected_category_2]

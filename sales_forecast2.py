@@ -48,11 +48,11 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
 
         st.markdown(f"""
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                <span style="font-size: 14px;">Laba Minggu Terakhir</span><br>
+                <span style="font-size: 14px;">Rata - rata Laba Minggu Terakhir</span><br>
                 <span style="font-size: 36px; font-weight: bold;">{last_week_profit:,.2f}</span>
             </div>
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                <span style="font-size: 14px;">Prediksi Laba Minggu Depan</span><br>
+                <span style="font-size: 14px;">Prediksi Rata - rata Laba Minggu Depan</span><br>
                 <span style="font-size: 36px; font-weight: bold;">{predicted_profit_next_week:,.2f}</span>
                 <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
             </div>
@@ -81,7 +81,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
         fig.update_layout(
-            title='Data Historis dan Prediksi Laba',
+            title='Data Historis dan Prediksi Rata - rata Laba Mingguan',
             xaxis_title='Tanggal',
             yaxis_title='Laba',
             hovermode='x'

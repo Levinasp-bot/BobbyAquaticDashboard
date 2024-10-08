@@ -5,18 +5,14 @@ from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit
 from product_clustering import load_all_excel_files as load_cluster_data_1, show_dashboard as show_cluster_dashboard_1
 from product_clustering2 import load_all_excel_files as load_cluster_data_2, show_dashboard as show_cluster_dashboard_2
 
-# Set wide mode layout
 st.set_page_config(layout="wide")
 
-# Initialize session state for page if not already
 if 'page' not in st.session_state:
-    st.session_state.page = 'sales'  # Set default page
+    st.session_state.page = 'sales'  
 
-# Function to switch page
 def switch_page(page_name):
     st.session_state.page = page_name
-
-# Sidebar for navigation between Sales and Product
+    
 with st.sidebar:
     st.title("Dashboard Navigation")
     if st.button('Penjualan', key="sales_button"):

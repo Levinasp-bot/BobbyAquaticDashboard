@@ -125,15 +125,22 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         cluster_labels = cluster_rfm(rfm_scaled, n_clusters)
         rfm_category['Cluster'] = cluster_labels
 
-        # Mengategorikan RFM tanpa argumen tambahan
-        rfm_category = categorize_rfm(rfm_category)
+        # Menghitung rata-rata RFM untuk setiap cluster
+        cluster_means = rfm_category.groupby('Cluster').agg({
+            'Recency': 'mean',
+            'Frequency': 'mean',
+            'Monetary': 'mean'
+        }).reset_index()
 
-        # Membuat legenda untuk setiap cluster menggunakan rata-rata (mean)
+        # Mengategorikan nilai rata-rata RFM berdasarkan quintile
+        cluster_means = categorize_rfm(cluster_means)
+
+        # Membuat legenda berdasarkan kategori rata-rata RFM
         custom_legends = {
-            cluster: f"{rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mean()} Dibeli, "
-                     f"Frekuensi {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mean()}, "
-                     f"dan Nilai Pembelian {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mean()}"
-            for cluster in sorted(rfm_category['Cluster'].unique())
+            row['Cluster']: f"Recency: {row['Recency_Category']}, "
+                            f"Frequency: {row['Frequency_Category']}, "
+                            f"Monetary: {row['Monetary_Category']}"
+            for _, row in cluster_means.iterrows()
         }
 
         # Menampilkan informasi dalam dua kolom
@@ -144,32 +151,21 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
                         f"<strong>{rfm_category['Frequency'].sum()}</strong></div>", unsafe_allow_html=True)
 
         with col2:
-            st.markdown("### Rata - rata RFM")
-            average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
-            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
-                        f"<strong>Recency: {average_rfm['Recency']:.2f}</strong><br>"
-                        f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"
-                        f"<strong>Monetary: {average_rfm['Monetary']:.2f}</strong></div>", unsafe_allow_html=True)
-
-        # Memilih cluster yang akan ditampilkan
-        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
-        selected_custom_label = st.selectbox(
-            f'Select a cluster for {category_name}:',
-            options=[custom_legends[cluster] for cluster in sorted(custom_legends.keys())],
-            key=unique_key
-        )
-
-        selected_cluster_num = {v: k for k, v in custom_legends.items()}[selected_custom_label]
-        plot_key = f'plotly_chart_{category_name}_{key_suffix}'
+            st.markdown("### Rata-rata RFM per Cluster")
+            for cluster, legend in custom_legends.items():
+                st.markdown(f"Cluster {cluster}: {legend}", unsafe_allow_html=True)
 
         # Menampilkan grafik dan tabel cluster
         chart_col, table_col = st.columns(2)
         with chart_col:
             fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-            st.plotly_chart(fig, use_container_width=True, key=plot_key)
+            st.plotly_chart(fig, use_container_width=True, key=f'plotly_chart_{category_name}_{key_suffix}')
 
         with table_col:
-            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix)
+            selected_cluster_num = st.selectbox(f'Select a cluster for {category_name}:',
+                                                options=sorted(cluster_means['Cluster'].unique()))
+            show_cluster_table(rfm_category, selected_cluster_num, f"Cluster {selected_cluster_num}", key_suffix)
+
 
 def get_optimal_k(data_scaled):
     # Mendapatkan jumlah cluster optimal menggunakan metode elbow

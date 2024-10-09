@@ -147,7 +147,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
 
-def find_optimal_k(data, max_k=10):
+def find_optimal_k(data, min_k=3, max_k=10):
     scaler = StandardScaler()
     scaled_data = scaler.fit_transform(data[['Recency', 'Frequency', 'Monetary']])
     
@@ -158,14 +158,15 @@ def find_optimal_k(data, max_k=10):
         wcss.append(kmeans.inertia_)
     
     # Calculate the elbow point (i.e., where WCSS starts diminishing at a slower rate)
-    # Simplified version by choosing the k where the reduction in WCSS diminishes
-    k_optimal = 1
-    for i in range(1, len(wcss)-1):
+    # Start looking for the elbow from k=min_k
+    k_optimal = min_k
+    for i in range(min_k - 1, len(wcss)-1):
         if (wcss[i-1] - wcss[i]) > (wcss[i] - wcss[i+1]):
             k_optimal = i + 1
             break
             
-    return k_optimal
+    return max(k_optimal, min_k)  # Ensure k_optimal is at least min_k
+
 
 def show_dashboard(data, key_suffix=''):
     rfm = process_rfm(data)

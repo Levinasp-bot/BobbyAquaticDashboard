@@ -111,7 +111,7 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     # Menampilkan tabel cluster
-    st.markdown(f"### Produk yang {custom_label}", unsafe_allow_html=True)
+    st.markdown(f"#### Daftar Produk yang {custom_label}", unsafe_allow_html=True)
     
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")

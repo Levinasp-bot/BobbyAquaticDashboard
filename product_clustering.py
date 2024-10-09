@@ -36,33 +36,18 @@ def process_rfm(data):
     return rfm
 
 def categorize_rfm(rfm):
-    # Menghitung quartile (4 bagian) untuk Recency, Frequency, dan Monetary
-    recency_q1 = rfm['Recency'].quantile(0.25)
-    recency_q2 = rfm['Recency'].quantile(0.5)
-    recency_q3 = rfm['Recency'].quantile(0.75)
-    
-    frequency_q1 = rfm['Frequency'].quantile(0.25)
-    frequency_q2 = rfm['Frequency'].quantile(0.5)
-    frequency_q3 = rfm['Frequency'].quantile(0.75)
-    
-    monetary_q1 = rfm['Monetary'].quantile(0.25)
-    monetary_q2 = rfm['Monetary'].quantile(0.5)
-    monetary_q3 = rfm['Monetary'].quantile(0.75)
+    # Menggunakan skala z-score untuk menghindari tumpang tindih pada kategori
+    rfm['Recency_Z'] = (rfm['Recency'] - rfm['Recency'].mean()) / rfm['Recency'].std()
+    rfm['Frequency_Z'] = (rfm['Frequency'] - rfm['Frequency'].mean()) / rfm['Frequency'].std()
+    rfm['Monetary_Z'] = (rfm['Monetary'] - rfm['Monetary'].mean()) / rfm['Monetary'].std()
 
-    # Membuat bins secara dinamis berdasarkan quartile
-    recency_bins = [0, recency_q1, recency_q2, recency_q3, float('inf')]
-    frequency_bins = [0, frequency_q1, frequency_q2, frequency_q3, float('inf')]
-    monetary_bins = [0, monetary_q1, monetary_q2, monetary_q3, float('inf')]
+    # Menambahkan batas kategori z-score untuk 4 kategori
+    bins = [-float('inf'), -0.5, 0.5, float('inf')]  # Menggunakan 4 kategori
 
-    # Label untuk 4 kategori
-    recency_labels = ['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Sangat Lama']
-    frequency_labels = ['Sangat Jarang', 'Jarang', 'Cukup Sering', 'Sangat Sering']
-    monetary_labels = ['Sangat Rendah', 'Rendah', 'Tinggi', 'Sangat Tinggi']
-
-    # Menetapkan kategori berdasarkan bins dan labels
-    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=recency_labels)
-    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=frequency_labels)
-    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=monetary_labels)
+    # Label untuk kategori
+    rfm['Recency_Category'] = pd.cut(rfm['Recency_Z'], bins=bins, labels=['Sangat Baru', 'Cukup Lama', 'Sangat Lama'])
+    rfm['Frequency_Category'] = pd.cut(rfm['Frequency_Z'], bins=bins, labels=['Jarang', 'Cukup Sering', 'Sering'])
+    rfm['Monetary_Category'] = pd.cut(rfm['Monetary_Z'], bins=bins, labels=['Rendah', 'Sedang', 'Tinggi'])
 
     return rfm
 

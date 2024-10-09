@@ -123,7 +123,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         cluster_labels = cluster_rfm(rfm_scaled, n_clusters)
         rfm_category['Cluster'] = cluster_labels
 
-        rfm_category = categorize_rfm(rfm_category, category_name)
+        rfm_category = categorize_rfm(rfm_category)
 
         # Membuat legenda untuk setiap cluster
         custom_legends = {
@@ -162,42 +162,10 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         # Menampilkan grafik dan tabel cluster
         chart_col, table_col = st.columns(2)
         with chart_col:
-            fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
+                    # Menampilkan grafik pie interaktif
+            fig = plot_interactive_pie_chart(rfm_category, rfm_category['Cluster'], category_name, custom_legends)
             st.plotly_chart(fig, use_container_width=True, key=plot_key)
 
         with table_col:
-            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
-
-    else:
-        st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
-
-def get_optimal_k(data_scaled):
-    # Mendapatkan jumlah cluster optimal menggunakan metode elbow
-    model = KMeans(random_state=1)
-    visualizer = KElbowVisualizer(model, k=(3, 10), timings=False)
-    visualizer.fit(data_scaled)
-    return visualizer.elbow_value_
-
-def show_dashboard(data, key_suffix=''):
-    # Menampilkan dashboard
-    rfm = process_rfm(data)
-
-    rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
-    rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
-
-    # Mendapatkan jumlah klaster optimal untuk setiap kategori
-    if not rfm_ikan.empty:
-        data_scaled_ikan = StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
-        n_clusters_ikan = get_optimal_k(data_scaled_ikan)
-    else:
-        n_clusters_ikan = 0
-
-    if not rfm_aksesoris.empty:
-        data_scaled_aksesoris = StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])
-        n_clusters_aksesoris = get_optimal_k(data_scaled_aksesoris)
-    else:
-        n_clusters_aksesoris = 0
-
-    # Memproses dan menampilkan masing-masing kategori
-    process_category(rfm_ikan, 'Ikan', n_clusters_ikan, key_suffix)
-    process_category(rfm_aksesoris, 'Aksesoris', n_clusters_aksesoris, key_suffix)
+            # Menampilkan tabel cluster
+            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix)

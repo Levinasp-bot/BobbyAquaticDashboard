@@ -36,17 +36,22 @@ def process_rfm(data):
     return rfm
 
 def categorize_rfm(rfm, category_name):
-    # Menghitung Q1, Q2, Q3 untuk Recency, Frequency, dan Monetary
-    rfm['Recency_Q'] = pd.qcut(rfm['Recency'], q=4, labels=['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Sangat Lama'])
-    rfm['Frequency_Q'] = pd.qcut(rfm['Frequency'], q=4, labels=['Jarang', 'Cukup Jarang', 'Cukup Sering', 'Sering'])
-    rfm['Monetary_Q'] = pd.qcut(rfm['Monetary'], q=4, labels=['Rendah', 'Sedang', 'Cukup Tinggi', 'Tinggi'])
+    # Mengkategorikan RFM berdasarkan kategori
+    if category_name == 'Ikan':
+        recency_bins = [0, 3, 16.75, float('inf')]
+        frequency_bins = [0, 82, 146.5, float('inf')]
+        monetary_bins = [0, 3540625, 11900000, float('inf')]
+    elif category_name == 'Aksesoris':
+        recency_bins = [0, 16, 182.5, float('inf')]
+        frequency_bins = [0, 8, 60.25, float('inf')]
+        monetary_bins = [0, 1007500, 3456250, float('inf')]
+    else:
+        return rfm
 
-    # Mengganti nama kolom agar lebih konsisten dengan kategori
-    rfm = rfm.rename(columns={
-        'Recency_Q': 'Recency_Category',
-        'Frequency_Q': 'Frequency_Category',
-        'Monetary_Q': 'Monetary_Category'
-    })
+    # Label untuk kategori
+    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'])
+    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=['Jarang', 'Cukup Sering', 'Sering'])
+    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=['Rendah', 'Sedang', 'Tinggi'])
     
     return rfm
 
@@ -96,6 +101,11 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
+def get_cluster_medians(rfm, cluster_labels):
+    rfm['Cluster'] = cluster_labels
+    cluster_medians = rfm.groupby('Cluster').median().reset_index()
+    return cluster_medians
+
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
     # Memproses kategori dan menampilkan hasil
     if rfm_category.shape[0] > 0 and n_clusters > 0:
@@ -109,9 +119,9 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
         # Membuat legenda untuk setiap cluster
         custom_legends = {
-            cluster: f"Recency {rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]}, "
-                     f"Frequency {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
-                     f" dan Monetary {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mode()[0]}"
+        cluster:    f"Recency Median: {rfm_category[rfm_category['Cluster'] == cluster]['Recency'].median()}, "
+                    f"Frequency Median: {rfm_category[rfm_category['Cluster'] == cluster]['Frequency'].median()}, "
+                    f"Monetary Median: {rfm_category[rfm_category['Cluster'] == cluster]['Monetary'].median()}"
             for cluster in sorted(rfm_category['Cluster'].unique())
         }
 

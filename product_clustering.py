@@ -119,25 +119,16 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
             for cluster in sorted(rfm_category['Cluster'].unique())
         }
 
-        # Menghitung total dan rata-rata RFM
-        total_fish_sold = rfm_category['Frequency'].sum() if category_name == 'Ikan' else 0
-        total_accessories_sold = rfm_category['Frequency'].sum() if category_name == 'Aksesoris' else 0
-        average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
-
         # Menampilkan informasi dalam dua kolom
         col1, col2 = st.columns(2)
         with col1:
-            if category_name == 'Ikan':
-                st.markdown("### Total Ikan Terjual")
-                st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
-                            f"<strong>{total_fish_sold}</strong></div>", unsafe_allow_html=True)
-            else:
-                st.markdown("### Total Aksesoris Terjual")
-                st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
-                            f"<strong>{total_accessories_sold}</strong></div>", unsafe_allow_html=True)
-        
+            st.markdown(f"### Total {category_name} Terjual")
+            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
+                        f"<strong>{rfm_category['Frequency'].sum()}</strong></div>", unsafe_allow_html=True)
+
         with col2:
             st.markdown("### Rata - rata RFM")
+            average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
             st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
                         f"<strong>Recency: {average_rfm['Recency']:.2f}</strong><br>"
                         f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"
@@ -183,7 +174,5 @@ def show_dashboard(data, key_suffix=''):
     n_clusters_ikan = get_optimal_k(StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])) if not rfm_ikan.empty else 0
     n_clusters_aksesoris = get_optimal_k(StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])) if not rfm_aksesoris.empty else 0
 
-    if n_clusters_ikan > 0:
-        process_category(rfm_ikan, 'Ikan', n_clusters_ikan, key_suffix=key_suffix)
-    if n_clusters_aksesoris > 0:
-        process_category(rfm_aksesoris, 'Aksesoris', n_clusters_aksesoris, key_suffix=key_suffix)
+    process_category(rfm_ikan, 'Ikan', n_clusters=n_clusters_ikan, key_suffix=key_suffix)
+    process_category(rfm_aksesoris, 'Aksesoris', n_clusters=n_clusters_aksesoris, key_suffix=key_suffix)

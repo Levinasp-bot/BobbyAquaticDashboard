@@ -7,8 +7,10 @@ import streamlit as st
 import plotly.graph_objects as go
 from yellowbrick.cluster import KElbowVisualizer
 
+# Supaya Streamlit tidak menggunakan cache untuk fungsi yang melakukan clustering
 @st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
+    # Memuat semua file Excel dari folder yang diberikan
     all_files = glob.glob(os.path.join(folder_path, "*.xlsm"))
     dfs = []
     for file in all_files:
@@ -19,8 +21,11 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dfs, ignore_index=True)
 
 def process_rfm(data):
+    # Memproses data RFM
     data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])
     reference_date = data['TANGGAL'].max()
+    
+    # Mengelompokkan data berdasarkan KODE BARANG dan KATEGORI
     rfm = data.groupby(['KODE BARANG', 'KATEGORI']).agg({
         'TANGGAL': lambda x: (reference_date - x.max()).days,  # Recency
         'NAMA BARANG': 'count',  # Frequency
@@ -31,6 +36,7 @@ def process_rfm(data):
     return rfm
 
 def categorize_rfm(rfm, category_name):
+    # Mengkategorikan RFM berdasarkan kategori
     if category_name == 'Ikan':
         recency_bins = [0, 3, 16.75, float('inf')]
         frequency_bins = [0, 82, 146.5, float('inf')]
@@ -42,6 +48,7 @@ def categorize_rfm(rfm, category_name):
     else:
         return rfm
 
+    # Label untuk kategori
     rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'])
     rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=['Jarang', 'Cukup Sering', 'Sering'])
     rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=['Rendah', 'Sedang', 'Tinggi'])
@@ -49,11 +56,13 @@ def categorize_rfm(rfm, category_name):
     return rfm
 
 def cluster_rfm(rfm_scaled, n_clusters):
+    # Melakukan clustering menggunakan KMeans
     kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
     kmeans.fit(rfm_scaled)
     return kmeans.labels_
 
 def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legends):
+    # Membuat grafik pie interaktif
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
@@ -86,11 +95,14 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
     return fig
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
+    # Menampilkan tabel cluster
     st.markdown(f"### Cluster: {custom_label}", unsafe_allow_html=True)
+    
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
+    # Memproses kategori dan menampilkan hasil
     if rfm_category.shape[0] > 0 and n_clusters > 0:
         scaler = StandardScaler()
         rfm_scaled = scaler.fit_transform(rfm_category[['Recency', 'Frequency', 'Monetary']])
@@ -100,6 +112,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
         rfm_category = categorize_rfm(rfm_category, category_name)
 
+        # Membuat legenda untuk setiap cluster
         custom_legends = {
             cluster: f"Recency {rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]}, "
                      f"Frequency {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
@@ -107,6 +120,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
             for cluster in sorted(rfm_category['Cluster'].unique())
         }
 
+        # Menampilkan informasi dalam dua kolom
         col1, col2 = st.columns(2)
         with col1:
             st.markdown(f"### Total {category_name} Terjual")
@@ -121,6 +135,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
                         f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"
                         f"<strong>Monetary: {average_rfm['Monetary']:.2f}</strong></div>", unsafe_allow_html=True)
 
+        # Memilih cluster yang akan ditampilkan
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
         selected_custom_label = st.selectbox(
             f'Select a cluster for {category_name}:',
@@ -131,6 +146,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         selected_cluster_num = {v: k for k, v in custom_legends.items()}[selected_custom_label]
         plot_key = f'plotly_chart_{category_name}_{key_suffix}'
 
+        # Menampilkan grafik dan tabel cluster
         chart_col, table_col = st.columns(2)
         with chart_col:
             fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
@@ -143,17 +159,20 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
 def get_optimal_k(data_scaled):
+    # Mendapatkan jumlah cluster optimal menggunakan metode elbow
     model = KMeans(random_state=1)
     visualizer = KElbowVisualizer(model, k=(3, 10), timings=False)
     visualizer.fit(data_scaled)
     return visualizer.elbow_value_
 
 def show_dashboard(data, key_suffix=''):
+    # Menampilkan dashboard
     rfm = process_rfm(data)
 
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
     rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
 
+    # Mendapatkan jumlah klaster optimal untuk setiap kategori
     if not rfm_ikan.empty:
         data_scaled_ikan = StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
         n_clusters_ikan = get_optimal_k(data_scaled_ikan)
@@ -166,8 +185,6 @@ def show_dashboard(data, key_suffix=''):
     else:
         n_clusters_aksesoris = 0
 
-    st.markdown("---")
-    
-    # Memproses dan menampilkan setiap kategori
-    process_category(rfm_ikan, 'Ikan', n_clusters=n_clusters_ikan, key_suffix=key_suffix)
-    process_category(rfm_aksesoris, 'Aksesoris', n_clusters=n_clusters_aksesoris, key_suffix=key_suffix)
+    # Memproses dan menampilkan masing-masing kategori
+    process_category(rfm_ikan, 'Ikan', n_clusters_ikan, key_suffix)
+    process_category(rfm_aksesoris, 'Aksesoris', n_clusters_aksesoris, key_suffix)

@@ -39,10 +39,10 @@ def categorize_rfm(rfm):
     # Menghitung quartile untuk Recency, Frequency, dan Monetary
     recency_q1 = rfm['Recency'].quantile(0.25)
     recency_q3 = rfm['Recency'].quantile(0.75)
-    
+
     frequency_q1 = rfm['Frequency'].quantile(0.25)
     frequency_q3 = rfm['Frequency'].quantile(0.75)
-    
+
     monetary_q1 = rfm['Monetary'].quantile(0.25)
     monetary_q3 = rfm['Monetary'].quantile(0.75)
 
@@ -52,9 +52,9 @@ def categorize_rfm(rfm):
     monetary_bins = [0, monetary_q1, monetary_q3, float('inf')]
 
     # Label untuk kategori
-    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'])
-    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=['Jarang', 'Cukup Sering', 'Sering'])
-    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=['Rendah', 'Sedang', 'Tinggi'])
+    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'], right=False)
+    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=['Jarang', 'Cukup Sering', 'Sering'], right=False)
+    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=['Rendah', 'Sedang', 'Tinggi'], right=False)
 
     return rfm
 

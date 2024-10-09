@@ -35,24 +35,27 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
-def categorize_rfm(rfm, category_name):
-    # Mengkategorikan RFM berdasarkan kategori
-    if category_name == 'Ikan':
-        recency_bins = [0, 3, 16.75, float('inf')]
-        frequency_bins = [0, 82, 146.5, float('inf')]
-        monetary_bins = [0, 3540625, 11900000, float('inf')]
-    elif category_name == 'Aksesoris':
-        recency_bins = [0, 16, 182.5, float('inf')]
-        frequency_bins = [0, 8, 60.25, float('inf')]
-        monetary_bins = [0, 1007500, 3456250, float('inf')]
-    else:
-        return rfm
+def categorize_rfm(rfm):
+    # Menghitung quartile untuk Recency, Frequency, dan Monetary
+    recency_q1 = rfm['Recency'].quantile(0.25)
+    recency_q3 = rfm['Recency'].quantile(0.75)
+    
+    frequency_q1 = rfm['Frequency'].quantile(0.25)
+    frequency_q3 = rfm['Frequency'].quantile(0.75)
+    
+    monetary_q1 = rfm['Monetary'].quantile(0.25)
+    monetary_q3 = rfm['Monetary'].quantile(0.75)
+
+    # Membuat bins secara dinamis berdasarkan kuartil
+    recency_bins = [0, recency_q1, recency_q3, float('inf')]
+    frequency_bins = [0, frequency_q1, frequency_q3, float('inf')]
+    monetary_bins = [0, monetary_q1, monetary_q3, float('inf')]
 
     # Label untuk kategori
     rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'])
     rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=['Jarang', 'Cukup Sering', 'Sering'])
     rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=['Rendah', 'Sedang', 'Tinggi'])
-    
+
     return rfm
 
 def cluster_rfm(rfm_scaled, n_clusters):

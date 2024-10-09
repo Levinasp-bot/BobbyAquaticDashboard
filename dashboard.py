@@ -198,5 +198,5 @@ elif st.session_state.page == "product":
         # Show cluster dashboard
         show_cluster_dashboard_2(filtered_data_2, key_suffix='cabang2')
 
-# Footer
+
 st.markdown("<div class='footer'>© 2024 Bobby Aquatic. All Rights Reserved.</div>", unsafe_allow_html=True)

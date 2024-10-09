@@ -36,21 +36,38 @@ def process_rfm(data):
     return rfm
 
 def categorize_rfm(rfm):
-    # Menggunakan skala z-score untuk menghindari tumpang tindih pada kategori
-    rfm['Recency_Z'] = (rfm['Recency'] - rfm['Recency'].mean()) / rfm['Recency'].std()
-    rfm['Frequency_Z'] = (rfm['Frequency'] - rfm['Frequency'].mean()) / rfm['Frequency'].std()
-    rfm['Monetary_Z'] = (rfm['Monetary'] - rfm['Monetary'].mean()) / rfm['Monetary'].std()
+    # Menghitung quintile (5 bagian) untuk Recency, Frequency, dan Monetary
+    recency_q1 = rfm['Recency'].quantile(0.2)
+    recency_q2 = rfm['Recency'].quantile(0.4)
+    recency_q3 = rfm['Recency'].quantile(0.6)
+    recency_q4 = rfm['Recency'].quantile(0.8)
+    
+    frequency_q1 = rfm['Frequency'].quantile(0.2)
+    frequency_q2 = rfm['Frequency'].quantile(0.4)
+    frequency_q3 = rfm['Frequency'].quantile(0.6)
+    frequency_q4 = rfm['Frequency'].quantile(0.8)
+    
+    monetary_q1 = rfm['Monetary'].quantile(0.2)
+    monetary_q2 = rfm['Monetary'].quantile(0.4)
+    monetary_q3 = rfm['Monetary'].quantile(0.6)
+    monetary_q4 = rfm['Monetary'].quantile(0.8)
 
-    # Menambahkan lebih banyak batas kategori z-score
-    bins = [-float('inf'), -1, -0.5, 0.5, 1, float('inf')]  # Menggunakan lebih banyak kategori
+    # Membuat bins secara dinamis berdasarkan quintile
+    recency_bins = [0, recency_q1, recency_q2, recency_q3, recency_q4, float('inf')]
+    frequency_bins = [0, frequency_q1, frequency_q2, frequency_q3, frequency_q4, float('inf')]
+    monetary_bins = [0, monetary_q1, monetary_q2, monetary_q3, monetary_q4, float('inf')]
 
-    # Label untuk kategori
-    rfm['Recency_Category'] = pd.cut(rfm['Recency_Z'], bins=bins, labels=['Sangat Baru', 'Cukup Baru', 'Cukup Lama', 'Lama', 'Sangat Lama'])
-    rfm['Frequency_Category'] = pd.cut(rfm['Frequency_Z'], bins=bins, labels=['Jarang', 'Cukup Jarang', 'Cukup Sering', 'Sering', 'Sangat Sering'])
-    rfm['Monetary_Category'] = pd.cut(rfm['Monetary_Z'], bins=bins, labels=['Rendah', 'Cukup Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi'])
+    # Label untuk 5 kategori
+    recency_labels = ['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Lama', 'Sangat Lama']
+    frequency_labels = ['Sangat Jarang', 'Jarang', 'Cukup Sering', 'Sering', 'Sangat Sering']
+    monetary_labels = ['Sangat Rendah', 'Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi']
+
+    # Menetapkan kategori berdasarkan bins dan labels
+    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=recency_labels)
+    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=frequency_labels)
+    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=monetary_labels)
 
     return rfm
-
 
 
 def cluster_rfm(rfm_scaled, n_clusters):
@@ -98,11 +115,6 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
-
-def get_cluster_medians(rfm, cluster_labels):
-    rfm['Cluster'] = cluster_labels
-    cluster_medians = rfm.groupby('Cluster').median().reset_index()
-    return cluster_medians
 
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
     # Memproses kategori dan menampilkan hasil

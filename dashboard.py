@@ -28,14 +28,20 @@ st.markdown("""
     .stTabs .stTabs-header {
         justify-content: center; /* Center tab headers */
     }
-    /* Adjusting text colors for better visibility */
+    /* Adjusting button colors */
     .stButton>button {
         color: white; /* White text for buttons */
         background-color: #0D4F6D; /* Darker blue for buttons */
     }
+    /* Style for select boxes and multiselects */
     .stSelectbox, .stMultiselect {
         background-color: #E0F7FA; /* Light blue for select boxes */
         color: #0D4F6D; /* Dark blue text */
+    }
+    /* Style for the filter options */
+    .stSelectbox:hover, .stMultiselect:hover {
+        background-color: #0D4F6D; /* Dark blue on hover */
+        color: white; /* White text on hover */
     }
 </style>
 """, unsafe_allow_html=True)
@@ -167,5 +173,5 @@ elif st.session_state.page == "product":
         # Show cluster dashboard
         show_cluster_dashboard_2(filtered_data_2, key_suffix='cabang2')
 
-# Footer section
-st.markdown("<div class='footer'>© 2024 Bobby Aquatic. All rights reserved.</div>", unsafe_allow_html=True)
+# Footer
+st.markdown("<div class='footer'>© 2024 Bobby Aquatic. All Rights Reserved.</div>", unsafe_allow_html=True)

@@ -35,45 +35,23 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
-import skfuzzy as fuzz
-
 def categorize_rfm(rfm):
-    # Define fuzzy membership functions for Recency
-    recency = rfm['Recency']
-    r_min, r_max = recency.min(), recency.max()
-    r_very_new = fuzz.trimf(recency, [r_min, r_min, r_min + (r_max - r_min) * 0.33])
-    r_moderate = fuzz.trimf(recency, [r_min, r_min + (r_max - r_min) * 0.33, r_max - (r_max - r_min) * 0.33])
-    r_old = fuzz.trimf(recency, [r_min + (r_max - r_min) * 0.33, r_max, r_max])
+    # Menggunakan skala z-score untuk menghindari tumpang tindih pada kategori
+    rfm['Recency_Z'] = (rfm['Recency'] - rfm['Recency'].mean()) / rfm['Recency'].std()
+    rfm['Frequency_Z'] = (rfm['Frequency'] - rfm['Frequency'].mean()) / rfm['Frequency'].std()
+    rfm['Monetary_Z'] = (rfm['Monetary'] - rfm['Monetary'].mean()) / rfm['Monetary'].std()
 
-    # Define fuzzy membership functions for Frequency
-    frequency = rfm['Frequency']
-    f_min, f_max = frequency.min(), frequency.max()
-    f_rare = fuzz.trimf(frequency, [f_min, f_min, f_min + (f_max - f_min) * 0.33])
-    f_moderate = fuzz.trimf(frequency, [f_min, f_min + (f_max - f_min) * 0.33, f_max - (f_max - f_min) * 0.33])
-    f_frequent = fuzz.trimf(frequency, [f_min + (f_max - f_min) * 0.33, f_max, f_max])
+    # Menambahkan lebih banyak batas kategori z-score
+    bins = [-float('inf'), -1, -0.5, 0.5, 1, float('inf')]  # Menggunakan lebih banyak kategori
 
-    # Define fuzzy membership functions for Monetary
-    monetary = rfm['Monetary']
-    m_min, m_max = monetary.min(), monetary.max()
-    m_low = fuzz.trimf(monetary, [m_min, m_min, m_min + (m_max - m_min) * 0.33])
-    m_medium = fuzz.trimf(monetary, [m_min, m_min + (m_max - m_min) * 0.33, m_max - (m_max - m_min) * 0.33])
-    m_high = fuzz.trimf(monetary, [m_min + (m_max - m_min) * 0.33, m_max, m_max])
-
-    # Apply the fuzzy membership functions to categorize Recency, Frequency, Monetary
-    rfm['Recency_Category'] = np.select(
-        [r_very_new, r_moderate, r_old],
-        ['Sangat Baru', 'Cukup Lama', 'Sangat Lama']
-    )
-    rfm['Frequency_Category'] = np.select(
-        [f_rare, f_moderate, f_frequent],
-        ['Jarang', 'Cukup Sering', 'Sering']
-    )
-    rfm['Monetary_Category'] = np.select(
-        [m_low, m_medium, m_high],
-        ['Rendah', 'Sedang', 'Tinggi']
-    )
+    # Label untuk kategori
+    rfm['Recency_Category'] = pd.cut(rfm['Recency_Z'], bins=bins, labels=['Sangat Baru', 'Cukup Baru', 'Cukup Lama', 'Lama', 'Sangat Lama'])
+    rfm['Frequency_Category'] = pd.cut(rfm['Frequency_Z'], bins=bins, labels=['Jarang', 'Cukup Jarang', 'Cukup Sering', 'Sering', 'Sangat Sering'])
+    rfm['Monetary_Category'] = pd.cut(rfm['Monetary_Z'], bins=bins, labels=['Rendah', 'Cukup Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi'])
 
     return rfm
+
+
 
 def cluster_rfm(rfm_scaled, n_clusters):
     # Melakukan clustering menggunakan KMeans

@@ -64,7 +64,7 @@ if st.session_state.page == "sales":
         penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
 
         # Get unique categories from data
-        categories_1 = penjualan_data_1['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_1.columns else ['All']
+        categories_1 = penjualan_data_1['KATEGORI'].dropna().unique() if 'KATEGORI' in penjualan_data_1.columns else ['All']
 
         # Filter for Bobby Aquatic 1
         selected_category_1 = st.selectbox("Pilih Kategori", options=['All'] + list(categories_1), key='category_select_cabang1')
@@ -88,7 +88,7 @@ if st.session_state.page == "sales":
         penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
         # Get unique categories from data
-        categories_2 = penjualan_data_2['KATEGORI'].unique() if 'KATEGORI' in penjualan_data_2.columns else ['All']
+        categories_2 = penjualan_data_2['KATEGORI'].dropna().unique() if 'KATEGORI' in penjualan_data_2.columns else ['All']
 
         # Filter for Bobby Aquatic 2
         selected_category_2 = st.selectbox("Pilih Kategori", options=['All'] + list(categories_2), key='category_select_cabang2')

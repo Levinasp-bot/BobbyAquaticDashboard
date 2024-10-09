@@ -37,9 +37,9 @@ def process_rfm(data):
 
 def categorize_rfm(rfm, category_name):
     # Menghitung Q1, Q2, Q3 untuk Recency, Frequency, dan Monetary
-    rfm['Recency_Q'] = pd.qcut(rfm['Recency'], q=3, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'])
-    rfm['Frequency_Q'] = pd.qcut(rfm['Frequency'], q=3, labels=['Jarang', 'Cukup Sering', 'Sering'])
-    rfm['Monetary_Q'] = pd.qcut(rfm['Monetary'], q=3, labels=['Rendah', 'Sedang', 'Tinggi'])
+    rfm['Recency_Q'] = pd.qcut(rfm['Recency'], q=4, labels=['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Sangat Lama'])
+    rfm['Frequency_Q'] = pd.qcut(rfm['Frequency'], q=4, labels=['Jarang', 'Cukup Jarang', 'Cukup Sering', 'Sering'])
+    rfm['Monetary_Q'] = pd.qcut(rfm['Monetary'], q=4, labels=['Rendah', 'Sedang', 'Cukup Tinggi', 'Tinggi'])
 
     # Mengganti nama kolom agar lebih konsisten dengan kategori
     rfm = rfm.rename(columns={

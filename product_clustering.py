@@ -175,4 +175,4 @@ def show_dashboard(data, key_suffix=''):
     n_clusters_aksesoris = get_optimal_k(StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])) if not rfm_aksesoris.empty else 0
 
     process_category(rfm_ikan, 'Ikan', n_clusters=n_clusters_ikan, key_suffix=key_suffix)
-    process_category
+    process_category(rfm_aksesoris, 'Aksesoris', n_clusters=n_clusters_aksesoris, key_suffix=key_suffix)

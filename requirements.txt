@@ -9,4 +9,5 @@ yellowbrick
 setuptools
 numpy
 plotly
+skfuzzy
 plotly.express

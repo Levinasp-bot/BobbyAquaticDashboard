@@ -32,6 +32,30 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
+def categorize_rfm(rfm, category_name):
+    if category_name == 'Ikan':
+        recency_bins = [0, 3, 16.75, float('inf')]
+        frequency_bins = [0, 82, 146.5, float('inf')]
+        monetary_bins = [0, 3540625, 11900000, float('inf')]
+        recency_labels = ['Baru Saja', 'Cukup Lama', 'Sangat Lama']
+        frequency_labels = ['Jarang', 'Cukup Sering', 'Sering']
+        monetary_labels = ['Rendah', 'Sedang', 'Tinggi']
+    elif category_name == 'Aksesoris':
+        recency_bins = [0, 16, 182.5, float('inf')]
+        frequency_bins = [0, 8, 60.25, float('inf')]
+        monetary_bins = [0, 1007500, 3456250, float('inf')]
+        recency_labels = ['Baru Saja', 'Cukup Lama', 'Sangat Lama']
+        frequency_labels = ['Jarang', 'Cukup Sering', 'Sering']
+        monetary_labels = ['Rendah', 'Sedang', 'Tinggi']
+    else:
+        return rfm
+
+    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=recency_labels)
+    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=frequency_labels)
+    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=monetary_labels)
+    
+    return rfm
+
 def cluster_rfm(rfm_scaled, n_clusters):
     kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
     kmeans.fit(rfm_scaled)
@@ -75,7 +99,7 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
-def process_category(rfm_category, category_name, n_clusters, custom_legends, key_suffix=''):
+def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
     if rfm_category.shape[0] > 0:
         scaler = StandardScaler()
         rfm_scaled = scaler.fit_transform(rfm_category[['Recency', 'Frequency', 'Monetary']])
@@ -83,8 +107,14 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         cluster_labels = cluster_rfm(rfm_scaled, n_clusters)
         rfm_category['Cluster'] = cluster_labels
 
-        available_clusters = sorted(rfm_category['Cluster'].unique())
-        custom_label_map = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
+        rfm_category = categorize_rfm(rfm_category, category_name)
+
+        custom_legends = {
+            cluster: f"Recency: {rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]}, "
+                     f"Frequency: {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
+                     f"Monetary: {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mode()[0]}"
+            for cluster in sorted(rfm_category['Cluster'].unique())
+        }
 
         if category_name == 'Ikan':
             total_fish_sold = rfm_category['Frequency'].sum()
@@ -113,14 +143,14 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
                         f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"
                         f"<strong>Monetary: {average_rfm['Monetary']:.2f}</strong></div>", unsafe_allow_html=True)
 
-        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(available_clusters)))}'
+        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
         selected_custom_label = st.selectbox(
             f'Select a cluster for {category_name}:',
-            options=[custom_label_map[cluster] for cluster in available_clusters],
+            options=[custom_legends[cluster] for cluster in sorted(custom_legends.keys())],
             key=unique_key
         )
 
-        selected_cluster_num = {v: k for k, v in custom_label_map.items()}[selected_custom_label]
+        selected_cluster_num = {v: k for k, v in custom_legends.items()}[selected_custom_label]
         plot_key = f'plotly_chart_{category_name}_{key_suffix}'
 
         chart_col, table_col = st.columns(2)
@@ -136,7 +166,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
 
 def get_optimal_k(data_scaled):
     model = KMeans(random_state=1)
-    visualizer = KElbowVisualizer(model, k=(3, 10), timings=False)  # Set min k to 3
+    visualizer = KElbowVisualizer(model, k=(3, 10), timings=False)
     visualizer.fit(data_scaled)
     return visualizer.elbow_value_
 
@@ -146,20 +176,10 @@ def show_dashboard(data, key_suffix=''):
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
     rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
 
-    scaler = StandardScaler()
-    
-    # Scale the data before determining optimal k
-    rfm_ikan_scaled = scaler.fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
-    rfm_aksesoris_scaled = scaler.fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])
+    n_clusters_ikan = get_optimal_k(StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])) if not rfm_ikan.empty else 0
+    n_clusters_aksesoris = get_optimal_k(StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])) if not rfm_aksesoris.empty else 0
 
-    # Find the optimal number of clusters for each category using KElbowVisualizer
-    k_ikan = get_optimal_k(rfm_ikan_scaled)
-    k_aksesoris = get_optimal_k(rfm_aksesoris_scaled)
-
-    custom_legends = {
-        'Ikan': {0: 'Ikan Kualitas Tinggi', 1: 'Ikan Kualitas Menengah', 2: 'Ikan Kualitas Rendah', 3: 'Ikan Spesial'},
-        'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium'}
-    }
-
-    process_category(rfm_ikan, 'Ikan', k_ikan, custom_legends['Ikan'], key_suffix='ikan')
-    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, custom_legends['Aksesoris'], key_suffix='aksesoris')
+    if n_clusters_ikan > 0:
+        process_category(rfm_ikan, 'Ikan', n_clusters_ikan, key_suffix=key_suffix)
+    if n_clusters_aksesoris > 0:
+        process_category(rfm_aksesoris, 'Aksesoris', n_clusters_aksesoris, key_suffix=key_suffix)

@@ -69,7 +69,6 @@ def categorize_rfm(rfm):
 
     return rfm
 
-
 def cluster_rfm(rfm_scaled, n_clusters):
     # Melakukan clustering menggunakan KMeans
     kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
@@ -166,14 +165,12 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
                                                 options=sorted(cluster_means['Cluster'].unique()))
             show_cluster_table(rfm_category, selected_cluster_num, f"Cluster {selected_cluster_num}", key_suffix)
 
-
 def get_optimal_k(data_scaled):
     # Mendapatkan jumlah cluster optimal menggunakan metode elbow
     model = KMeans(random_state=1)
     visualizer = KElbowVisualizer(model, k=(3, 10), timings=False)
     visualizer.fit(data_scaled)
     return visualizer.elbow_value_
-
 def show_dashboard(data, key_suffix=''):
     # Menampilkan dashboard
     rfm = process_rfm(data)

@@ -11,31 +11,22 @@ st.set_page_config(page_title="Bobby Aquatic Dashboard", layout="wide")
 st.markdown("""
 <style>
     .sidebar .sidebar-content {
-        background-color: #2B8DA3; /* Sea blue for sidebar */
+        background-color: #f0f2f5;
         padding: 20px;
-        border-right: 2px solid #0D4F6D; /* Darker blue border */
+        border-right: 2px solid #2A7B5C;  /* Added border for better visibility */
     }
     .header {
         font-size: 1.5em;
-        color: #1F4D68; /* Darker shade of blue for header */
+        color: #2A7B5C;
     }
     .footer {
         font-size: 0.8em;
-        color: #FFFFFF; /* White for footer text */
-        text-align: center; /* Center the copyright text */
-        margin-top: 20px; /* Added margin for spacing */
+        color: #7D7D7D;
+        text-align: center;  /* Center the copyright text */
+        margin-top: 20px;  /* Added margin for spacing */
     }
     .stTabs .stTabs-header {
-        justify-content: center; /* Center tab headers */
-    }
-    /* Adjusting text colors for better visibility */
-    .stButton>button {
-        color: white; /* White text for buttons */
-        background-color: #0D4F6D; /* Darker blue for buttons */
-    }
-    .stSelectbox, .stMultiselect {
-        background-color: #E0F7FA; /* Light blue for select boxes */
-        color: #0D4F6D; /* Dark blue text */
+        justify-content: center;  /* Center tab headers */
     }
 </style>
 """, unsafe_allow_html=True)

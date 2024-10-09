@@ -35,37 +35,19 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
-def categorize_rfm(rfm):
-    # Mengkategorikan RFM berdasarkan kuartil
-    for category in rfm['KATEGORI'].unique():
-        category_data = rfm[rfm['KATEGORI'] == category]
+def categorize_rfm(rfm, category_name):
+    # Menghitung Q1, Q2, Q3 untuk Recency, Frequency, dan Monetary
+    rfm['Recency_Q'] = pd.qcut(rfm['Recency'], q=3, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'])
+    rfm['Frequency_Q'] = pd.qcut(rfm['Frequency'], q=3, labels=['Jarang', 'Cukup Sering', 'Sering'])
+    rfm['Monetary_Q'] = pd.qcut(rfm['Monetary'], q=3, labels=['Rendah', 'Sedang', 'Tinggi'])
 
-        if not category_data.empty:
-            Q1_recency = category_data['Recency'].quantile(0.25)
-            Q2_recency = category_data['Recency'].quantile(0.5)  # Median
-            Q3_recency = category_data['Recency'].quantile(0.75)
-
-            Q1_frequency = category_data['Frequency'].quantile(0.25)
-            Q2_frequency = category_data['Frequency'].quantile(0.5)
-            Q3_frequency = category_data['Frequency'].quantile(0.75)
-
-            Q1_monetary = category_data['Monetary'].quantile(0.25)
-            Q2_monetary = category_data['Monetary'].quantile(0.5)
-            Q3_monetary = category_data['Monetary'].quantile(0.75)
-
-            # Menentukan kategori berdasarkan kuartil
-            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Recency'] <= Q1_recency), 'Recency_Category'] = 'Baru Saja'
-            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Recency'].between(Q1_recency, Q2_recency)), 'Recency_Category'] = 'Cukup Lama'
-            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Recency'] > Q2_recency), 'Recency_Category'] = 'Sangat Lama'
-
-            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Frequency'] <= Q1_frequency), 'Frequency_Category'] = 'Jarang'
-            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Frequency'].between(Q1_frequency, Q2_frequency)), 'Frequency_Category'] = 'Cukup Sering'
-            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Frequency'] > Q2_frequency), 'Frequency_Category'] = 'Sering'
-
-            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Monetary'] <= Q1_monetary), 'Monetary_Category'] = 'Rendah'
-            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Monetary'].between(Q1_monetary, Q2_monetary)), 'Monetary_Category'] = 'Sedang'
-            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Monetary'] > Q2_monetary), 'Monetary_Category'] = 'Tinggi'
-
+    # Mengganti nama kolom agar lebih konsisten dengan kategori
+    rfm = rfm.rename(columns={
+        'Recency_Q': 'Recency_Category',
+        'Frequency_Q': 'Frequency_Category',
+        'Monetary_Q': 'Monetary_Category'
+    })
+    
     return rfm
 
 def cluster_rfm(rfm_scaled, n_clusters):
@@ -123,7 +105,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         cluster_labels = cluster_rfm(rfm_scaled, n_clusters)
         rfm_category['Cluster'] = cluster_labels
 
-        rfm_category = categorize_rfm(rfm_category)
+        rfm_category = categorize_rfm(rfm_category, category_name)
 
         # Membuat legenda untuk setiap cluster
         custom_legends = {
@@ -162,10 +144,42 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         # Menampilkan grafik dan tabel cluster
         chart_col, table_col = st.columns(2)
         with chart_col:
-                    # Menampilkan grafik pie interaktif
-            fig = plot_interactive_pie_chart(rfm_category, rfm_category['Cluster'], category_name, custom_legends)
+            fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
             st.plotly_chart(fig, use_container_width=True, key=plot_key)
 
         with table_col:
-            # Menampilkan tabel cluster
-            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix)
+            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
+
+    else:
+        st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
+
+def get_optimal_k(data_scaled):
+    # Mendapatkan jumlah cluster optimal menggunakan metode elbow
+    model = KMeans(random_state=1)
+    visualizer = KElbowVisualizer(model, k=(3, 10), timings=False)
+    visualizer.fit(data_scaled)
+    return visualizer.elbow_value_
+
+def show_dashboard(data, key_suffix=''):
+    # Menampilkan dashboard
+    rfm = process_rfm(data)
+
+    rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
+    rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
+
+    # Mendapatkan jumlah klaster optimal untuk setiap kategori
+    if not rfm_ikan.empty:
+        data_scaled_ikan = StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
+        n_clusters_ikan = get_optimal_k(data_scaled_ikan)
+    else:
+        n_clusters_ikan = 0
+
+    if not rfm_aksesoris.empty:
+        data_scaled_aksesoris = StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])
+        n_clusters_aksesoris = get_optimal_k(data_scaled_aksesoris)
+    else:
+        n_clusters_aksesoris = 0
+
+    # Memproses dan menampilkan masing-masing kategori
+    process_category(rfm_ikan, 'Ikan', n_clusters_ikan, key_suffix)
+    process_category(rfm_aksesoris, 'Aksesoris', n_clusters_aksesoris, key_suffix)

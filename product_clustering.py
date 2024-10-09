@@ -1,6 +1,5 @@
 import glob
 import os
-import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
@@ -37,38 +36,20 @@ def process_rfm(data):
     return rfm
 
 def categorize_rfm(rfm):
-    # Menggunakan persentil untuk menentukan kategori
-    def categorize_percentile(val, percentiles):
-        if val <= percentiles[0]:
-            return 'Rendah'
-        elif val <= percentiles[1]:
-            return 'Sedang'
-        else:
-            return 'Tinggi'
+    # Menggunakan skala z-score untuk menghindari tumpang tindih pada kategori
+    rfm['Recency_Z'] = (rfm['Recency'] - rfm['Recency'].mean()) / rfm['Recency'].std()
+    rfm['Frequency_Z'] = (rfm['Frequency'] - rfm['Frequency'].mean()) / rfm['Frequency'].std()
+    rfm['Monetary_Z'] = (rfm['Monetary'] - rfm['Monetary'].mean()) / rfm['Monetary'].std()
 
-    # Untuk setiap cluster, hitung persentil dari Recency, Frequency, dan Monetary
-    for cluster in rfm['Cluster'].unique():
-        cluster_data = rfm[rfm['Cluster'] == cluster]
-        
-        # Menghitung persentil untuk Recency, Frequency, Monetary
-        recency_percentiles = np.percentile(cluster_data['Recency'], [33, 66])
-        frequency_percentiles = np.percentile(cluster_data['Frequency'], [33, 66])
-        monetary_percentiles = np.percentile(cluster_data['Monetary'], [33, 66])
-        
-        # Kategorikan Recency berdasarkan persentil
-        rfm.loc[rfm['Cluster'] == cluster, 'Recency_Category'] = cluster_data['Recency'].apply(
-            lambda x: categorize_percentile(x, recency_percentiles))
-        
-        # Kategorikan Frequency berdasarkan persentil
-        rfm.loc[rfm['Cluster'] == cluster, 'Frequency_Category'] = cluster_data['Frequency'].apply(
-            lambda x: categorize_percentile(x, frequency_percentiles))
-        
-        # Kategorikan Monetary berdasarkan persentil
-        rfm.loc[rfm['Cluster'] == cluster, 'Monetary_Category'] = cluster_data['Monetary'].apply(
-            lambda x: categorize_percentile(x, monetary_percentiles))
+    # Menentukan batas untuk kategori berdasarkan z-score
+    bins = [-float('inf'), -0.5, 0.5, float('inf')]  # Batas kustom berdasarkan distribusi
+
+    # Label untuk kategori
+    rfm['Recency_Category'] = pd.cut(rfm['Recency_Z'], bins=bins, labels=['Sangat Baru', 'Cukup Lama', 'Sangat Lama'])
+    rfm['Frequency_Category'] = pd.cut(rfm['Frequency_Z'], bins=bins, labels=['Jarang', 'Cukup Sering', 'Sering'])
+    rfm['Monetary_Category'] = pd.cut(rfm['Monetary_Z'], bins=bins, labels=['Rendah', 'Sedang', 'Tinggi'])
 
     return rfm
-
 
 
 def cluster_rfm(rfm_scaled, n_clusters):

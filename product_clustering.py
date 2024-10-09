@@ -15,7 +15,7 @@ def load_all_excel_files(folder_path, sheet_name):
     for file in all_files:
         df = pd.read_excel(file, sheet_name=sheet_name)
         if 'KODE BARANG' in df.columns:
-            df = df.loc[:, ~df.columns.duplicated()] 
+            df = df.loc[:, ~df.columns.duplicated()]
         dfs.append(df)
     return pd.concat(dfs, ignore_index=True)
 

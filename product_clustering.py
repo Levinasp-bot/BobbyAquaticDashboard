@@ -130,7 +130,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
         # Membuat legenda untuk setiap cluster menggunakan kategori linguistik
         custom_legends = {
-            cluster: f"{rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]} dibeli, "
+            cluster: f"{rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]} Dibeli, "
                      f"Frekuensi {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
                      f"dan Nilai Pembelian {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mode()[0]}"
             for cluster in sorted(rfm_category['Cluster'].unique())

@@ -68,16 +68,19 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
     return fig
 
+def generate_custom_legends(n_clusters, category_name):
+    # Template untuk nama cluster
+    template = f'{category_name} Kualitas {{}}'
+    
+    # Membuat dictionary custom legends
+    return {i: template.format(i + 1) for i in range(n_clusters)}
+
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
-    # Use markdown with HTML to adjust the title size instead of st.subheader
     st.markdown(f"<h4>Cluster: {custom_label} Members</h4>", unsafe_allow_html=True)
-    
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
-    
-    # Adjust the width and height of the dataframe to fit better
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
-def process_category(rfm_category, category_name, n_clusters, custom_legends, key_suffix=''):
+def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
     if rfm_category.shape[0] > 0:
         scaler = StandardScaler()
         rfm_scaled = scaler.fit_transform(rfm_category[['Recency', 'Frequency', 'Monetary']])
@@ -85,23 +88,17 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         cluster_labels = cluster_rfm(rfm_scaled, n_clusters)
         rfm_category['Cluster'] = cluster_labels
 
-        available_clusters = sorted(rfm_category['Cluster'].unique())
-        custom_label_map = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
+        # Menghasilkan custom legends berdasarkan jumlah cluster
+        custom_legends = generate_custom_legends(n_clusters, category_name)
 
-        # Calculate Total Fish Sold or Total Accessories Sold
-        if category_name == 'Ikan':
-            total_fish_sold = rfm_category['Frequency'].sum()
-            total_accessories_sold = 0  # Not applicable for fish category
-        elif category_name == 'Aksesoris':
-            total_accessories_sold = rfm_category['Frequency'].sum()
-            total_fish_sold = 0  # Not applicable for accessories category
+        # Proses yang sama seperti sebelumnya...
+        total_fish_sold = rfm_category['Frequency'].sum() if category_name == 'Ikan' else 0
+        total_accessories_sold = rfm_category['Frequency'].sum() if category_name == 'Aksesoris' else 0
 
         average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
 
-        # Adjust layout for side-by-side display
-        col1, col2 = st.columns(2)  # Create two equal columns
+        col1, col2 = st.columns(2)
 
-        # Display total fish sold or total accessories sold and average RFM
         with col1:
             if category_name == 'Ikan':
                 st.markdown("### Total Ikan Terjual")
@@ -110,7 +107,7 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
             else:
                 st.markdown("### Total Aksesoris Terjual")
                 st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
-                             f"<strong>{total_accessories_sold}</strong></div>", unsafe_allow_html=True)
+                             f"<strong>{total_accessories_sold}</strong></div>")
         
         with col2:
             st.markdown("### Rata - rata RFM")
@@ -119,26 +116,22 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
                          f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"
                          f"<strong>Monetary: {average_rfm['Monetary']:.2f}</strong></div>", unsafe_allow_html=True)
 
-        # Create a unique key for the selectbox
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(available_clusters)))}'
 
         selected_custom_label = st.selectbox(
             f'Select a cluster for {category_name}:',
-            options=[custom_label_map[cluster] for cluster in available_clusters],
+            options=[custom_legends[cluster] for cluster in available_clusters],
             key=unique_key
         )
 
-        selected_cluster_num = {v: k for k, v in custom_label_map.items()}[selected_custom_label]
+        selected_cluster_num = {v: k for k, v in custom_legends.items()}[selected_custom_label]
 
-        # Create a unique key for the plotly chart
         plot_key = f'plotly_chart_{category_name}_{key_suffix}'
-
-        # Create columns for chart and table
-        chart_col, table_col = st.columns(2)  # Create two equal columns for chart and table
+        chart_col, table_col = st.columns(2)
 
         with chart_col:
             fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-            st.plotly_chart(fig, use_container_width=True, key=plot_key)  # Pie chart in the first column
+            st.plotly_chart(fig, use_container_width=True, key=plot_key)
 
         with table_col:
             show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
@@ -146,21 +139,19 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
-
 def show_dashboard(data, key_suffix=''):
     rfm = process_rfm(data)
 
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
     rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
 
-    k_ikan = 4
-    k_aksesoris = 5
+    k_ikan = 4  # Jumlah cluster untuk ikan
+    k_aksesoris = 5  # Jumlah cluster untuk aksesoris
 
-    custom_legends = {
-        'Ikan': {0: 'Ikan Kualitas Tinggi', 1: 'Ikan Kualitas Menengah', 2: 'Ikan Kualitas Rendah', 3: 'Ikan Spesial'},
-        'Aksesoris': {0: 'Aksesoris Populer', 1: 'Aksesoris Baru', 2: 'Aksesoris Diskon', 3: 'Aksesoris Premium'}
-    }
+    # Menggunakan fungsi generate_custom_legends untuk membuat custom legends dinamis
+    custom_legends_ikan = generate_custom_legends(k_ikan, 'Ikan')
+    custom_legends_aksesoris = generate_custom_legends(k_aksesoris, 'Aksesoris')
 
-    # Keep only one call for each category
-    process_category(rfm_ikan, 'Ikan', k_ikan, custom_legends['Ikan'], key_suffix='ikan')  # Kunci unik untuk Ikan
-    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, custom_legends['Aksesoris'], key_suffix='aksesoris')  # Kunci unik untuk Aksesoris
+    # Proses category ikan dan aksesoris dengan custom legends yang dihasilkan dinamis
+    process_category(rfm_ikan, 'Ikan', k_ikan, custom_legends_ikan, key_suffix='ikan')
+    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, custom_legends_aksesoris, key_suffix='aksesoris')

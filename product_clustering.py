@@ -35,21 +35,38 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
-def categorize_rfm(rfm):
-    # Menggunakan skala z-score untuk menghindari tumpang tindih pada kategori
-    rfm['Recency_Z'] = (rfm['Recency'] - rfm['Recency'].mean()) / rfm['Recency'].std()
-    rfm['Frequency_Z'] = (rfm['Frequency'] - rfm['Frequency'].mean()) / rfm['Frequency'].std()
-    rfm['Monetary_Z'] = (rfm['Monetary'] - rfm['Monetary'].mean()) / rfm['Monetary'].std()
+def categorize_rfm_by_cluster(rfm):
+    # Buat dictionary untuk menyimpan kategori berdasarkan cluster
+    cluster_medians = rfm.groupby('Cluster').median().reset_index()
 
-    # Menentukan batas untuk kategori berdasarkan z-score
-    bins = [-float('inf'), -0.5, 0.5, float('inf')]  # Batas kustom berdasarkan distribusi
+    # Mengkategorikan setiap cluster berdasarkan median cluster-nya
+    def categorize_value(val, median):
+        if val <= median:
+            return 'Rendah'
+        else:
+            return 'Tinggi'
 
-    # Label untuk kategori
-    rfm['Recency_Category'] = pd.cut(rfm['Recency_Z'], bins=bins, labels=['Sangat Baru', 'Cukup Lama', 'Sangat Lama'])
-    rfm['Frequency_Category'] = pd.cut(rfm['Frequency_Z'], bins=bins, labels=['Jarang', 'Cukup Sering', 'Sering'])
-    rfm['Monetary_Category'] = pd.cut(rfm['Monetary_Z'], bins=bins, labels=['Rendah', 'Sedang', 'Tinggi'])
+    # Untuk setiap cluster, kategorikan Recency, Frequency, dan Monetary
+    for cluster in rfm['Cluster'].unique():
+        median_values = cluster_medians[cluster_medians['Cluster'] == cluster]
+        
+        # Mengkategorikan Recency
+        rfm.loc[rfm['Cluster'] == cluster, 'Recency_Category'] = rfm[rfm['Cluster'] == cluster].apply(
+            lambda row: categorize_value(row['Recency'], median_values['Recency'].values[0]), axis=1
+        )
+        
+        # Mengkategorikan Frequency
+        rfm.loc[rfm['Cluster'] == cluster, 'Frequency_Category'] = rfm[rfm['Cluster'] == cluster].apply(
+            lambda row: categorize_value(row['Frequency'], median_values['Frequency'].values[0]), axis=1
+        )
+        
+        # Mengkategorikan Monetary
+        rfm.loc[rfm['Cluster'] == cluster, 'Monetary_Category'] = rfm[rfm['Cluster'] == cluster].apply(
+            lambda row: categorize_value(row['Monetary'], median_values['Monetary'].values[0]), axis=1
+        )
 
     return rfm
+
 
 
 def cluster_rfm(rfm_scaled, n_clusters):

@@ -1,4 +1,3 @@
-coba tambahkan code untuk menampilkan nilai optimal k ke dashboard
 import glob
 import os
 import pandas as pd

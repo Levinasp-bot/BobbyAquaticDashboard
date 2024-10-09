@@ -35,35 +35,36 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
-def categorize_rfm_by_cluster(rfm):
-    # Buat dictionary untuk menyimpan kategori berdasarkan cluster
-    cluster_medians = rfm.groupby('Cluster').median().reset_index()
-
-    # Mengkategorikan setiap cluster berdasarkan median cluster-nya
-    def categorize_value(val, median):
-        if val <= median:
+def categorize_rfm(rfm):
+    # Menggunakan persentil untuk menentukan kategori
+    def categorize_percentile(val, percentiles):
+        if val <= percentiles[0]:
             return 'Rendah'
+        elif val <= percentiles[1]:
+            return 'Sedang'
         else:
             return 'Tinggi'
 
-    # Untuk setiap cluster, kategorikan Recency, Frequency, dan Monetary
+    # Untuk setiap cluster, hitung persentil dari Recency, Frequency, dan Monetary
     for cluster in rfm['Cluster'].unique():
-        median_values = cluster_medians[cluster_medians['Cluster'] == cluster]
+        cluster_data = rfm[rfm['Cluster'] == cluster]
         
-        # Mengkategorikan Recency
-        rfm.loc[rfm['Cluster'] == cluster, 'Recency_Category'] = rfm[rfm['Cluster'] == cluster].apply(
-            lambda row: categorize_value(row['Recency'], median_values['Recency'].values[0]), axis=1
-        )
+        # Menghitung persentil untuk Recency, Frequency, Monetary
+        recency_percentiles = np.percentile(cluster_data['Recency'], [33, 66])
+        frequency_percentiles = np.percentile(cluster_data['Frequency'], [33, 66])
+        monetary_percentiles = np.percentile(cluster_data['Monetary'], [33, 66])
         
-        # Mengkategorikan Frequency
-        rfm.loc[rfm['Cluster'] == cluster, 'Frequency_Category'] = rfm[rfm['Cluster'] == cluster].apply(
-            lambda row: categorize_value(row['Frequency'], median_values['Frequency'].values[0]), axis=1
-        )
+        # Kategorikan Recency berdasarkan persentil
+        rfm.loc[rfm['Cluster'] == cluster, 'Recency_Category'] = cluster_data['Recency'].apply(
+            lambda x: categorize_percentile(x, recency_percentiles))
         
-        # Mengkategorikan Monetary
-        rfm.loc[rfm['Cluster'] == cluster, 'Monetary_Category'] = rfm[rfm['Cluster'] == cluster].apply(
-            lambda row: categorize_value(row['Monetary'], median_values['Monetary'].values[0]), axis=1
-        )
+        # Kategorikan Frequency berdasarkan persentil
+        rfm.loc[rfm['Cluster'] == cluster, 'Frequency_Category'] = cluster_data['Frequency'].apply(
+            lambda x: categorize_percentile(x, frequency_percentiles))
+        
+        # Kategorikan Monetary berdasarkan persentil
+        rfm.loc[rfm['Cluster'] == cluster, 'Monetary_Category'] = cluster_data['Monetary'].apply(
+            lambda x: categorize_percentile(x, monetary_percentiles))
 
     return rfm
 

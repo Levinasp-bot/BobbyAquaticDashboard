@@ -8,7 +8,6 @@ from product_clustering2 import load_all_excel_files as load_cluster_data_2, sho
 st.set_page_config(page_title="Bobby Aquatic Dashboard", layout="wide")
 
 # Custom CSS for styling
-# Custom CSS for styling
 st.markdown("""
 <style>
     .sidebar .sidebar-content {
@@ -28,48 +27,18 @@ st.markdown("""
     }
     .stTabs .stTabs-header {
         justify-content: center; /* Center tab headers */
-        background-color: #2B8DA3; /* Ubah warna latar belakang tab */
     }
-    .stTabs .stTabs-header .stTabs-tab {
-        color: white; /* Ubah warna teks tab */
-    }
-    .stTabs .stTabs-header .stTabs-tab:hover {
-        background-color: #0D4F6D; /* Ubah warna latar belakang saat hover */
-        color: white; /* Ubah warna teks saat hover */
-    }
-    /* Adjusting button colors */
+    /* Adjusting text colors for better visibility */
     .stButton>button {
         color: white; /* White text for buttons */
         background-color: #0D4F6D; /* Darker blue for buttons */
     }
-    /* Style for select boxes and multiselects */
     .stSelectbox, .stMultiselect {
         background-color: #E0F7FA; /* Light blue for select boxes */
         color: #0D4F6D; /* Dark blue text */
     }
-    /* Style for the filter options */
-    .stSelectbox:hover, .stMultiselect:hover {
-        background-color: #0D4F6D; /* Dark blue on hover */
-        color: white; /* White text on hover */
-    }
-    .stMultiSelect {
-        background-color: #E0F7FA; /* Ubah warna latar belakang multiselect */
-        color: #0D4F6D; /* Ubah warna teks */
-    }
-    .stMultiSelect:hover {
-        background-color: #0D4F6D; /* Ubah warna latar belakang saat hover */
-        color: white; /* Ubah warna teks saat hover */
-    }
-    .stMultiSelect .stMultiSelect-option {
-        background-color: #E0F7FA; /* Ubah warna latar belakang pilihan */
-    }
-    .stMultiSelect .stMultiSelect-option:hover {
-        background-color: #0D4F6D; /* Ubah warna latar belakang pilihan saat hover */
-        color: white; /* Ubah warna teks pilihan saat hover */
-    }
 </style>
 """, unsafe_allow_html=True)
-
 
 # Initialize session state for page navigation
 if 'page' not in st.session_state:
@@ -198,5 +167,5 @@ elif st.session_state.page == "product":
         # Show cluster dashboard
         show_cluster_dashboard_2(filtered_data_2, key_suffix='cabang2')
 
-
-st.markdown("<div class='footer'>© 2024 Bobby Aquatic. All Rights Reserved.</div>", unsafe_allow_html=True)
+# Footer section
+st.markdown("<div class='footer'>© 2024 Bobby Aquatic. All rights reserved.</div>", unsafe_allow_html=True)

@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import streamlit as st
 import plotly.graph_objects as go
+from yellowbrick.cluster import KElbowVisualizer
 
 @st.cache
 def load_all_excel_files(folder_path, sheet_name):
@@ -69,12 +70,9 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
     return fig
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
-    # Use markdown with HTML to adjust the title size instead of st.subheader
     st.markdown(f"<h4>Cluster: {custom_label} Members</h4>", unsafe_allow_html=True)
     
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
-    
-    # Adjust the width and height of the dataframe to fit better
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, custom_legends, key_suffix=''):
@@ -88,40 +86,34 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         available_clusters = sorted(rfm_category['Cluster'].unique())
         custom_label_map = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
 
-        # Calculate Total Fish Sold or Total Accessories Sold
         if category_name == 'Ikan':
             total_fish_sold = rfm_category['Frequency'].sum()
-            total_accessories_sold = 0  # Not applicable for fish category
+            total_accessories_sold = 0
         elif category_name == 'Aksesoris':
             total_accessories_sold = rfm_category['Frequency'].sum()
-            total_fish_sold = 0  # Not applicable for accessories category
+            total_fish_sold = 0
 
         average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
 
-        # Adjust layout for side-by-side display
-        col1, col2 = st.columns(2)  # Create two equal columns
-
-        # Display total fish sold or total accessories sold and average RFM
+        col1, col2 = st.columns(2)
         with col1:
             if category_name == 'Ikan':
                 st.markdown("### Total Ikan Terjual")
                 st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
-                             f"<strong>{total_fish_sold}</strong></div>", unsafe_allow_html=True)
+                            f"<strong>{total_fish_sold}</strong></div>", unsafe_allow_html=True)
             else:
                 st.markdown("### Total Aksesoris Terjual")
                 st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
-                             f"<strong>{total_accessories_sold}</strong></div>", unsafe_allow_html=True)
+                            f"<strong>{total_accessories_sold}</strong></div>", unsafe_allow_html=True)
         
         with col2:
             st.markdown("### Rata - rata RFM")
             st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
-                         f"<strong>Recency: {average_rfm['Recency']:.2f}</strong><br>"
-                         f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"
-                         f"<strong>Monetary: {average_rfm['Monetary']:.2f}</strong></div>", unsafe_allow_html=True)
+                        f"<strong>Recency: {average_rfm['Recency']:.2f}</strong><br>"
+                        f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"
+                        f"<strong>Monetary: {average_rfm['Monetary']:.2f}</strong></div>", unsafe_allow_html=True)
 
-        # Create a unique key for the selectbox
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(available_clusters)))}'
-
         selected_custom_label = st.selectbox(
             f'Select a cluster for {category_name}:',
             options=[custom_label_map[cluster] for cluster in available_clusters],
@@ -129,16 +121,12 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
         )
 
         selected_cluster_num = {v: k for k, v in custom_label_map.items()}[selected_custom_label]
-
-        # Create a unique key for the plotly chart
         plot_key = f'plotly_chart_{category_name}_{key_suffix}'
 
-        # Create columns for chart and table
-        chart_col, table_col = st.columns(2)  # Create two equal columns for chart and table
-
+        chart_col, table_col = st.columns(2)
         with chart_col:
             fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-            st.plotly_chart(fig, use_container_width=True, key=plot_key)  # Pie chart in the first column
+            st.plotly_chart(fig, use_container_width=True, key=plot_key)
 
         with table_col:
             show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
@@ -146,27 +134,11 @@ def process_category(rfm_category, category_name, n_clusters, custom_legends, ke
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
-
-def find_optimal_k(data, min_k=3, max_k=10):
-    scaler = StandardScaler()
-    scaled_data = scaler.fit_transform(data[['Recency', 'Frequency', 'Monetary']])
-    
-    wcss = []
-    for k in range(1, max_k+1):
-        kmeans = KMeans(n_clusters=k, init='k-means++', random_state=1)
-        kmeans.fit(scaled_data)
-        wcss.append(kmeans.inertia_)
-    
-    # Calculate the elbow point (i.e., where WCSS starts diminishing at a slower rate)
-    # Start looking for the elbow from k=min_k
-    k_optimal = min_k
-    for i in range(min_k - 1, len(wcss)-1):
-        if (wcss[i-1] - wcss[i]) > (wcss[i] - wcss[i+1]):
-            k_optimal = i + 1
-            break
-            
-    return max(k_optimal, min_k)  # Ensure k_optimal is at least min_k
-
+def get_optimal_k(data_scaled):
+    model = KMeans(random_state=1)
+    visualizer = KElbowVisualizer(model, k=(3, 10), timings=False)  # Set min k to 3
+    visualizer.fit(data_scaled)
+    return visualizer.elbow_value_
 
 def show_dashboard(data, key_suffix=''):
     rfm = process_rfm(data)
@@ -174,9 +146,15 @@ def show_dashboard(data, key_suffix=''):
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
     rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
 
-    # Find the optimal number of clusters for each category
-    k_ikan = find_optimal_k(rfm_ikan)
-    k_aksesoris = find_optimal_k(rfm_aksesoris)
+    scaler = StandardScaler()
+    
+    # Scale the data before determining optimal k
+    rfm_ikan_scaled = scaler.fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
+    rfm_aksesoris_scaled = scaler.fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])
+
+    # Find the optimal number of clusters for each category using KElbowVisualizer
+    k_ikan = get_optimal_k(rfm_ikan_scaled)
+    k_aksesoris = get_optimal_k(rfm_aksesoris_scaled)
 
     custom_legends = {
         'Ikan': {0: 'Ikan Kualitas Tinggi', 1: 'Ikan Kualitas Menengah', 2: 'Ikan Kualitas Rendah', 3: 'Ikan Spesial'},

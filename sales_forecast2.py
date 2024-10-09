@@ -42,7 +42,6 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         predicted_profit_next_week = hw_forecast_future.iloc[0]
         profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
-        # Add arrows based on profit change
         arrow = "🡅" if profit_change_percentage > 0 else "🡇"
         color = "green" if profit_change_percentage > 0 else "red"
 
@@ -59,11 +58,19 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         """, unsafe_allow_html=True)
 
     with col2:
-        # Filter tahun
-        default_years = [2024] if 2024 in daily_profit.index.year.unique() else []
+        historical_years = daily_profit.index.year.unique()
+        # Get the forecasted years from the forecasted dates
+        last_actual_date = daily_profit.index[-1]
+        forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
+        forecast_years = forecast_dates.year.unique()
+
+        # Combine historical and forecasted years
+        all_years = sorted(set(historical_years) | set(forecast_years))
+        default_years = [2024] if 2024 in all_years else []
+
         selected_years = st.multiselect(
             "Pilih Tahun",
-            daily_profit.index.year.unique(),
+            all_years,
             default=default_years,
             key=f"multiselect_{key_suffix}",
             help="Pilih tahun yang ingin ditampilkan"
@@ -73,9 +80,6 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         if selected_years:
             combined_data = daily_profit[daily_profit.index.year.isin(selected_years)]
             fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data['LABA'], mode='lines', name='Data Historis'))
-
-        last_actual_date = daily_profit.index[-1]
-        forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
 
         combined_forecast = pd.concat([daily_profit.iloc[[-1]]['LABA'], hw_forecast_future])
         fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
@@ -88,4 +92,3 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         )
 
         st.plotly_chart(fig)
-

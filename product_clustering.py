@@ -153,5 +153,5 @@ def show_dashboard(data, key_suffix=''):
     custom_legends_aksesoris = generate_custom_legends(k_aksesoris, 'Aksesoris')
 
     # Proses category ikan dan aksesoris dengan custom legends yang dihasilkan dinamis
-    process_category(rfm_ikan, 'Ikan', k_ikan, custom_legends_ikan, key_suffix='ikan')
-    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, custom_legends_aksesoris, key_suffix='aksesoris')
+    process_category(rfm_ikan, 'Ikan', k_ikan, key_suffix='ikan')
+    process_category(rfm_aksesoris, 'Aksesoris', k_aksesoris, key_suffix='aksesoris')

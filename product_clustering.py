@@ -111,7 +111,7 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     # Menampilkan tabel cluster
-    st.markdown(f"### Cluster: {custom_label}", unsafe_allow_html=True)
+    st.markdown(f"### Cluster dengan {custom_label}", unsafe_allow_html=True)
     
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
@@ -130,9 +130,9 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
         # Membuat legenda untuk setiap cluster menggunakan kategori linguistik
         custom_legends = {
-            cluster: f"Recency: {rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]}, "
-                     f"Frequency: {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
-                     f"Monetary: {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mode()[0]}"
+            cluster: f"Recency {rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]}, "
+                     f"Frequency {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
+                     f"dan Monetary {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mode()[0]}"
             for cluster in sorted(rfm_category['Cluster'].unique())
         }
 

@@ -171,8 +171,22 @@ def show_dashboard(data, key_suffix=''):
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
     rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
 
-    n_clusters_ikan = get_optimal_k(StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])) if not rfm_ikan.empty else 0
-    n_clusters_aksesoris = get_optimal_k(StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])) if not rfm_aksesoris.empty else 0
+    # Get optimal k for both categories
+    if not rfm_ikan.empty:
+        rfm_ikan_scaled = StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
+        n_clusters_ikan, visualizer_ikan = get_optimal_k(rfm_ikan_scaled)
+        st.write(f"Optimal number of clusters for Ikan: {n_clusters_ikan}")
+        st.plotly_chart(visualizer_ikan.poof(), use_container_width=True)  # Tampilkan plot elbow jika diinginkan
+    else:
+        n_clusters_ikan = 0
+
+    if not rfm_aksesoris.empty:
+        rfm_aksesoris_scaled = StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])
+        n_clusters_aksesoris, visualizer_aksesoris = get_optimal_k(rfm_aksesoris_scaled)
+        st.write(f"Optimal number of clusters for Aksesoris: {n_clusters_aksesoris}")
+        st.plotly_chart(visualizer_aksesoris.poof(), use_container_width=True)  # Tampilkan plot elbow jika diinginkan
+    else:
+        n_clusters_aksesoris = 0
 
     process_category(rfm_ikan, 'Ikan', n_clusters=n_clusters_ikan, key_suffix=key_suffix)
     process_category(rfm_aksesoris, 'Aksesoris', n_clusters=n_clusters_aksesoris, key_suffix=key_suffix)

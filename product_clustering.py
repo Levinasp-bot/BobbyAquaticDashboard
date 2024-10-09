@@ -117,11 +117,11 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
         rfm_category = categorize_rfm(rfm_category, category_name)
 
-        # Membuat legenda untuk setiap cluster
+        # Membuat legenda untuk setiap cluster menggunakan kategori linguistik
         custom_legends = {
-        cluster:    f"Recency Median: {rfm_category[rfm_category['Cluster'] == cluster]['Recency'].median()}, "
-                    f"Frequency Median: {rfm_category[rfm_category['Cluster'] == cluster]['Frequency'].median()}, "
-                    f"Monetary Median: {rfm_category[rfm_category['Cluster'] == cluster]['Monetary'].median()}"
+            cluster: f"Recency: {rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]}, "
+                     f"Frequency: {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
+                     f"Monetary: {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mode()[0]}"
             for cluster in sorted(rfm_category['Cluster'].unique())
         }
 
@@ -162,6 +162,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
+
 
 def get_optimal_k(data_scaled):
     # Mendapatkan jumlah cluster optimal menggunakan metode elbow

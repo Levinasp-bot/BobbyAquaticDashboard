@@ -35,24 +35,37 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
-def categorize_rfm(rfm, category_name):
-    # Mengkategorikan RFM berdasarkan kategori
-    if category_name == 'Ikan':
-        recency_bins = [0, 3, 16.75, float('inf')]
-        frequency_bins = [0, 82, 146.5, float('inf')]
-        monetary_bins = [0, 3540625, 11900000, float('inf')]
-    elif category_name == 'Aksesoris':
-        recency_bins = [0, 16, 182.5, float('inf')]
-        frequency_bins = [0, 8, 60.25, float('inf')]
-        monetary_bins = [0, 1007500, 3456250, float('inf')]
-    else:
-        return rfm
+def categorize_rfm(rfm):
+    # Mengkategorikan RFM berdasarkan kuartil
+    for category in rfm['KATEGORI'].unique():
+        category_data = rfm[rfm['KATEGORI'] == category]
 
-    # Label untuk kategori
-    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'])
-    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=['Jarang', 'Cukup Sering', 'Sering'])
-    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=['Rendah', 'Sedang', 'Tinggi'])
-    
+        if not category_data.empty:
+            Q1_recency = category_data['Recency'].quantile(0.25)
+            Q2_recency = category_data['Recency'].quantile(0.5)  # Median
+            Q3_recency = category_data['Recency'].quantile(0.75)
+
+            Q1_frequency = category_data['Frequency'].quantile(0.25)
+            Q2_frequency = category_data['Frequency'].quantile(0.5)
+            Q3_frequency = category_data['Frequency'].quantile(0.75)
+
+            Q1_monetary = category_data['Monetary'].quantile(0.25)
+            Q2_monetary = category_data['Monetary'].quantile(0.5)
+            Q3_monetary = category_data['Monetary'].quantile(0.75)
+
+            # Menentukan kategori berdasarkan kuartil
+            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Recency'] <= Q1_recency), 'Recency_Category'] = 'Baru Saja'
+            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Recency'].between(Q1_recency, Q2_recency)), 'Recency_Category'] = 'Cukup Lama'
+            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Recency'] > Q2_recency), 'Recency_Category'] = 'Sangat Lama'
+
+            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Frequency'] <= Q1_frequency), 'Frequency_Category'] = 'Jarang'
+            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Frequency'].between(Q1_frequency, Q2_frequency)), 'Frequency_Category'] = 'Cukup Sering'
+            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Frequency'] > Q2_frequency), 'Frequency_Category'] = 'Sering'
+
+            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Monetary'] <= Q1_monetary), 'Monetary_Category'] = 'Rendah'
+            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Monetary'].between(Q1_monetary, Q2_monetary)), 'Monetary_Category'] = 'Sedang'
+            rfm.loc[(rfm['KATEGORI'] == category) & (rfm['Monetary'] > Q2_monetary), 'Monetary_Category'] = 'Tinggi'
+
     return rfm
 
 def cluster_rfm(rfm_scaled, n_clusters):

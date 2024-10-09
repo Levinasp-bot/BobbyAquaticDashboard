@@ -39,10 +39,10 @@ def categorize_rfm(rfm):
     # Menghitung quartile untuk Recency, Frequency, dan Monetary
     recency_q1 = rfm['Recency'].quantile(0.25)
     recency_q3 = rfm['Recency'].quantile(0.75)
-
+    
     frequency_q1 = rfm['Frequency'].quantile(0.25)
     frequency_q3 = rfm['Frequency'].quantile(0.75)
-
+    
     monetary_q1 = rfm['Monetary'].quantile(0.25)
     monetary_q3 = rfm['Monetary'].quantile(0.75)
 
@@ -52,9 +52,9 @@ def categorize_rfm(rfm):
     monetary_bins = [0, monetary_q1, monetary_q3, float('inf')]
 
     # Label untuk kategori
-    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'], right=False)
-    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=['Jarang', 'Cukup Sering', 'Sering'], right=False)
-    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=['Rendah', 'Sedang', 'Tinggi'], right=False)
+    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=['Baru Saja', 'Cukup Lama', 'Sangat Lama'])
+    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=['Jarang', 'Cukup Sering', 'Sering'])
+    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=['Rendah', 'Sedang', 'Tinggi'])
 
     return rfm
 
@@ -118,7 +118,8 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         cluster_labels = cluster_rfm(rfm_scaled, n_clusters)
         rfm_category['Cluster'] = cluster_labels
 
-        rfm_category = categorize_rfm(rfm_category, category_name)
+        # Mengategorikan RFM tanpa argumen tambahan
+        rfm_category = categorize_rfm(rfm_category)
 
         # Membuat legenda untuk setiap cluster menggunakan kategori linguistik
         custom_legends = {
@@ -166,7 +167,6 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
-
 def get_optimal_k(data_scaled):
     # Mendapatkan jumlah cluster optimal menggunakan metode elbow
     model = KMeans(random_state=1)
@@ -179,21 +179,13 @@ def show_dashboard(data, key_suffix=''):
     rfm = process_rfm(data)
 
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
-    rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
-
-    # Mendapatkan jumlah klaster optimal untuk setiap kategori
-    if not rfm_ikan.empty:
-        data_scaled_ikan = StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
-        n_clusters_ikan = get_optimal_k(data_scaled_ikan)
-    else:
-        n_clusters_ikan = 0
-
-    if not rfm_aksesoris.empty:
-        data_scaled_aksesoris = StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])
-        n_clusters_aksesoris = get_optimal_k(data_scaled_aksesoris)
-    else:
-        n_clusters_aksesoris = 0
-
-    # Memproses dan menampilkan masing-masing kategori
+    n_clusters_ikan = get_optimal_k(StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']]))
     process_category(rfm_ikan, 'Ikan', n_clusters_ikan, key_suffix)
-    process_category(rfm_aksesoris, 'Aksesoris', n_clusters_aksesoris, key_suffix)
+
+    rfm_sayuran = rfm[rfm['KATEGORI'] == 'Sayuran']
+    n_clusters_sayuran = get_optimal_k(StandardScaler().fit_transform(rfm_sayuran[['Recency', 'Frequency', 'Monetary']]))
+    process_category(rfm_sayuran, 'Sayuran', n_clusters_sayuran, key_suffix)
+
+    rfm_buah = rfm[rfm['KATEGORI'] == 'Buah']
+    n_clusters_buah = get_optimal_k(StandardScaler().fit_transform(rfm_buah[['Recency', 'Frequency', 'Monetary']]))
+    process_category(rfm_buah, 'Buah', n_clusters_buah, key_suffix)

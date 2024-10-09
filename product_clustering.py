@@ -7,7 +7,8 @@ import streamlit as st
 import plotly.graph_objects as go
 from yellowbrick.cluster import KElbowVisualizer
 
-@st.cache
+# Supaya Streamlit tidak menggunakan cache untuk fungsi yang melakukan clustering
+@st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
     # Memuat semua file Excel dari folder yang diberikan
     all_files = glob.glob(os.path.join(folder_path, "*.xlsm"))
@@ -95,14 +96,14 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     # Menampilkan tabel cluster
-    st.markdown(f"<h4>Cluster dengan {custom_label} </h4>", unsafe_allow_html=True)
+    st.markdown(f"### Cluster: {custom_label}", unsafe_allow_html=True)
     
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
     # Memproses kategori dan menampilkan hasil
-    if rfm_category.shape[0] > 0:
+    if rfm_category.shape[0] > 0 and n_clusters > 0:
         scaler = StandardScaler()
         rfm_scaled = scaler.fit_transform(rfm_category[['Recency', 'Frequency', 'Monetary']])
         
@@ -171,8 +172,35 @@ def show_dashboard(data, key_suffix=''):
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
     rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
 
-    n_clusters_ikan = get_optimal_k(StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])) if not rfm_ikan.empty else 0
-    n_clusters_aksesoris = get_optimal_k(StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])) if not rfm_aksesoris.empty else 0
+    # Mendapatkan jumlah klaster optimal untuk setiap kategori
+    if not rfm_ikan.empty:
+        data_scaled_ikan = StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
+        n_clusters_ikan = get_optimal_k(data_scaled_ikan)
+    else:
+        n_clusters_ikan = 0
 
+    if not rfm_aksesoris.empty:
+        data_scaled_aksesoris = StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])
+        n_clusters_aksesoris = get_optimal_k(data_scaled_aksesoris)
+    else:
+        n_clusters_aksesoris = 0
+
+    # Menampilkan jumlah klaster optimal
+    st.markdown("## Jumlah Klaster Optimal")
+    cols_optimal = st.columns(2)
+    with cols_optimal[0]:
+        if n_clusters_ikan > 0:
+            st.markdown(f"**Ikan:** {n_clusters_ikan} klaster")
+        else:
+            st.markdown("**Ikan:** Tidak ada data")
+    with cols_optimal[1]:
+        if n_clusters_aksesoris > 0:
+            st.markdown(f"**Aksesoris:** {n_clusters_aksesoris} klaster")
+        else:
+            st.markdown("**Aksesoris:** Tidak ada data")
+
+    st.markdown("---")  # Separator
+
+    # Memproses dan menampilkan setiap kategori
     process_category(rfm_ikan, 'Ikan', n_clusters=n_clusters_ikan, key_suffix=key_suffix)
     process_category(rfm_aksesoris, 'Aksesoris', n_clusters=n_clusters_aksesoris, key_suffix=key_suffix)

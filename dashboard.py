@@ -63,17 +63,8 @@ if st.session_state.page == "sales":
         sheet_name_1 = 'Penjualan'
         penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
 
-        # Get unique categories from data
-        categories_1 = penjualan_data_1['KATEGORI'].dropna().unique() if 'KATEGORI' in penjualan_data_1.columns else ['Semua Kategori']
-
-        # Filter for Bobby Aquatic 1
-        selected_category_1 = st.selectbox("Pilih Kategori", options=['Semua Kategori'] + list(categories_1), key='category_select_cabang1')
-
-        # Filter data based on selected category
-        filtered_penjualan_data_1 = penjualan_data_1 if selected_category_1 == 'Semua Kategori' else penjualan_data_1[penjualan_data_1['KATEGORI'] == selected_category_1]
-
         # Forecast data for Bobby Aquatic 1
-        daily_profit_1, hw_forecast_future_1 = forecast_profit_1(filtered_penjualan_data_1)
+        daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)
 
         # Show dashboard
         show_dashboard_1(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
@@ -87,17 +78,8 @@ if st.session_state.page == "sales":
         sheet_name_2 = 'Penjualan'
         penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
-        # Get unique categories from data
-        categories_2 = penjualan_data_2['KATEGORI'].dropna().unique() if 'KATEGORI' in penjualan_data_2.columns else ['Semua Kategori']
-
-        # Filter for Bobby Aquatic 2
-        selected_category_2 = st.selectbox("Pilih Kategori", options=['Semua Kategori'] + list(categories_2), key='category_select_cabang2')
-
-        # Filter data based on selected category
-        filtered_penjualan_data_2 = penjualan_data_2 if selected_category_2 == 'Semua Kategori' else penjualan_data_2[penjualan_data_2['KATEGORI'] == selected_category_2]
-
         # Forecast data for Bobby Aquatic 2
-        daily_profit_2, hw_forecast_future_2 = forecast_profit_2(filtered_penjualan_data_2)
+        daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
 
         # Show dashboard
         show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
@@ -117,21 +99,8 @@ elif st.session_state.page == "product":
         sheet_name_1 = 'Penjualan'
         cluster_data_1 = load_cluster_data_1(folder_path_1, sheet_name_1)
 
-        # Get unique years and categories from data
-        years_1 = sorted(cluster_data_1['TANGGAL'].dt.year.dropna().astype(int).unique())
-        categories_1 = cluster_data_1['KATEGORI'].unique() if 'KATEGORI' in cluster_data_1.columns else ['Semua Kategori']
-
-        # Filters for Bobby Aquatic 1
-        selected_years_1 = st.multiselect("Pilih Tahun", options=years_1, default=years_1, key='years_1_cabang1')
-        selected_category_1 = st.selectbox("Pilih Kategori", options=['Semua Kategori'] + list(categories_1), key='category_cluster_cabang1')
-
-        # Filter data based on selected years and category
-        filtered_data_1 = cluster_data_1[cluster_data_1['TANGGAL'].dt.year.isin(selected_years_1)]
-        if selected_category_1 != 'Semua Kategori':
-            filtered_data_1 = filtered_data_1[filtered_data_1['KATEGORI'] == selected_category_1]
-
         # Show cluster dashboard
-        show_cluster_dashboard_1(filtered_data_1, key_suffix='cabang1')
+        show_cluster_dashboard_1(cluster_data_1, key_suffix='cabang1')
 
     # Bobby Aquatic 2 clustering dashboard
     with tab2:
@@ -142,21 +111,8 @@ elif st.session_state.page == "product":
         sheet_name_2 = 'Penjualan'
         cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name_2)
 
-        # Get unique years and categories from data
-        years_2 = sorted(cluster_data_2['TANGGAL'].dt.year.dropna().astype(int).unique())
-        categories_2 = cluster_data_2['KATEGORI'].unique() if 'KATEGORI' in cluster_data_2.columns else ['Semua Kategori']
-
-        # Filters for Bobby Aquatic 2
-        selected_years_2 = st.multiselect("Pilih Tahun", options=years_2, default=years_2, key='years_2_cabang2')
-        selected_category_2 = st.selectbox("Pilih Kategori", options=['Semua Kategori'] + list(categories_2), key='category_cluster_cabang2')
-
-        # Filter data based on selected years and category
-        filtered_data_2 = cluster_data_2[cluster_data_2['TANGGAL'].dt.year.isin(selected_years_2)]
-        if selected_category_2 != 'Semua Kategori':
-            filtered_data_2 = filtered_data_2[filtered_data_2['KATEGORI'] == selected_category_2]
-
         # Show cluster dashboard
-        show_cluster_dashboard_2(filtered_data_2, key_suffix='cabang2')
+        show_cluster_dashboard_2(cluster_data_2, key_suffix='cabang2')
 
 # Footer section
 st.markdown("<div class='footer'>© 2024 Bobby Aquatic. All rights reserved.</div>", unsafe_allow_html=True)

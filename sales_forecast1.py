@@ -15,7 +15,7 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dataframes, ignore_index=True)
 
 @st.cache_data
-def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
+def forecast_profit(data, seasonal_period=39, forecast_horizon=39):
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
     daily_profit = daily_profit.groupby('TANGGAL').sum()
@@ -32,7 +32,7 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_suffix=''):
+def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=39, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -49,15 +49,15 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         st.markdown(f"""
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                 <span style="font-size: 14px;">Total Laba Minggu Ini</span><br>
-                <span style="font-size: 36px; font-weight: bold;">{total_profit_last_week:,.2f}</span>
+                <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week:,.2f}</span>
             </div>
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                 <span style="font-size: 14px;">Rata - rata Laba Minggu Terakhir</span><br>
-                <span style="font-size: 36px; font-weight: bold;">{last_week_profit:,.2f}</span>
+                <span style="font-size: 32px; font-weight: bold;">{last_week_profit:,.2f}</span>
             </div>
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                 <span style="font-size: 14px;">Prediksi Rata - rata Laba Minggu Depan</span><br>
-                <span style="font-size: 36px; font-weight: bold;">{predicted_profit_next_week:,.2f}</span>
+                <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week:,.2f}</span>
                 <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
             </div>
         """, unsafe_allow_html=True)

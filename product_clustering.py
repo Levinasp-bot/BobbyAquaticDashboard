@@ -144,7 +144,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
             # Mengurangi ukuran font untuk judul kategori terjual
             st.markdown(f"<h4 style='font-size: 20px;'>Total {category_name} Terjual</h4>", unsafe_allow_html=True)
             st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
-                        f"font-size: 24px; display: flex; justify-content: center; align-items: center; "
+                        f"font-size: 32px; font-weight: bold; display: flex; justify-content: center; align-items: center; "
                         f"height: 100px;'>"
                         f"<strong>{rfm_category['Frequency'].sum()}</strong></div>", unsafe_allow_html=True)
 

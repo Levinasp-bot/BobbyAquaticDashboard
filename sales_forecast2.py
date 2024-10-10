@@ -4,7 +4,6 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import streamlit as st
 import plotly.graph_objects as go
 
-# Using @st.cache_data for caching data
 @st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
     dataframes = []
@@ -16,8 +15,7 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dataframes, ignore_index=True)
 
 @st.cache_data
-def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
-    # Ensure data only contains date and profit
+def forecast_profit(data, seasonal_period=30, forecast_horizon=30):
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
     daily_profit = daily_profit.groupby('TANGGAL').sum()
@@ -34,7 +32,7 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_suffix=''):
+def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=30, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -42,17 +40,24 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         predicted_profit_next_week = hw_forecast_future.iloc[0]
         profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
+        # Total laba minggu ini (asumsi total untuk minggu terakhir diambil dari rata-rata * 7 hari)
+        total_profit_last_week = last_week_profit * 7
+
         arrow = "🡅" if profit_change_percentage > 0 else "🡇"
         color = "green" if profit_change_percentage > 0 else "red"
 
         st.markdown(f"""
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                <span style="font-size: 14px;">Rata - rata Laba Minggu Terakhir</span><br>
-                <span style="font-size: 36px; font-weight: bold;">{last_week_profit:,.2f}</span>
+                <span style="font-size: 14px;">Total Laba Minggu Ini</span><br>
+                <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week:,.2f}</span>
+            </div>
+            <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                <span style="font-size: 14px;">Rata - rata Laba Minggu Ini</span><br>
+                <span style="font-size: 32px; font-weight: bold;">{last_week_profit:,.2f}</span>
             </div>
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                 <span style="font-size: 14px;">Prediksi Rata - rata Laba Minggu Depan</span><br>
-                <span style="font-size: 36px; font-weight: bold;">{predicted_profit_next_week:,.2f}</span>
+                <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week:,.2f}</span>
                 <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
             </div>
         """, unsafe_allow_html=True)

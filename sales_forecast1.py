@@ -52,7 +52,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=39, key_su
                 <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week:,.2f}</span>
             </div>
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                <span style="font-size: 14px;">Rata - rata Laba Minggu Terakhir</span><br>
+                <span style="font-size: 14px;">Rata - rata Laba Minggu Ini</span><br>
                 <span style="font-size: 32px; font-weight: bold;">{last_week_profit:,.2f}</span>
             </div>
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">

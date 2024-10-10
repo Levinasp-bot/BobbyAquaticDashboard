@@ -137,11 +137,11 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         }
 
         # Menampilkan informasi dalam dua kolom
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 2])
         with col1:
             st.markdown(f"### Total {category_name} Terjual")
             st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
-                        f"font-size: 24px; display: flex; justify-content: center; align-items: center; "
+                        f"font-size: 32px; display: flex; justify-content: center; align-items: center; "
                         f"height: 100px;'>"
                         f"<strong>{rfm_category['Frequency'].sum()}</strong></div>", unsafe_allow_html=True)
 

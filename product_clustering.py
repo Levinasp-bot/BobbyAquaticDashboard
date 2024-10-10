@@ -137,8 +137,8 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         }
 
         # Menampilkan informasi dalam dua kolom
-# Menampilkan informasi dalam dua kolom dengan proporsi berbeda
-col1, col2 = st.columns([1, 2])  # Mengatur proporsi 1:2 antara col1 dan col2
+        # Menampilkan informasi dalam dua kolom dengan proporsi berbeda
+        col1, col2 = st.columns([1, 2])  # Mengatur proporsi 1:2 antara col1 dan col2
 
         with col1:
             # Mengurangi ukuran font untuk judul kategori terjual
@@ -159,12 +159,13 @@ col1, col2 = st.columns([1, 2])  # Mengatur proporsi 1:2 antara col1 dan col2
                         f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Recency']:.2f}</span><br>"
                         f"<span style='font-size: 12px;'>Recency</span></div>"
                         f"<div style='text-align: center;'>"
-                     f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Frequency']:.2f}</span><br>"
+                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Frequency']:.2f}</span><br>"
                         f"<span style='font-size: 12px;'>Frequency</span></div>"
                         f"<div style='text-align: center;'>"
                         f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Monetary']:.2f}</span><br>"
                         f"<span style='font-size: 12px;'>Monetary</span></div>"
                         f"</div>", unsafe_allow_html=True)
+
 
         # Memilih cluster yang akan ditampilkan
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'

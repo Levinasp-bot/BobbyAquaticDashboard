@@ -137,26 +137,31 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         }
 
         # Menampilkan informasi dalam dua kolom
-        col1, col2 = st.columns([1, 2])
+# Menampilkan informasi dalam dua kolom dengan proporsi berbeda
+col1, col2 = st.columns([1, 2])  # Mengatur proporsi 1:2 antara col1 dan col2
+
         with col1:
-            st.markdown(f"### Total {category_name} Terjual")
+            # Mengurangi ukuran font untuk judul kategori terjual
+            st.markdown(f"<h4 style='font-size: 20px;'>Total {category_name} Terjual</h4>", unsafe_allow_html=True)
             st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
-                        f"font-size: 32px; display: flex; justify-content: center; align-items: center; "
+                        f"font-size: 24px; display: flex; justify-content: center; align-items: center; "
                         f"height: 100px;'>"
                         f"<strong>{rfm_category['Frequency'].sum()}</strong></div>", unsafe_allow_html=True)
 
         with col2:
-            st.markdown("### Rata - rata RFM")
+            st.markdown("<h4 style='font-size: 20px;'>Rata - rata RFM</h4>", unsafe_allow_html=True)
             average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
+    
+            # Menyesuaikan jarak antar Recency, Frequency, dan Monetary agar lebih proporsional
             st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
-                        f"display: flex; justify-content: center; align-items: center; height: 100px;'>"
+                        f"display: flex; justify-content: space-around; align-items: center; height: 100px;'>"
                         f"<div style='text-align: center;'>"
                         f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Recency']:.2f}</span><br>"
                         f"<span style='font-size: 12px;'>Recency</span></div>"
-                        f"<div style='text-align: center; margin-left: 15px;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Frequency']:.2f}</span><br>"
+                        f"<div style='text-align: center;'>"
+                     f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Frequency']:.2f}</span><br>"
                         f"<span style='font-size: 12px;'>Frequency</span></div>"
-                        f"<div style='text-align: center; margin-left: 15px;'>"
+                        f"<div style='text-align: center;'>"
                         f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Monetary']:.2f}</span><br>"
                         f"<span style='font-size: 12px;'>Monetary</span></div>"
                         f"</div>", unsafe_allow_html=True)

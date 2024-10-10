@@ -140,13 +140,16 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         col1, col2 = st.columns(2)
         with col1:
             st.markdown(f"### Total {category_name} Terjual")
-            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
+            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
+                        f"font-size: 24px; display: flex; justify-content: center; align-items: center; "
+                        f"height: 100px;'>"
                         f"<strong>{rfm_category['Frequency'].sum()}</strong></div>", unsafe_allow_html=True)
 
         with col2:
             st.markdown("### Rata - rata RFM")
             average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
-            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
+            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
+                        f"font-size: 16px; height: 100px;'>"
                         f"<strong>Recency: {average_rfm['Recency']:.2f}</strong><br>"
                         f"<strong>Frequency: {average_rfm['Frequency']:.2f}</strong><br>"
                         f"<strong>Monetary: {average_rfm['Monetary']:.2f}</strong></div>", unsafe_allow_html=True)

@@ -164,7 +164,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         # Memilih cluster yang akan ditampilkan
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
         selected_custom_label = st.selectbox(
-            f'Select a cluster for {category_name}:',
+            f'Pilih Kelompok untuk {category_name}:',
             options=[custom_legends[cluster] for cluster in sorted(custom_legends.keys())],
             key=unique_key
         )

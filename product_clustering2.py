@@ -77,7 +77,7 @@ def cluster_rfm(rfm_scaled, n_clusters):
     return kmeans.labels_
 
 def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legends):
-    # Membuat grafik pie interaktif
+
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']

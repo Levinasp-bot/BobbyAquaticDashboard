@@ -36,31 +36,28 @@ def process_rfm(data):
     return rfm
 
 def categorize_rfm(rfm):
-    # Menghitung quintile (5 bagian) untuk Recency, Frequency, dan Monetary
-    recency_q1 = rfm['Recency'].quantile(0.2)
-    recency_q2 = rfm['Recency'].quantile(0.4)
-    recency_q3 = rfm['Recency'].quantile(0.6)
-    recency_q4 = rfm['Recency'].quantile(0.8)
+    # Menghitung quartile (4 bagian) untuk Recency, Frequency, dan Monetary
+    recency_q1 = rfm['Recency'].quantile(0.25)
+    recency_q2 = rfm['Recency'].quantile(0.5)
+    recency_q3 = rfm['Recency'].quantile(0.75)
     
-    frequency_q1 = rfm['Frequency'].quantile(0.2)
-    frequency_q2 = rfm['Frequency'].quantile(0.4)
-    frequency_q3 = rfm['Frequency'].quantile(0.6)
-    frequency_q4 = rfm['Frequency'].quantile(0.8)
+    frequency_q1 = rfm['Frequency'].quantile(0.25)
+    frequency_q2 = rfm['Frequency'].quantile(0.5)
+    frequency_q3 = rfm['Frequency'].quantile(0.75)
     
-    monetary_q1 = rfm['Monetary'].quantile(0.2)
-    monetary_q2 = rfm['Monetary'].quantile(0.4)
-    monetary_q3 = rfm['Monetary'].quantile(0.6)
-    monetary_q4 = rfm['Monetary'].quantile(0.8)
+    monetary_q1 = rfm['Monetary'].quantile(0.25)
+    monetary_q2 = rfm['Monetary'].quantile(0.5)
+    monetary_q3 = rfm['Monetary'].quantile(0.75)
 
-    # Membuat bins secara dinamis berdasarkan quintile
-    recency_bins = [0, recency_q1, recency_q2, recency_q3, recency_q4, float('inf')]
-    frequency_bins = [0, frequency_q1, frequency_q2, frequency_q3, frequency_q4, float('inf')]
-    monetary_bins = [0, monetary_q1, monetary_q2, monetary_q3, monetary_q4, float('inf')]
+    # Membuat bins secara dinamis berdasarkan quartile
+    recency_bins = [0, recency_q1, recency_q2, recency_q3, float('inf')]
+    frequency_bins = [0, frequency_q1, frequency_q2, frequency_q3, float('inf')]
+    monetary_bins = [0, monetary_q1, monetary_q2, monetary_q3, float('inf')]
 
-    # Label untuk 5 kategori
-    recency_labels = ['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Lama', 'Sangat Lama']
-    frequency_labels = ['Sangat Jarang', 'Jarang', 'Cukup Sering', 'Sering', 'Sangat Sering']
-    monetary_labels = ['Sangat Rendah', 'Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi']
+    # Label untuk 4 kategori
+    recency_labels = ['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Lama']
+    frequency_labels = ['Sangat Jarang', 'Jarang', 'Cukup Sering', 'Sering']
+    monetary_labels = ['Sangat Rendah', 'Rendah', 'Sedang', 'Tinggi']
 
     # Menetapkan kategori berdasarkan bins dan labels
     rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=recency_labels)
@@ -68,6 +65,7 @@ def categorize_rfm(rfm):
     rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=monetary_labels)
 
     return rfm
+
 
 
 def cluster_rfm(rfm_scaled, n_clusters):
@@ -193,7 +191,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 def get_optimal_k(data_scaled):
     # Mendapatkan jumlah cluster optimal menggunakan metode elbow
     model = KMeans(random_state=1)
-    visualizer = KElbowVisualizer(model, k=(3, 10), timings=False)
+    visualizer = KElbowVisualizer(model, k=(1, 11), timings=False)
     visualizer.fit(data_scaled)
     return visualizer.elbow_value_
 

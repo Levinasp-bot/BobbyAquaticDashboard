@@ -191,14 +191,13 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
 def get_optimal_k(data_scaled):
-    # Mendapatkan jumlah cluster optimal menggunakan metode elbow
     model = KMeans(random_state=1)
     visualizer = KElbowVisualizer(model, k=(1, 11), timings=False)
     visualizer.fit(data_scaled)
     return visualizer.elbow_value_
 
 def show_dashboard(data, key_suffix=''):
-    # Menampilkan dashboard
+ 
     rfm = process_rfm(data)
 
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']

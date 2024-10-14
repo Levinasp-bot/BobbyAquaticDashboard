@@ -15,7 +15,7 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dataframes, ignore_index=True)
 
 @st.cache_data
-def forecast_profit(data, seasonal_period=39, forecast_horizon=39):
+def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
     daily_profit = daily_profit.groupby('TANGGAL').sum()
@@ -32,7 +32,7 @@ def forecast_profit(data, seasonal_period=39, forecast_horizon=39):
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=39, key_suffix=''):
+def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -64,7 +64,6 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=39, key_su
 
     with col2:
         historical_years = daily_profit.index.year.unique()
-        # Get the forecasted years from the forecasted dates
         last_actual_date = daily_profit.index[-1]
         forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
         forecast_years = forecast_dates.year.unique()

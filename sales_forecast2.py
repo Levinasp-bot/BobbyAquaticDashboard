@@ -15,7 +15,7 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dataframes, ignore_index=True)
 
 @st.cache_data
-def forecast_profit(data, seasonal_period=30, forecast_horizon=30):
+def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
     daily_profit = daily_profit.groupby('TANGGAL').sum()
@@ -26,13 +26,13 @@ def forecast_profit(data, seasonal_period=30, forecast_horizon=30):
     train_size = int(len(daily_profit) * 0.9)
     train, test = daily_profit[:train_size], daily_profit[train_size:]
 
-    hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
+    hw_model = ExponentialSmoothing(train, trend='add', seasonal='add', seasonal_periods=seasonal_period).fit()
 
     hw_forecast_future = hw_model.forecast(forecast_horizon)
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=30, key_suffix=''):
+def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
     with col1:

@@ -85,7 +85,7 @@ if st.session_state.page == "sales":
         show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
 
 elif st.session_state.page == "product":
-    st.header("🔍 Segementasi Produk Bobby Aquatic")
+    st.header("🔍 Segmentasi Produk Bobby Aquatic")
 
     # Tabs for Bobby Aquatic 1 and 2
     tab1, tab2 = st.tabs(["Bobby Aquatic 1", "Bobby Aquatic 2"])
@@ -104,7 +104,7 @@ elif st.session_state.page == "product":
 
     # Bobby Aquatic 2 clustering dashboard
     with tab2:
-        st.header("Segementasi Produk Bobby Aquatic 2")
+        st.header("Segmentasi Produk Bobby Aquatic 2")
 
         # Load data for Bobby Aquatic 2
         folder_path_2 = "./data/Bobby Aquatic 2"

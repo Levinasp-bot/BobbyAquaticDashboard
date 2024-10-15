@@ -93,7 +93,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=12, key_su
             yaxis_title='Laba',
             hovermode='x',
             margin=dict(t=20),  # Mengurangi padding atas (t = top)
-            height=400  # Mengurangi tinggi chart
+            height=370  # Mengurangi tinggi chart
         )
 
         st.plotly_chart(fig)

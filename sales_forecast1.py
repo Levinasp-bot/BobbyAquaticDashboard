@@ -32,7 +32,7 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_suffix=''):
+def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=12, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -52,17 +52,19 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
                 <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week:,.2f}</span>
             </div>
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                <span style="font-size: 14px;">Rata - rata Laba Minggu Ini</span><br>
+                <span style="font-size: 14px;">Rata - rata Laba Harian Minggu Ini</span><br>
                 <span style="font-size: 32px; font-weight: bold;">{last_week_profit:,.2f}</span>
             </div>
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                <span style="font-size: 14px;">Prediksi Rata - rata Laba Minggu Depan</span><br>
+                <span style="font-size: 14px;">Prediksi Rata - rata Laba Harian Minggu Depan</span><br>
                 <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week:,.2f}</span>
                 <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
             </div>
         """, unsafe_allow_html=True)
 
     with col2:
+        st.subheader('Data Historis dan Prediksi Rata - rata Laba Mingguan')
+
         historical_years = daily_profit.index.year.unique()
         last_actual_date = daily_profit.index[-1]
         forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
@@ -72,6 +74,7 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         all_years = sorted(set(historical_years) | set(forecast_years))
         default_years = [2024] if 2024 in all_years else []
 
+        # Year filter placed directly below the chart title
         selected_years = st.multiselect(
             "Pilih Tahun",
             all_years,
@@ -89,7 +92,6 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=13, key_su
         fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
         fig.update_layout(
-            title='Data Historis dan Prediksi Rata - rata Laba Mingguan',
             xaxis_title='Tanggal',
             yaxis_title='Laba',
             hovermode='x'

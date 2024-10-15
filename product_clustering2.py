@@ -69,9 +69,7 @@ def categorize_rfm(rfm):
 
     return rfm
 
-
 def cluster_rfm(rfm_scaled, n_clusters):
-    # Melakukan clustering menggunakan KMeans
     kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
     kmeans.fit(rfm_scaled)
     return kmeans.labels_

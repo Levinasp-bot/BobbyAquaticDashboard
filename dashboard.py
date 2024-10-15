@@ -64,18 +64,18 @@ if st.session_state.page == "sales":
     penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
     daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
 
-    # Ensure date columns are correctly named and formatted
-    # Assuming 'daily_profit_1' and 'daily_profit_2' have a date column named 'Date' or are indexed by date
-    if 'Date' in daily_profit_1.columns:
-        daily_profit_1['Date'] = pd.to_datetime(daily_profit_1['Date'])
-        daily_profit_2['Date'] = pd.to_datetime(daily_profit_2['Date'])
+    # Ensure TANGGAL columns are correctly named and formatted
+    # Assuming 'daily_profit_1' and 'daily_profit_2' have a TANGGAL column named 'TANGGAL' or are indexed by TANGGAL
+    if 'TANGGAL' in daily_profit_1.columns:
+        daily_profit_1['TANGGAL'] = pd.to_datetime(daily_profit_1['TANGGAL'])
+        daily_profit_2['TANGGAL'] = pd.to_datetime(daily_profit_2['TANGGAL'])
     else:
-        # If the data uses an index as the date
-        daily_profit_1 = daily_profit_1.reset_index().rename(columns={'index': 'Date'})
-        daily_profit_2 = daily_profit_2.reset_index().rename(columns={'index': 'Date'})
+        # If the data uses an index as the TANGGAL
+        daily_profit_1 = daily_profit_1.reset_index().rename(columns={'index': 'TANGGAL'})
+        daily_profit_2 = daily_profit_2.reset_index().rename(columns={'index': 'TANGGAL'})
 
     # Combine data
-    combined_profit = pd.concat([daily_profit_1, daily_profit_2]).groupby('Date').sum().reset_index()
+    combined_profit = pd.concat([daily_profit_1, daily_profit_2]).groupby('TANGGAL').sum().reset_index()
     combined_forecast = hw_forecast_future_1.add(hw_forecast_future_2, fill_value=0)
 
     # Filter for selecting branches
@@ -89,7 +89,7 @@ if st.session_state.page == "sales":
     def show_combined_dashboard(profit_data, forecast_data, title):
         st.header(title)
         # Visualization code goes here (e.g., line charts, bar charts)
-        st.line_chart(profit_data.set_index('Date')['Profit'], width=0, height=300)  # Example line chart
+        st.line_chart(profit_data.set_index('TANGGAL')['Profit'], width=0, height=300)  # Example line chart
         st.write(forecast_data)  # Example table display
 
     # Display the selected data

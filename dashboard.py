@@ -65,7 +65,7 @@ if st.session_state.page == "sales":
     daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
 
     # Combine data
-    combined_profit = pd.concat([daily_profit_1, daily_profit_2]).groupby('date').sum().reset_index()
+    combined_profit = pd.concat([daily_profit_1, daily_profit_2]).groupby('TANGGAL').sum().reset_index()
     combined_forecast = hw_forecast_future_1.add(hw_forecast_future_2, fill_value=0)
 
     # Filter for selecting branches

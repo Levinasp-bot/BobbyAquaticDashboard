@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1
 from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2
 from product_clustering import load_all_excel_files as load_cluster_data_1, show_dashboard as show_cluster_dashboard_1

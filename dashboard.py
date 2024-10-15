@@ -1,9 +1,8 @@
 import streamlit as st
-from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1
-from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2
+from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1, show_dashboard as show_dashboard_1
+from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2, show_dashboard as show_dashboard_2
 from product_clustering import load_all_excel_files as load_cluster_data_1, show_dashboard as show_cluster_dashboard_1
 from product_clustering2 import load_all_excel_files as load_cluster_data_2, show_dashboard as show_cluster_dashboard_2
-import pandas as pd
 
 # Set page configuration
 st.set_page_config(page_title="Bobby Aquatic Dashboard", layout="wide")
@@ -52,46 +51,26 @@ with st.sidebar:
 if st.session_state.page == "sales":
     st.header("📈 Dashboard Penjualan Bobby Aquatic")
 
-    # Load data for Bobby Aquatic 1 and 2
-    folder_path_1 = "./data/Bobby Aquatic 1"
-    folder_path_2 = "./data/Bobby Aquatic 2"
-    sheet_name = 'Penjualan'
-    penjualan_data_1 = load_data_1(folder_path_1, sheet_name)
-    penjualan_data_2 = load_data_2(folder_path_2, sheet_name)
+    # Combined dashboard for Bobby Aquatic 1 and 2
+    col1, col2 = st.columns(2)
 
-    # Combine sales data
-    combined_data = pd.concat([penjualan_data_1, penjualan_data_2], ignore_index=True)
+    # Bobby Aquatic 1 dashboard
+    with col1:
+        st.header("Bobby Aquatic 1")
+        folder_path_1 = "./data/Bobby Aquatic 1"
+        sheet_name_1 = 'Penjualan'
+        penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
+        daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)
+        show_dashboard_1(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
 
-    # Forecast data for combined branches
-    daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)
-    daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
-
-    # Option to view combined data or separate
-    st.markdown("### Pilih Tipe Data:")
-    view_type = st.radio("Tampilkan data sebagai:", ("Gabungan", "Terpisah"))
-
-    if view_type == "Gabungan":
-        # Sum the daily profits for a combined view
-        combined_daily_profit = daily_profit_1.add(daily_profit_2, fill_value=0)
-        combined_forecast = hw_forecast_future_1.add(hw_forecast_future_2, fill_value=0)
-
-        # Show combined dashboard
-        st.header("Dashboard Penjualan Gabungan Bobby Aquatic")
-        st.subheader("Profit Harian Gabungan")
-        st.line_chart(combined_daily_profit)
-        st.subheader("Peramalan Profit Gabungan")
-        st.line_chart(combined_forecast)
-    else:
-        # Show separate dashboards in a single tab
-        st.subheader("Dashboard Penjualan Bobby Aquatic 1")
-        st.line_chart(daily_profit_1)
-        st.subheader("Peramalan Profit Bobby Aquatic 1")
-        st.line_chart(hw_forecast_future_1)
-
-        st.subheader("Dashboard Penjualan Bobby Aquatic 2")
-        st.line_chart(daily_profit_2)
-        st.subheader("Peramalan Profit Bobby Aquatic 2")
-        st.line_chart(hw_forecast_future_2)
+    # Bobby Aquatic 2 dashboard
+    with col2:
+        st.header("Bobby Aquatic 2")
+        folder_path_2 = "./data/Bobby Aquatic 2"
+        sheet_name_2 = 'Penjualan'
+        penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
+        daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
+        show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
 
 elif st.session_state.page == "product":
     st.header("🔍 Segmentasi Produk Bobby Aquatic")
@@ -102,23 +81,17 @@ elif st.session_state.page == "product":
     # Bobby Aquatic 1 clustering dashboard
     with tab1:
         st.header("Segmentasi Produk Bobby Aquatic 1")
-
-        # Load data for Bobby Aquatic 1
         folder_path_1 = "./data/Bobby Aquatic 1"
-        cluster_data_1 = load_cluster_data_1(folder_path_1, sheet_name)
-
-        # Show cluster dashboard
+        sheet_name_1 = 'Penjualan'
+        cluster_data_1 = load_cluster_data_1(folder_path_1, sheet_name_1)
         show_cluster_dashboard_1(cluster_data_1, key_suffix='cabang1')
 
     # Bobby Aquatic 2 clustering dashboard
     with tab2:
         st.header("Segmentasi Produk Bobby Aquatic 2")
-
-        # Load data for Bobby Aquatic 2
         folder_path_2 = "./data/Bobby Aquatic 2"
-        cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name)
-
-        # Show cluster dashboard
+        sheet_name_2 = 'Penjualan'
+        cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name_2)
         show_cluster_dashboard_2(cluster_data_2, key_suffix='cabang2')
 
 # Footer section

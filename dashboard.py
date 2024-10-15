@@ -77,17 +77,21 @@ if st.session_state.page == "sales":
 
         # Show combined dashboard
         st.header("Dashboard Penjualan Gabungan Bobby Aquatic")
-        st.line_chart(combined_daily_profit, title="Profit Harian Gabungan")
-        st.line_chart(combined_forecast, title="Peramalan Profit Gabungan")
+        st.subheader("Profit Harian Gabungan")
+        st.line_chart(combined_daily_profit)
+        st.subheader("Peramalan Profit Gabungan")
+        st.line_chart(combined_forecast)
     else:
         # Show separate dashboards in a single tab
         st.subheader("Dashboard Penjualan Bobby Aquatic 1")
-        st.line_chart(daily_profit_1, title="Profit Harian Bobby Aquatic 1")
-        st.line_chart(hw_forecast_future_1, title="Peramalan Profit Bobby Aquatic 1")
+        st.line_chart(daily_profit_1)
+        st.subheader("Peramalan Profit Bobby Aquatic 1")
+        st.line_chart(hw_forecast_future_1)
 
         st.subheader("Dashboard Penjualan Bobby Aquatic 2")
-        st.line_chart(daily_profit_2, title="Profit Harian Bobby Aquatic 2")
-        st.line_chart(hw_forecast_future_2, title="Peramalan Profit Bobby Aquatic 2")
+        st.line_chart(daily_profit_2)
+        st.subheader("Peramalan Profit Bobby Aquatic 2")
+        st.line_chart(hw_forecast_future_2)
 
 elif st.session_state.page == "product":
     st.header("🔍 Segmentasi Produk Bobby Aquatic")

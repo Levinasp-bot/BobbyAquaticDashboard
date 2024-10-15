@@ -81,12 +81,16 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=12, key_su
         )
 
         fig = go.Figure()
+        
+        # Only plot historical data if years are selected
         if selected_years:
             combined_data = daily_profit[daily_profit.index.year.isin(selected_years)]
             fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data['LABA'], mode='lines', name='Data Historis'))
 
-        combined_forecast = pd.concat([daily_profit.iloc[[-1]]['LABA'], hw_forecast_future])
-        fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
+            # Include forecast data only if any historical data is available for the selected years
+            if not combined_data.empty:
+                combined_forecast = pd.concat([combined_data.iloc[[-1]]['LABA'], hw_forecast_future])
+                fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
         fig.update_layout(
             xaxis_title='Tanggal',

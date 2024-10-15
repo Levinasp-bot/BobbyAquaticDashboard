@@ -89,7 +89,7 @@ if st.session_state.page == "sales":
     def show_combined_dashboard(profit_data, forecast_data, title):
         st.header(title)
         # Visualization code goes here (e.g., line charts, bar charts)
-        st.line_chart(profit_data.set_index('TANGGAL')['Profit'], width=0, height=300)  # Example line chart
+        st.line_chart(profit_data.set_index('TANGGAL')['LABA'], width=0, height=300)  # Example line chart
         st.write(forecast_data)  # Example table display
 
     # Display the selected data

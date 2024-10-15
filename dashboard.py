@@ -48,27 +48,57 @@ with st.sidebar:
     if st.button('📦 Produk', key="product_button"):
         switch_page("product")
 
+    # Branch filter for sales data
+    st.markdown("### Filter Cabang:")
+    branch_selection = st.selectbox(
+        "Pilih cabang untuk ditampilkan:",
+        ("Bobby Aquatic 1", "Bobby Aquatic 2", "Kombinasi Keduanya")
+    )
+
 # Display content based on selected page
 if st.session_state.page == "sales":
     st.header("📈 Dashboard Penjualan Bobby Aquatic")
 
-    # Load and merge sales data from both branches
-    folder_path_1 = "./data/Bobby Aquatic 1"
-    sheet_name_1 = 'Penjualan'
-    penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
+    # Load sales data based on selected branch
+    if branch_selection == "Bobby Aquatic 1":
+        folder_path = "./data/Bobby Aquatic 1"
+        sheet_name = 'Penjualan'
+        penjualan_data = load_data_1(folder_path, sheet_name)
+        
+        # Forecast profit based on the selected branch data
+        daily_profit, hw_forecast_future = forecast_profit_1(penjualan_data)
+        
+        # Show dashboard for the selected branch
+        show_dashboard(daily_profit, hw_forecast_future, key_suffix='cabang1')
 
-    folder_path_2 = "./data/Bobby Aquatic 2"
-    sheet_name_2 = 'Penjualan'
-    penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
+    elif branch_selection == "Bobby Aquatic 2":
+        folder_path = "./data/Bobby Aquatic 2"
+        sheet_name = 'Penjualan'
+        penjualan_data = load_data_2(folder_path, sheet_name)
 
-    # Combine sales data from both branches
-    combined_penjualan_data = pd.concat([penjualan_data_1, penjualan_data_2], ignore_index=True)
+        # Forecast profit based on the selected branch data
+        daily_profit, hw_forecast_future = forecast_profit_2(penjualan_data)
 
-    # Forecast profit based on combined data
-    daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
+        # Show dashboard for the selected branch
+        show_dashboard(daily_profit, hw_forecast_future, key_suffix='cabang2')
 
-    # Show dashboard for the combined data
-    show_dashboard(daily_profit_combined, hw_forecast_future_combined, key_suffix='combined')
+    elif branch_selection == "Kombinasi Keduanya":
+        # Load and combine sales data from both branches
+        folder_path_1 = "./data/Bobby Aquatic 1"
+        sheet_name_1 = 'Penjualan'
+        penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
+
+        folder_path_2 = "./data/Bobby Aquatic 2"
+        sheet_name_2 = 'Penjualan'
+        penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
+
+        combined_penjualan_data = pd.concat([penjualan_data_1, penjualan_data_2], ignore_index=True)
+
+        # Forecast profit based on combined data
+        daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
+
+        # Show dashboard for the combined data
+        show_dashboard(daily_profit_combined, hw_forecast_future_combined, key_suffix='combined')
 
 elif st.session_state.page == "product":
     st.header("🔍 Segmentasi Produk Bobby Aquatic")

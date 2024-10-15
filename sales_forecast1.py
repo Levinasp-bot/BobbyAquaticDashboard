@@ -40,7 +40,6 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=12, key_su
         predicted_profit_next_week = hw_forecast_future.iloc[0]
         profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
-        # Total laba minggu ini (asumsi total untuk minggu terakhir diambil dari rata-rata * 7 hari)
         total_profit_last_week = last_week_profit * 7
 
         arrow = "🡅" if profit_change_percentage > 0 else "🡇"
@@ -70,11 +69,9 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=12, key_su
         forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
         forecast_years = forecast_dates.year.unique()
 
-        # Combine historical and forecasted years
         all_years = sorted(set(historical_years) | set(forecast_years))
         default_years = [2024] if 2024 in all_years else []
 
-        # Year filter placed directly below the chart title
         selected_years = st.multiselect(
             "Pilih Tahun",
             all_years,
@@ -94,7 +91,8 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=12, key_su
         fig.update_layout(
             xaxis_title='Tanggal',
             yaxis_title='Laba',
-            hovermode='x'
+            hovermode='x',
+            margin=dict(t=20)  # Mengurangi padding atas (t = top)
         )
 
         st.plotly_chart(fig)

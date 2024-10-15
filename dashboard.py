@@ -1,8 +1,9 @@
 import streamlit as st
-from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1, show_dashboard as show_dashboard_1
-from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2, show_dashboard as show_dashboard_2
+from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1
+from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2
 from product_clustering import load_all_excel_files as load_cluster_data_1, show_dashboard as show_cluster_dashboard_1
 from product_clustering2 import load_all_excel_files as load_cluster_data_2, show_dashboard as show_cluster_dashboard_2
+import pandas as pd
 
 # Set page configuration
 st.set_page_config(page_title="Bobby Aquatic Dashboard", layout="wide")
@@ -51,25 +52,38 @@ with st.sidebar:
 if st.session_state.page == "sales":
     st.header("📈 Dashboard Penjualan Bobby Aquatic")
 
-    # Combined dashboard for Bobby Aquatic 1 and 2
-    col1, col2 = st.columns(2)
+    # Load data for Bobby Aquatic 1
+    folder_path_1 = "./data/Bobby Aquatic 1"
+    sheet_name_1 = 'Penjualan'
+    penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
+    daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)
 
-    # Bobby Aquatic 1 dashboard
-    with col1:
-        st.header("Bobby Aquatic 1")
-        folder_path_1 = "./data/Bobby Aquatic 1"
-        sheet_name_1 = 'Penjualan'
-        penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
-        daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)
+    # Load data for Bobby Aquatic 2
+    folder_path_2 = "./data/Bobby Aquatic 2"
+    sheet_name_2 = 'Penjualan'
+    penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
+    daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
+
+    # Combine data
+    combined_profit = pd.concat([daily_profit_1, daily_profit_2]).groupby('date').sum().reset_index()
+    combined_forecast = hw_forecast_future_1.add(hw_forecast_future_2, fill_value=0)
+
+    # Filter for selecting branches
+    branch_option = st.selectbox(
+        "Pilih Cabang", 
+        ["Gabungan", "Bobby Aquatic 1", "Bobby Aquatic 2"],
+        index=0
+    )
+
+    # Display the selected data
+    if branch_option == "Gabungan":
+        st.header("Penjualan Gabungan Bobby Aquatic 1 & 2")
+        show_dashboard_1(combined_profit, combined_forecast, key_suffix='gabungan')
+    elif branch_option == "Bobby Aquatic 1":
+        st.header("Penjualan Bobby Aquatic 1")
         show_dashboard_1(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
-
-    # Bobby Aquatic 2 dashboard
-    with col2:
-        st.header("Bobby Aquatic 2")
-        folder_path_2 = "./data/Bobby Aquatic 2"
-        sheet_name_2 = 'Penjualan'
-        penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
-        daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
+    else:
+        st.header("Penjualan Bobby Aquatic 2")
         show_dashboard_2(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
 
 elif st.session_state.page == "product":

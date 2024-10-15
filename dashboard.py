@@ -3,7 +3,6 @@ from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit
 from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2
 from product_clustering import load_all_excel_files as load_cluster_data_1, show_dashboard as show_cluster_dashboard_1
 from product_clustering2 import load_all_excel_files as load_cluster_data_2, show_dashboard as show_cluster_dashboard_2
-import pandas as pd
 
 # Set page configuration
 st.set_page_config(page_title="Bobby Aquatic Dashboard", layout="wide")
@@ -52,7 +51,7 @@ with st.sidebar:
 if st.session_state.page == "sales":
     st.header("📈 Dashboard Penjualan Bobby Aquatic")
 
-    # Load data for both Bobby Aquatic 1 and 2
+    # Load and merge sales data from both branches
     folder_path_1 = "./data/Bobby Aquatic 1"
     sheet_name_1 = 'Penjualan'
     penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
@@ -61,15 +60,14 @@ if st.session_state.page == "sales":
     sheet_name_2 = 'Penjualan'
     penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
-    # Combine data from both branches
-    combined_data = pd.concat([penjualan_data_1, penjualan_data_2], ignore_index=True)
+    # Combine sales data from both branches
+    combined_penjualan_data = pd.concat([penjualan_data_1, penjualan_data_2], ignore_index=True)
 
-    # Forecast combined data
-    daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_data)
+    # Forecast profit based on combined data
+    daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
 
-    # Show combined dashboard
-    st.subheader("Penjualan Gabungan Bobby Aquatic 1 & 2")
-    show_dashboard_1(daily_profit_combined, hw_forecast_future_combined, key_suffix='combined')
+    # Show dashboard for the combined data
+    show_dashboard(daily_profit_combined, hw_forecast_future_combined, key_suffix='combined')
 
 elif st.session_state.page == "product":
     st.header("🔍 Segmentasi Produk Bobby Aquatic")

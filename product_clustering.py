@@ -5,7 +5,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import streamlit as st
 import plotly.graph_objects as go
-from yellowbrick.cluster import KElbowVisualizer
 
 @st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
@@ -168,7 +167,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
         if st.checkbox(f"Lihat Detail Cluster {category_name}", key=f"cluster_detail_{key_suffix}"):
             cluster_selected = st.selectbox(f"Pilih Cluster {category_name}", sorted(custom_legends.keys()),
-                                            format_func=lambda x: custom_legends[x])
+                                            format_func=lambda x: custom_legends[x], key=f"select_cluster_{key_suffix}")
 
             show_cluster_table(rfm_category, cluster_selected, custom_legends[cluster_selected], key_suffix)
 

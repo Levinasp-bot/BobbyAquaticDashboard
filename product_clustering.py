@@ -166,7 +166,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         pie_chart = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
         st.plotly_chart(pie_chart, use_container_width=True)
 
-        if st.checkbox(f"Lihat Detail Cluster {category_name}", key=f"cluster_detail_{key_suffix}"):
+        if st.checkbox(f"Lihat Detail Cluster {category_name}", key=f"cluster_details_{key_suffix}"):
             cluster_selected = st.selectbox(f"Pilih Cluster {category_name}", sorted(custom_legends.keys()),
                                             format_func=lambda x: custom_legends[x], key=f"select_cluster_{key_suffix}")
 

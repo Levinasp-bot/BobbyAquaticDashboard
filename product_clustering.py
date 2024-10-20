@@ -137,6 +137,13 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
+def categorize_cluster_avg(cluster_avg, recency_quartiles, frequency_quartiles, monetary_quartiles):
+    # Kategorisasi berdasarkan rata-rata Recency, Frequency, dan Monetary di setiap cluster
+    cluster_avg['Recency_Category'] = cluster_avg['Recency'].apply(lambda x: categorize_recency(x, recency_quartiles))
+    cluster_avg['Frequency_Category'] = cluster_avg['Frequency'].apply(lambda x: categorize_frequency(x, frequency_quartiles))
+    cluster_avg['Monetary_Category'] = cluster_avg['Monetary'].apply(lambda x: categorize_monetary(x, monetary_quartiles))
+    return cluster_avg
+
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
     if rfm_category.shape[0] > 0 and n_clusters > 0:
         scaler = StandardScaler()
@@ -147,63 +154,24 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
         rfm_category = categorize_rfm(rfm_category)
 
+        # Menghitung quartiles untuk kategorisasi rata-rata setiap cluster
+        recency_quartiles = rfm_category['Recency'].quantile([0.2, 0.4, 0.6, 0.8])
+        frequency_quartiles = rfm_category['Frequency'].quantile([0.2, 0.4, 0.6, 0.8])
+        monetary_quartiles = rfm_category['Monetary'].quantile([0.2, 0.4, 0.6, 0.8])
+
         # Membuat summary rata-rata setiap cluster
         cluster_avg = rfm_category.groupby('Cluster')[['Recency', 'Frequency', 'Monetary']].mean()
 
-        # Mendapatkan karakteristik cluster berdasarkan rata-rata RFM
+        # Mendapatkan kategori berdasarkan rata-rata Recency, Frequency, dan Monetary untuk setiap cluster
+        cluster_avg_categorized = categorize_cluster_avg(cluster_avg, recency_quartiles, frequency_quartiles, monetary_quartiles)
+
+        # Menyusun legenda kustom
         custom_legends = {
-            cluster: f"{rfm_category[rfm_category['Cluster'] == cluster]['Recency'].mean():.2f} hari sejak pembelian terakhir, "
-                    f"Rata-rata Frekuensi {rfm_category[rfm_category['Cluster'] == cluster]['Frequency'].mean():.2f}, "
-                    f"dan Nilai Pembelian {rfm_category[rfm_category['Cluster'] == cluster]['Monetary'].mean():.2f}"
-            for cluster in sorted(rfm_category['Cluster'].unique())
+            cluster: f"{cluster_avg_categorized.loc[cluster, 'Recency_Category']} Recency, "
+                     f"{cluster_avg_categorized.loc[cluster, 'Frequency_Category']} Frequency, "
+                     f"{cluster_avg_categorized.loc[cluster, 'Monetary_Category']} Monetary"
+            for cluster in sorted(cluster_avg.index)
         }
-
-        col1, col2 = st.columns([1, 2])
-
-        with col1:
-            st.markdown(f"<h4 style='font-size: 20px;'>Total {category_name} Terjual</h4>", unsafe_allow_html=True)
-            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
-                        f"font-size: 32px; font-weight: bold; display: flex; justify-content: center; align-items: center; "
-                        f"height: 100px;'>"
-                        f"<strong>{rfm_category['Frequency'].sum()}</strong></div>", unsafe_allow_html=True)
-
-        with col2:
-            st.markdown("<h4 style='font-size: 20px;'>Rata - rata RFM</h4>", unsafe_allow_html=True)
-            average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
-    
-            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
-                        f"display: flex; justify-content: space-around; align-items: center; height: 100px;'>"
-                        f"<div style='text-align: center;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Recency']:.2f}</span><br>"
-                        f"<span style='font-size: 12px;'>Recency</span></div>"
-                        f"<div style='text-align: center;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Frequency']:.2f}</span><br>"
-                        f"<span style='font-size: 12px;'>Frequency</span></div>"
-                        f"<div style='text-align: center;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Monetary']:.2f}</span><br>"
-                        f"<span style='font-size: 12px;'>Monetary</span></div>"
-                        f"</div>", unsafe_allow_html=True)
-
-        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
-        selected_custom_label = st.selectbox(
-            f'Pilih Kelompok untuk {category_name}:',
-            options=[custom_legends[cluster] for cluster in sorted(custom_legends.keys())],
-            key=unique_key
-        )
-
-        selected_cluster_num = {v: k for k, v in custom_legends.items()}[selected_custom_label]
-        plot_key = f'plotly_chart_{category_name}_{key_suffix}'
-
-        chart_col, table_col = st.columns(2)
-        with chart_col:
-            fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-            st.plotly_chart(fig, use_container_width=True, key=plot_key)
-
-        with table_col:
-            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
-
-    else:
-        st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
 def get_optimal_k(data_scaled):
     model = KMeans(random_state=1)

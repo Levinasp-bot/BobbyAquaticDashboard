@@ -7,8 +7,10 @@ import streamlit as st
 import plotly.graph_objects as go
 from yellowbrick.cluster import KElbowVisualizer
 
+# Supaya Streamlit tidak menggunakan cache untuk fungsi yang melakukan clustering
 @st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
+    # Memuat semua file Excel dari folder yang diberikan
     all_files = glob.glob(os.path.join(folder_path, "*.xlsm"))
     dfs = []
     for file in all_files:
@@ -19,17 +21,22 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dfs, ignore_index=True)
 
 def process_rfm(data):
+    # Memproses data RFM
     data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])
     reference_date = data['TANGGAL'].max()
+    
+    # Mengelompokkan data berdasarkan KODE BARANG dan KATEGORI
     rfm = data.groupby(['KODE BARANG', 'KATEGORI']).agg({
         'TANGGAL': lambda x: (reference_date - x.max()).days,  # Recency
         'NAMA BARANG': 'count',  # Frequency
         'TOTAL HR JUAL': 'sum'  # Monetary
     }).reset_index()
+    
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
 def categorize_rfm(rfm):
+    # Menghitung quintile (5 bagian) untuk Recency, Frequency, dan Monetary
     recency_q1 = rfm['Recency'].quantile(0.2)
     recency_q2 = rfm['Recency'].quantile(0.4)
     recency_q3 = rfm['Recency'].quantile(0.6)
@@ -45,43 +52,32 @@ def categorize_rfm(rfm):
     monetary_q3 = rfm['Monetary'].quantile(0.6)
     monetary_q4 = rfm['Monetary'].quantile(0.8)
 
+    # Membuat bins secara dinamis berdasarkan quintile
     recency_bins = [0, recency_q1, recency_q2, recency_q3, recency_q4, float('inf')]
     frequency_bins = [0, frequency_q1, frequency_q2, frequency_q3, frequency_q4, float('inf')]
     monetary_bins = [0, monetary_q1, monetary_q2, monetary_q3, monetary_q4, float('inf')]
 
+    # Label untuk 5 kategori
     recency_labels = ['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Lama', 'Sangat Lama']
     frequency_labels = ['Sangat Jarang', 'Jarang', 'Cukup Sering', 'Sering', 'Sangat Sering']
     monetary_labels = ['Sangat Rendah', 'Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi']
 
+    # Menetapkan kategori berdasarkan bins dan labels
     rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=recency_labels)
     rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=frequency_labels)
     rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=monetary_labels)
 
     return rfm
 
-def assign_cluster_labels(cluster_avg, recency_labels, frequency_labels, monetary_labels):
-    def assign_linguistic_labels(value, labels):
-        for i, label in enumerate(labels):
-            if value <= i + 1:
-                return label
-        return labels[-1]
-
-    cluster_labels = {}
-    for cluster, row in cluster_avg.iterrows():
-        recency_cat = assign_linguistic_labels(row['Recency'], recency_labels)
-        frequency_cat = assign_linguistic_labels(row['Frequency'], frequency_labels)
-        monetary_cat = assign_linguistic_labels(row['Monetary'], monetary_labels)
-
-        cluster_labels[cluster] = f"{recency_cat} Dibeli, Frekuensi {frequency_cat}, dan Nilai Pembelian {monetary_cat}"
-
-    return cluster_labels
 
 def cluster_rfm(rfm_scaled, n_clusters):
+    # Melakukan clustering menggunakan KMeans
     kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
     kmeans.fit(rfm_scaled)
     return kmeans.labels_
 
 def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legends):
+    # Membuat grafik pie interaktif
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
@@ -113,13 +109,15 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
     return fig
 
-def show_cluster_table(rfm, cluster_label, custom_label, key_suffix, table_index):
+def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
+    # Menampilkan tabel cluster
     st.markdown(f"##### Daftar Produk yang {custom_label}", unsafe_allow_html=True)
     
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
-    st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}_{table_index}")
+    st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
+    # Memproses kategori dan menampilkan hasil
     if rfm_category.shape[0] > 0 and n_clusters > 0:
         scaler = StandardScaler()
         rfm_scaled = scaler.fit_transform(rfm_category[['Recency', 'Frequency', 'Monetary']])
@@ -127,17 +125,32 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         cluster_labels = cluster_rfm(rfm_scaled, n_clusters)
         rfm_category['Cluster'] = cluster_labels
 
+        # Mengategorikan RFM
         rfm_category = categorize_rfm(rfm_category)
 
-        # Membuat summary rata-rata setiap cluster
-        cluster_avg = rfm_category.groupby('Cluster')[['Recency', 'Frequency', 'Monetary']].mean()
+        # Menghitung rata-rata RFM untuk setiap cluster
+        average_rfm_per_cluster = rfm_category.groupby('Cluster')[['Recency', 'Frequency', 'Monetary']].mean().reset_index()
+        
+        # Menentukan kategori linguistik berdasarkan rentang quantile
+        for col in ['Recency', 'Frequency', 'Monetary']:
+            quantiles = average_rfm_per_cluster[col].quantile([0.2, 0.4, 0.6, 0.8]).values
+            bins = [0] + list(quantiles) + [float('inf')]
+            labels = [f'Q{i+1}' for i in range(len(quantiles) + 1)]
+            average_rfm_per_cluster[f'{col}_Category'] = pd.cut(
+                average_rfm_per_cluster[col],
+                bins=bins,
+                labels=labels
+            )
 
-        # Menentukan label berdasarkan rata-rata RFM
-        custom_legends = assign_cluster_labels(cluster_avg, ['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Lama', 'Sangat Lama'],
-                                               ['Sangat Jarang', 'Jarang', 'Cukup Sering', 'Sering', 'Sangat Sering'],
-                                               ['Sangat Rendah', 'Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi'])
+        # Membuat legenda untuk setiap cluster menggunakan kategori rata-rata
+        custom_legends = {
+            cluster: f"Rata-rata Recency: {average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Recency'].values[0]:.2f} ({average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Recency_Category'].values[0]}) | "
+                     f"Frekuensi: {average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Frequency'].values[0]:.2f} ({average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Frequency_Category'].values[0]}) | "
+                     f"Monetary: {average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Monetary'].values[0]:.2f} ({average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Monetary_Category'].values[0]})"
+            for cluster in sorted(rfm_category['Cluster'].unique())
+        }
 
-        col1, col2 = st.columns([1, 2])
+        col1, col2 = st.columns([1, 2])  
 
         with col1:
             st.markdown(f"<h4 style='font-size: 20px;'>Total {category_name} Terjual</h4>", unsafe_allow_html=True)
@@ -163,16 +176,28 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
                         f"<span style='font-size: 12px;'>Monetary</span></div>"
                         f"</div>", unsafe_allow_html=True)
 
-        pie_chart = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-        st.plotly_chart(pie_chart, use_container_width=True)
+        # Memilih cluster yang akan ditampilkan
+        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
+        selected_custom_label = st.selectbox(
+            f'Pilih Kelompok untuk {category_name}:',
+            options=[custom_legends[cluster] for cluster in sorted(custom_legends.keys())],
+            key=unique_key
+        )
 
-        if st.checkbox(f"Lihat Detail Cluster {category_name}", key=f"cluster_detail_{key_suffix}"):
-            cluster_selected = st.selectbox(f"Pilih Cluster {category_name}", sorted(custom_legends.keys()),
-                                            format_func=lambda x: custom_legends[x], key=f"select_cluster_{key_suffix}")
+        selected_cluster_num = {v: k for k, v in custom_legends.items()}[selected_custom_label]
+        plot_key = f'plotly_chart_{category_name}_{key_suffix}'
 
-            # Menggunakan index untuk membedakan tabel
-            show_cluster_table(rfm_category, cluster_selected, custom_legends[cluster_selected], key_suffix, table_index=1)  # Tabel pertama
-            show_cluster_table(rfm_category, cluster_selected, custom_legends[cluster_selected], key_suffix, table_index=2)  # Tabel kedua
+        # Menampilkan grafik dan tabel cluster
+        chart_col, table_col = st.columns(2)
+        with chart_col:
+            fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
+            st.plotly_chart(fig, use_container_width=True, key=plot_key)
+
+        with table_col:
+            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
+
+    else:
+        st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
 
 def get_optimal_k(data_scaled):
@@ -182,6 +207,7 @@ def get_optimal_k(data_scaled):
     return visualizer.elbow_value_
 
 def show_dashboard(data, key_suffix=''):
+ 
     rfm = process_rfm(data)
 
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']

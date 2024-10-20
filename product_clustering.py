@@ -191,21 +191,19 @@ def get_optimal_k(X):
 
 def show_dashboard(data):
     rfm = process_rfm(data)
-    key_suffix = st.session_state.get("key_suffix", 0)
 
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
     rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
 
-    # Determine optimal k for clustering
+    # Tentukan optimal k untuk clustering
     if rfm_ikan.shape[0] > 0:
         scaler_ikan = StandardScaler()
         rfm_ikan_scaled = scaler_ikan.fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
         optimal_k_ikan = get_optimal_k(rfm_ikan_scaled)
-        process_category(rfm_ikan, "Ikan", optimal_k_ikan, key_suffix)
+        process_category(rfm_ikan, "Ikan", optimal_k_ikan)
 
     if rfm_aksesoris.shape[0] > 0:
         scaler_aksesoris = StandardScaler()
         rfm_aksesoris_scaled = scaler_aksesoris.fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])
         optimal_k_aksesoris = get_optimal_k(rfm_aksesoris_scaled)
-        process_category(rfm_aksesoris, "Aksesoris", optimal_k_aksesoris, key_suffix)
-
+        process_category(rfm_aksesoris, "Aksesoris", optimal_k_aksesoris)

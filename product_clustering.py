@@ -29,65 +29,45 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
-def categorize_recency(recency, quartiles):
-    if recency <= quartiles[0.2]:
-        return 'Baru Saja'
-    elif recency <= quartiles[0.4]:
-        return 'Cukup Baru'
-    elif recency <= quartiles[0.6]:
-        return 'Cukup Lama'
-    elif recency <= quartiles[0.8]:
-        return 'Lama'
-    else:
-        return 'Sangat Lama'
-
-def categorize_frequency(frequency, quartiles):
-    if frequency <= quartiles[0.2]:
-        return 'Sangat Jarang'
-    elif frequency <= quartiles[0.4]:
-        return 'Jarang'
-    elif frequency <= quartiles[0.6]:
-        return 'Cukup Sering'
-    elif frequency <= quartiles[0.8]:
-        return 'Sering'
-    else:
-        return 'Sangat Sering'
-
-def categorize_monetary(monetary, quartiles):
-    if monetary <= quartiles[0.2]:
-        return 'Sangat Rendah'
-    elif monetary <= quartiles[0.4]:
-        return 'Rendah'
-    elif monetary <= quartiles[0.6]:
-        return 'Sedang'
-    elif monetary <= quartiles[0.8]:
-        return 'Tinggi'
-    else:
-        return 'Sangat Tinggi'
-
 def categorize_rfm(rfm):
-    # Calculate quartiles for Recency, Frequency, and Monetary
-    recency_quartiles = rfm['Recency'].quantile([0.2, 0.4, 0.6, 0.8])
-    frequency_quartiles = rfm['Frequency'].quantile([0.2, 0.4, 0.6, 0.8])
-    monetary_quartiles = rfm['Monetary'].quantile([0.2, 0.4, 0.6, 0.8])
+    recency_q1 = rfm['Recency'].quantile(0.2)
+    recency_q2 = rfm['Recency'].quantile(0.4)
+    recency_q3 = rfm['Recency'].quantile(0.6)
+    recency_q4 = rfm['Recency'].quantile(0.8)
+    
+    frequency_q1 = rfm['Frequency'].quantile(0.2)
+    frequency_q2 = rfm['Frequency'].quantile(0.4)
+    frequency_q3 = rfm['Frequency'].quantile(0.6)
+    frequency_q4 = rfm['Frequency'].quantile(0.8)
+    
+    monetary_q1 = rfm['Monetary'].quantile(0.2)
+    monetary_q2 = rfm['Monetary'].quantile(0.4)
+    monetary_q3 = rfm['Monetary'].quantile(0.6)
+    monetary_q4 = rfm['Monetary'].quantile(0.8)
 
-    # Categorize Recency, Frequency, and Monetary
-    rfm['Recency_Category'] = rfm['Recency'].apply(lambda x: categorize_recency(x, recency_quartiles))
-    rfm['Frequency_Category'] = rfm['Frequency'].apply(lambda x: categorize_frequency(x, frequency_quartiles))
-    rfm['Monetary_Category'] = rfm['Monetary'].apply(lambda x: categorize_monetary(x, monetary_quartiles))
+    recency_bins = [0, recency_q1, recency_q2, recency_q3, recency_q4, float('inf')]
+    frequency_bins = [0, frequency_q1, frequency_q2, frequency_q3, frequency_q4, float('inf')]
+    monetary_bins = [0, monetary_q1, monetary_q2, monetary_q3, monetary_q4, float('inf')]
+
+    recency_labels = ['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Lama', 'Sangat Lama']
+    frequency_labels = ['Sangat Jarang', 'Jarang', 'Cukup Sering', 'Sering', 'Sangat Sering']
+    monetary_labels = ['Sangat Rendah', 'Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi']
+
+    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=recency_labels)
+    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=frequency_labels)
+    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=monetary_labels)
 
     return rfm
 
-def determine_cluster_characteristics(cluster_avg, rfm):
-    rfm_categorized = categorize_rfm(rfm)
-    
-    # For each cluster, assign the category based on the average RFM value of that cluster
-    cluster_summary = rfm_categorized.groupby('Cluster').agg({
-        'Recency_Category': lambda x: x.mode()[0],  # Assign most frequent category
-        'Frequency_Category': lambda x: x.mode()[0],
-        'Monetary_Category': lambda x: x.mode()[0]
-    }).reset_index()
+def determine_cluster_characteristics(cluster_avg, recency_labels, frequency_labels, monetary_labels):
+    def assign_cluster_characteristics(row):
+        recency_cat = recency_labels[int(row['Recency'])]
+        frequency_cat = frequency_labels[int(row['Frequency'])]
+        monetary_cat = monetary_labels[int(row['Monetary'])]
+        return pd.Series([recency_cat, frequency_cat, monetary_cat], index=['Recency_Category', 'Frequency_Category', 'Monetary_Category'])
 
+    cluster_characteristics = cluster_avg.apply(assign_cluster_characteristics, axis=1)
+    cluster_summary = pd.concat([cluster_avg, cluster_characteristics], axis=1)
     return cluster_summary
 
 def cluster_rfm(rfm_scaled, n_clusters):
@@ -96,6 +76,7 @@ def cluster_rfm(rfm_scaled, n_clusters):
     return kmeans.labels_
 
 def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legends):
+    # Membuat grafik pie interaktif
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
@@ -143,17 +124,14 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
         rfm_category = categorize_rfm(rfm_category)
 
-        # Summary for clusters
+        # Membuat summary rata-rata setiap cluster
         cluster_avg = rfm_category.groupby('Cluster')[['Recency', 'Frequency', 'Monetary']].mean()
 
-        # Get cluster characteristics
-        cluster_summary = determine_cluster_characteristics(cluster_avg, rfm_category)
-
-        # Create custom legends for cluster description
+        # Mendapatkan karakteristik cluster berdasarkan rata-rata RFM
         custom_legends = {
-            cluster: f"{cluster_summary.loc[cluster, 'Recency_Category']}, "
-                     f"{cluster_summary.loc[cluster, 'Frequency_Category']}, "
-                     f"{cluster_summary.loc[cluster, 'Monetary_Category']}"
+            cluster: f"{rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]} Dibeli, "
+                     f"Frekuensi {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
+                     f"dan Nilai Pembelian {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mode()[0]}"
             for cluster in sorted(rfm_category['Cluster'].unique())
         }
 
@@ -183,17 +161,26 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
                         f"<span style='font-size: 12px;'>Monetary</span></div>"
                         f"</div>", unsafe_allow_html=True)
 
-        col1, col2 = st.columns([2, 1])
+        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
+        selected_custom_label = st.selectbox(
+            f'Pilih Kelompok untuk {category_name}:',
+            options=[custom_legends[cluster] for cluster in sorted(custom_legends.keys())],
+            key=unique_key
+        )
 
-        with col1:
-            st.markdown(f"<h4 style='font-size: 20px;'>Distribusi Cluster {category_name}</h4>", unsafe_allow_html=True)
+        selected_cluster_num = {v: k for k, v in custom_legends.items()}[selected_custom_label]
+        plot_key = f'plotly_chart_{category_name}_{key_suffix}'
+
+        chart_col, table_col = st.columns(2)
+        with chart_col:
             fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key=plot_key)
 
-        with col2:
-            st.markdown(f"<h4 style='font-size: 20px;'>Detail Cluster</h4>", unsafe_allow_html=True)
-            for cluster_label in sorted(rfm_category['Cluster'].unique()):
-                show_cluster_table(rfm_category, cluster_label, custom_legends[cluster_label], key_suffix)
+        with table_col:
+            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
+
+    else:
+        st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
 def get_optimal_k(data_scaled):
     model = KMeans(random_state=1)

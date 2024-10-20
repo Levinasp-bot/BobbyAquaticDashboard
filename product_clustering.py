@@ -174,6 +174,7 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
             show_cluster_table(rfm_category, cluster_selected, custom_legends[cluster_selected], key_suffix, table_index=1)  # Tabel pertama
             show_cluster_table(rfm_category, cluster_selected, custom_legends[cluster_selected], key_suffix, table_index=2)  # Tabel kedua
 
+
 def get_optimal_k(data_scaled):
     model = KMeans(random_state=1)
     visualizer = KElbowVisualizer(model, k=(1, 11), timings=False)

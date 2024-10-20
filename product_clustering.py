@@ -113,11 +113,11 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
 
     return fig
 
-def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
+def show_cluster_table(rfm, cluster_label, custom_label, key_suffix, table_index):
     st.markdown(f"##### Daftar Produk yang {custom_label}", unsafe_allow_html=True)
     
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
-    st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
+    st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}_{table_index}")
 
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
     if rfm_category.shape[0] > 0 and n_clusters > 0:
@@ -166,11 +166,13 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         pie_chart = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
         st.plotly_chart(pie_chart, use_container_width=True)
 
-        if st.checkbox(f"Lihat Detail Cluster {category_name}", key=f"cluster_details_{key_suffix}"):
+        if st.checkbox(f"Lihat Detail Cluster {category_name}", key=f"cluster_detail_{key_suffix}"):
             cluster_selected = st.selectbox(f"Pilih Cluster {category_name}", sorted(custom_legends.keys()),
                                             format_func=lambda x: custom_legends[x], key=f"select_cluster_{key_suffix}")
 
-            show_cluster_table(rfm_category, cluster_selected, custom_legends[cluster_selected], key_suffix)
+            # Menggunakan index untuk membedakan tabel
+            show_cluster_table(rfm_category, cluster_selected, custom_legends[cluster_selected], key_suffix, table_index=1)  # Tabel pertama
+            show_cluster_table(rfm_category, cluster_selected, custom_legends[cluster_selected], key_suffix, table_index=2)  # Tabel kedua
 
 def get_optimal_k(data_scaled):
     model = KMeans(random_state=1)

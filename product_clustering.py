@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import streamlit as st
 import plotly.graph_objects as go
+from yellowbrick.cluster import KElbowVisualizer
 
 @st.cache_data
 def load_all_excel_files(folder_path, sheet_name):

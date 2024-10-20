@@ -82,35 +82,6 @@ def categorize_rfm(rfm):
     
     return rfm
 
-    recency_q1 = rfm['Recency'].quantile(0.2)
-    recency_q2 = rfm['Recency'].quantile(0.4)
-    recency_q3 = rfm['Recency'].quantile(0.6)
-    recency_q4 = rfm['Recency'].quantile(0.8)
-    
-    frequency_q1 = rfm['Frequency'].quantile(0.2)
-    frequency_q2 = rfm['Frequency'].quantile(0.4)
-    frequency_q3 = rfm['Frequency'].quantile(0.6)
-    frequency_q4 = rfm['Frequency'].quantile(0.8)
-    
-    monetary_q1 = rfm['Monetary'].quantile(0.2)
-    monetary_q2 = rfm['Monetary'].quantile(0.4)
-    monetary_q3 = rfm['Monetary'].quantile(0.6)
-    monetary_q4 = rfm['Monetary'].quantile(0.8)
-
-    recency_bins = [0, recency_q1, recency_q2, recency_q3, recency_q4, float('inf')]
-    frequency_bins = [0, frequency_q1, frequency_q2, frequency_q3, frequency_q4, float('inf')]
-    monetary_bins = [0, monetary_q1, monetary_q2, monetary_q3, monetary_q4, float('inf')]
-
-    recency_labels = ['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Lama', 'Sangat Lama']
-    frequency_labels = ['Sangat Jarang', 'Jarang', 'Cukup Sering', 'Sering', 'Sangat Sering']
-    monetary_labels = ['Sangat Rendah', 'Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi']
-
-    rfm['Recency_Category'] = pd.cut(rfm['Recency'], bins=recency_bins, labels=recency_labels)
-    rfm['Frequency_Category'] = pd.cut(rfm['Frequency'], bins=frequency_bins, labels=frequency_labels)
-    rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=monetary_labels)
-
-    return rfm
-
 def determine_cluster_characteristics(cluster_avg, recency_labels, frequency_labels, monetary_labels):
     def assign_cluster_characteristics(row):
         recency_cat = recency_labels[int(row['Recency'])]
@@ -181,9 +152,9 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
 
         # Mendapatkan karakteristik cluster berdasarkan rata-rata RFM
         custom_legends = {
-            cluster: f"{rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]} Dibeli, "
-                     f"Frekuensi {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
-                     f"dan Nilai Pembelian {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mode()[0]}"
+            cluster: f"{rfm_category[rfm_category['Cluster'] == cluster]['Recency'].mean():.2f} hari sejak pembelian terakhir, "
+                    f"Rata-rata Frekuensi {rfm_category[rfm_category['Cluster'] == cluster]['Frequency'].mean():.2f}, "
+                    f"dan Nilai Pembelian {rfm_category[rfm_category['Cluster'] == cluster]['Monetary'].mean():.2f}"
             for cluster in sorted(rfm_category['Cluster'].unique())
         }
 

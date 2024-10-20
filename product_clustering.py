@@ -66,7 +66,7 @@ def show_cluster_table(rfm, cluster_label):
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350)
 
-def process_category(rfm_category, category_name, n_clusters):
+def process_category(rfm_category, category_name, n_clusters, key_suffix=None):
     if rfm_category.shape[0] > 0 and n_clusters > 0:
         scaler = StandardScaler()
         rfm_scaled = scaler.fit_transform(rfm_category[['Recency', 'Frequency', 'Monetary']])
@@ -80,7 +80,7 @@ def process_category(rfm_category, category_name, n_clusters):
         col1, col2 = st.columns([1, 2])
 
         with col1:
-            st.markdown(f"<h4 style='font-size: 20px;'>Total {category_name} Terjual</h4>", unsafe_allow_html=True)
+            st.markdown(f"<h4 style='font-size: 20px;'>Total {category_name} Terjual ({key_suffix})</h4>", unsafe_allow_html=True)
             st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
                         f"font-size: 32px; font-weight: bold; display: flex; justify-content: center; align-items: center; "
                         f"height: 100px;'>"
@@ -103,12 +103,12 @@ def process_category(rfm_category, category_name, n_clusters):
                         f"<span style='font-size: 12px;'>Monetary</span></div>"
                         f"</div>", unsafe_allow_html=True)
 
-        st.markdown(f"### Pie Chart for {category_name}")
+        st.markdown(f"### Pie Chart for {category_name} ({key_suffix})")
         fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name)
         st.plotly_chart(fig, use_container_width=True)
 
         selected_cluster = st.selectbox(
-            f'Pilih Cluster untuk {category_name}:',
+            f'Pilih Cluster untuk {category_name} ({key_suffix}):',
             options=sorted(rfm_category['Cluster'].unique())
         )
 
@@ -116,6 +116,7 @@ def process_category(rfm_category, category_name, n_clusters):
 
     else:
         st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
+
 
 def get_optimal_k(data_scaled):
     model = KMeans(random_state=1)

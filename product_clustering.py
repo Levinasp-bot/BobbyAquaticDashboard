@@ -123,13 +123,13 @@ def get_optimal_k(data_scaled):
     visualizer.fit(data_scaled)
     return visualizer.elbow_value_
 
-def show_dashboard(data):
+def show_dashboard(data, key_suffix=''):
     rfm = process_rfm(data)
 
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
     n_clusters_ikan = get_optimal_k(StandardScaler().fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']]))
-    process_category(rfm_ikan, 'Ikan', n_clusters_ikan)
+    process_category(rfm_ikan, 'Ikan', n_clusters_ikan, key_suffix)
 
     rfm_aksesoris = rfm[rfm['KATEGORI'] == 'Aksesoris']
     n_clusters_aksesoris = get_optimal_k(StandardScaler().fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']]))
-    process_category(rfm_aksesoris, 'Aksesoris', n_clusters_aksesoris)
+    process_category(rfm_aksesoris, 'Aksesoris', n_clusters_aksesoris, key_suffix)

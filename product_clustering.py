@@ -189,7 +189,7 @@ def get_optimal_k(X):
     visualizer.fit(X)
     return visualizer.elbow_value_
 
-def show_dashboard(data):
+def show_dashboard(data, key_suffix=''):
     rfm = process_rfm(data)
 
     rfm_ikan = rfm[rfm['KATEGORI'] == 'Ikan']
@@ -200,10 +200,10 @@ def show_dashboard(data):
         scaler_ikan = StandardScaler()
         rfm_ikan_scaled = scaler_ikan.fit_transform(rfm_ikan[['Recency', 'Frequency', 'Monetary']])
         optimal_k_ikan = get_optimal_k(rfm_ikan_scaled)
-        process_category(rfm_ikan, "Ikan", optimal_k_ikan)
+        process_category(rfm_ikan, "Ikan", optimal_k_ikan, key_suffix)
 
     if rfm_aksesoris.shape[0] > 0:
         scaler_aksesoris = StandardScaler()
         rfm_aksesoris_scaled = scaler_aksesoris.fit_transform(rfm_aksesoris[['Recency', 'Frequency', 'Monetary']])
         optimal_k_aksesoris = get_optimal_k(rfm_aksesoris_scaled)
-        process_category(rfm_aksesoris, "Aksesoris", optimal_k_aksesoris)
+        process_category(rfm_aksesoris, "Aksesoris", optimal_k_aksesoris, key_suffix)

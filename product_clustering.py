@@ -125,7 +125,8 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         rfm_category = categorize_rfm(rfm_category)
 
         # Membuat summary rata-rata setiap cluster
-        cluster_avg = rfm_category.groupby('Cluster')[['Recency', 'Frequency', 'Monetary']].mean()
+        cluster_avg = rfm_category.groupby('Cluster')[['Recency', 'Frequency', 'Monetary']].mean().reset_index()
+        cluster_avg.columns = ['Cluster', 'Avg_Recency', 'Avg_Frequency', 'Avg_Monetary']
 
         # Mendapatkan karakteristik cluster berdasarkan rata-rata RFM
         custom_legends = {
@@ -145,21 +146,19 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
                         f"<strong>{rfm_category['Frequency'].sum()}</strong></div>", unsafe_allow_html=True)
 
         with col2:
-            st.markdown("<h4 style='font-size: 20px;'>Rata - rata RFM</h4>", unsafe_allow_html=True)
-            average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
-    
-            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
-                        f"display: flex; justify-content: space-around; align-items: center; height: 100px;'>"
-                        f"<div style='text-align: center;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Recency']:.2f}</span><br>"
-                        f"<span style='font-size: 12px;'>Recency</span></div>"
-                        f"<div style='text-align: center;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Frequency']:.2f}</span><br>"
-                        f"<span style='font-size: 12px;'>Frequency</span></div>"
-                        f"<div style='text-align: center;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Monetary']:.2f}</span><br>"
-                        f"<span style='font-size: 12px;'>Monetary</span></div>"
-                        f"</div>", unsafe_allow_html=True)
+            st.markdown("<h4 style='font-size: 20px;'>Rata - rata RFM per Cluster</h4>", unsafe_allow_html=True)
+
+            for cluster in sorted(cluster_avg['Cluster'].unique()):
+                avg_recency = cluster_avg.loc[cluster_avg['Cluster'] == cluster, 'Avg_Recency'].values[0]
+                avg_frequency = cluster_avg.loc[cluster_avg['Cluster'] == cluster, 'Avg_Frequency'].values[0]
+                avg_monetary = cluster_avg.loc[cluster_avg['Cluster'] == cluster, 'Avg_Monetary'].values[0]
+
+                st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 10px; border-radius: 5px;'>"
+                            f"<strong>Cluster {cluster}</strong><br>"
+                            f"<span style='font-size: 12px;'>Avg Recency: {avg_recency:.2f}</span><br>"
+                            f"<span style='font-size: 12px;'>Avg Frequency: {avg_frequency:.2f}</span><br>"
+                            f"<span style='font-size: 12px;'>Avg Monetary: {avg_monetary:.2f}</span>"
+                            f"</div>", unsafe_allow_html=True)
 
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
         selected_custom_label = st.selectbox(

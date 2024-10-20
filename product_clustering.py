@@ -29,7 +29,59 @@ def process_rfm(data):
     rfm.columns = ['KODE BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
+def categorize_recency(recency, quartiles):
+    if recency <= quartiles[0.2]:
+        return 'Baru Saja'
+    elif recency <= quartiles[0.4]:
+        return 'Cukup Baru'
+    elif recency <= quartiles[0.6]:
+        return 'Cukup Lama'
+    elif recency <= quartiles[0.8]:
+        return 'Lama'
+    else:
+        return 'Sangat Lama'
+
+def categorize_frequency(frequency, quartiles):
+    if frequency <= quartiles[0.2]:
+        return 'Sangat Jarang'
+    elif frequency <= quartiles[0.4]:
+        return 'Jarang'
+    elif frequency <= quartiles[0.6]:
+        return 'Cukup Sering'
+    elif frequency <= quartiles[0.8]:
+        return 'Sering'
+    else:
+        return 'Sangat Sering'
+
+def categorize_monetary(monetary, quartiles):
+    if monetary <= quartiles[0.2]:
+        return 'Sangat Rendah'
+    elif monetary <= quartiles[0.4]:
+        return 'Rendah'
+    elif monetary <= quartiles[0.6]:
+        return 'Sedang'
+    elif monetary <= quartiles[0.8]:
+        return 'Tinggi'
+    else:
+        return 'Sangat Tinggi'
+
 def categorize_rfm(rfm):
+    # Menghitung quartiles untuk Recency, Frequency, dan Monetary
+    recency_quartiles = rfm['Recency'].quantile([0.2, 0.4, 0.6, 0.8])
+    frequency_quartiles = rfm['Frequency'].quantile([0.2, 0.4, 0.6, 0.8])
+    monetary_quartiles = rfm['Monetary'].quantile([0.2, 0.4, 0.6, 0.8])
+
+    # Kategorisasi Recency menggunakan fungsi categorize_recency
+    rfm['Recency_Category'] = rfm['Recency'].apply(lambda x: categorize_recency(x, recency_quartiles))
+    
+    # Kategorisasi Frequency menggunakan fungsi categorize_frequency
+    rfm['Frequency_Category'] = rfm['Frequency'].apply(lambda x: categorize_frequency(x, frequency_quartiles))
+    
+    # Kategorisasi Monetary menggunakan fungsi categorize_monetary
+    rfm['Monetary_Category'] = rfm['Monetary'].apply(lambda x: categorize_monetary(x, monetary_quartiles))
+    
+    return rfm
+
     recency_q1 = rfm['Recency'].quantile(0.2)
     recency_q2 = rfm['Recency'].quantile(0.4)
     recency_q3 = rfm['Recency'].quantile(0.6)

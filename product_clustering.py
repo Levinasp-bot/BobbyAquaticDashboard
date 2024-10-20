@@ -69,26 +69,33 @@ def categorize_rfm(rfm):
 
     return rfm
 
-
 def cluster_rfm(rfm_scaled, n_clusters):
     # Melakukan clustering menggunakan KMeans
     kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=1)
     kmeans.fit(rfm_scaled)
     return kmeans.labels_
 
-def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legends):
+def plot_interactive_pie_chart(rfm, cluster_labels, category_name):
     # Membuat grafik pie interaktif
     rfm['Cluster'] = cluster_labels
     cluster_counts = rfm['Cluster'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
 
-    available_clusters = sorted(rfm['Cluster'].unique())
-    custom_legend_mapped = {cluster: custom_legends.get(cluster, f'Cluster {cluster}') for cluster in available_clusters}
+    # Menentukan kategori linguistik untuk setiap cluster
+    cluster_labels_mapping = rfm.groupby('Cluster').agg({
+        'Recency_Category': 'first',
+        'Frequency_Category': 'first',
+        'Monetary_Category': 'first'
+    }).reset_index()
 
-    cluster_counts['Cluster'] = cluster_counts['Cluster'].map(custom_legend_mapped)
+    # Membuat label untuk legend berdasarkan kategori linguistik
+    custom_labels = [
+        f"Cluster {row['Cluster']}<br>Recency: {row['Recency_Category']}<br>Frequency: {row['Frequency_Category']}<br>Monetary: {row['Monetary_Category']}"
+        for _, row in cluster_labels_mapping.iterrows()
+    ]
 
     fig = go.Figure(data=[go.Pie(
-        labels=cluster_counts['Cluster'],
+        labels=custom_labels,
         values=cluster_counts['Count'],
         hole=0.3,
         textinfo='percent+label',
@@ -142,14 +149,6 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
                 labels=labels
             )
 
-        # Membuat legenda untuk setiap cluster menggunakan kategori rata-rata
-        custom_legends = {
-            cluster: f"Rata-rata Recency: {average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Recency'].values[0]:.2f} ({average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Recency_Category'].values[0]}) | "
-                     f"Frekuensi: {average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Frequency'].values[0]:.2f} ({average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Frequency_Category'].values[0]}) | "
-                     f"Monetary: {average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Monetary'].values[0]:.2f} ({average_rfm_per_cluster[average_rfm_per_cluster['Cluster'] == cluster]['Monetary_Category'].values[0]})"
-            for cluster in sorted(rfm_category['Cluster'].unique())
-        }
-
         col1, col2 = st.columns([1, 2])  
 
         with col1:
@@ -166,39 +165,23 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
             st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
                         f"display: flex; justify-content: space-around; align-items: center; height: 100px;'>"
                         f"<div style='text-align: center;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Recency']:.2f}</span><br>"
-                        f"<span style='font-size: 12px;'>Recency</span></div>"
+                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Recency']:.2f}</span><br/>Recency"
+                        f"</div>"
                         f"<div style='text-align: center;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Frequency']:.2f}</span><br>"
-                        f"<span style='font-size: 12px;'>Frequency</span></div>"
+                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Frequency']:.2f}</span><br/>Frequency"
+                        f"</div>"
                         f"<div style='text-align: center;'>"
-                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Monetary']:.2f}</span><br>"
-                        f"<span style='font-size: 12px;'>Monetary</span></div>"
-                        f"</div>", unsafe_allow_html=True)
+                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Monetary']:.2f}</span><br/>Monetary"
+                        f"</div></div>", unsafe_allow_html=True)
 
-        # Memilih cluster yang akan ditampilkan
-        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
-        selected_custom_label = st.selectbox(
-            f'Pilih Kelompok untuk {category_name}:',
-            options=[custom_legends[cluster] for cluster in sorted(custom_legends.keys())],
-            key=unique_key
-        )
+        fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name)
+        st.plotly_chart(fig, use_container_width=True)
 
-        selected_cluster_num = {v: k for k, v in custom_legends.items()}[selected_custom_label]
-        plot_key = f'plotly_chart_{category_name}_{key_suffix}'
-
-        # Menampilkan grafik dan tabel cluster
-        chart_col, table_col = st.columns(2)
-        with chart_col:
-            fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-            st.plotly_chart(fig, use_container_width=True, key=plot_key)
-
-        with table_col:
-            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
-
+        for i in range(n_clusters):
+            custom_label = f"Cluster {i}"
+            show_cluster_table(rfm_category, i, custom_label, key_suffix)
     else:
-        st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
-
+        st.warning(f"Tidak ada data untuk {category_name}.") 
 
 def get_optimal_k(data_scaled):
     model = KMeans(random_state=1)

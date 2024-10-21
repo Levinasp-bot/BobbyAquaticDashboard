@@ -86,20 +86,10 @@ if st.session_state.page == "sales":
         # Forecast profit based on combined data
         daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
 
-# Combine profits if both branches are selected
+# Show dashboard based on selections
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
-        combined_penjualan_data = pd.concat([penjualan_data_1, penjualan_data_2], ignore_index=True)
-
-    # Forecast profit based on combined data
-        daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
-
-    # Calculate combined metrics for display
-        last_week_profit_1 = daily_profit_1['LABA'].iloc[-1] if daily_profit_1 is not None else 0
-        last_week_profit_2 = daily_profit_2['LABA'].iloc[-1] if daily_profit_2 is not None else 0
-        total_profit_combined = last_week_profit_1 + last_week_profit_2
-
-    # Show dashboard for the combined data with total profit
-        show_dashboard(daily_profit_combined, hw_forecast_future_combined, daily_profit_combined, hw_forecast_future_combined, key_suffix='combined', total_profit=total_profit_combined)
+    # Show dashboard for the combined data
+        show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, key_suffix='combined')
     elif "Bobby Aquatic 1" in branch_selection:
     # Show dashboard for Bobby Aquatic 1
         show_dashboard(daily_profit_1, hw_forecast_future_1, None, None, key_suffix='cabang1')  # Pass None for second branch

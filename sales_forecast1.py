@@ -61,7 +61,7 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
                     <br><span style='color:{combined_color}; font-size:24px;'>{combined_arrow} {combined_profit_change_percentage:.2f}%</span>
                 </div>
             """, unsafe_allow_html=True)
-        # Show metrics for individual branches only if both branches are not selected
+
         elif daily_profit_1 is not None:
             # Metrics for Bobby Aquatic 1
             last_week_profit_1 = daily_profit_1['LABA'].iloc[-1]
@@ -114,7 +114,6 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
                 </div>
             """, unsafe_allow_html=True)
 
-
     with col2:
         st.subheader('Data Historis dan Prediksi Rata-rata Laba Mingguan')
 
@@ -142,28 +141,53 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
         
         # Plot data for Bobby Aquatic 1
         if selected_years and daily_profit_1 is not None:
-            combined_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(x=combined_data_1.index, y=combined_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
+            filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(
+                x=filtered_data_1.index,
+                y=filtered_data_1['LABA'],
+                mode='lines',
+                name='Data Historis Cabang 1'
+            ))
 
-            if not combined_data_1.empty:
-                combined_forecast_1 = pd.concat([combined_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
-                fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dash')))
+            forecast_segment_1 = pd.Series(hw_forecast_future_1[:forecast_horizon].values, index=forecast_dates_1[1:])
+            forecast_segment_1.index = pd.to_datetime(forecast_segment_1.index)
+            
+            fig.add_trace(go.Scatter(
+                x=forecast_segment_1.index,
+                y=forecast_segment_1.values,
+                mode='lines',
+                line=dict(dash='dash'),
+                name='Prediksi Cabang 1'
+            ))
 
         # Plot data for Bobby Aquatic 2
         if selected_years and daily_profit_2 is not None:
-            combined_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(x=combined_data_2.index, y=combined_data_2['LABA'], mode='lines', name='Data Historis Cabang 2'))
+            filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(
+                x=filtered_data_2.index,
+                y=filtered_data_2['LABA'],
+                mode='lines',
+                name='Data Historis Cabang 2'
+            ))
 
-            if not combined_data_2.empty:
-                combined_forecast_2 = pd.concat([combined_data_2.iloc[[-1]]['LABA'], hw_forecast_future_2])
-                fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dash')))
+            forecast_segment_2 = pd.Series(hw_forecast_future_2[:forecast_horizon].values, index=forecast_dates_2[1:])
+            forecast_segment_2.index = pd.to_datetime(forecast_segment_2.index)
+            
+            fig.add_trace(go.Scatter(
+                x=forecast_segment_2.index,
+                y=forecast_segment_2.values,
+                mode='lines',
+                line=dict(dash='dash'),
+                name='Prediksi Cabang 2'
+            ))
 
+        # Update layout for better visualization
         fig.update_layout(
-            xaxis_title='Tanggal',
-            yaxis_title='Laba',
-            hovermode='x',
-            margin=dict(t=18),  # Mengurangi padding atas (t = top)
-            height=350  # Mengurangi tinggi chart
+            title="Rata-rata Laba Harian",
+            xaxis_title="Tanggal",
+            yaxis_title="Laba Harian",
+            legend_title="Legenda",
+            template="plotly_white"
         )
 
         st.plotly_chart(fig)

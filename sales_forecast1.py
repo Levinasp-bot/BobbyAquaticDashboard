@@ -38,8 +38,8 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
     with col1:
         # Calculate combined metrics if both branches are present
         if daily_profit_1 is not None and daily_profit_2 is not None:
-            combined_last_week_profit = (daily_profit_1['LABA'].iloc[-1] + daily_profit_2['LABA'].iloc[-1]) / 2
-            combined_predicted_profit_next_week = (hw_forecast_future_1.iloc[0] + hw_forecast_future_2.iloc[0]) / 2
+            combined_last_week_profit = (daily_profit_1['LABA'].iloc[-1] + daily_profit_2['LABA'].iloc[-1]) 
+            combined_predicted_profit_next_week = (hw_forecast_future_1.iloc[0] + hw_forecast_future_2.iloc[0]) 
             combined_total_profit_last_week = combined_last_week_profit * 7
             combined_profit_change_percentage = ((combined_predicted_profit_next_week - combined_last_week_profit) / combined_last_week_profit) * 100 if combined_last_week_profit else 0
 

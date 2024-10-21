@@ -46,6 +46,7 @@ def show_dashboard(daily_profit_1, daily_profit_2=None, hw_forecast_future_1=Non
         profit_change_percentage_1 = ((predicted_profit_next_week_1 - last_week_profit_1) / last_week_profit_1) * 100 if last_week_profit_1 else 0
 
         total_profit_last_week_1 = last_week_profit_1 * 7
+        total_predicted_profit_next_week_1 = predicted_profit_next_week_1 * 7
 
         arrow_1 = "🡅" if profit_change_percentage_1 > 0 else "🡇"
         color_1 = "green" if profit_change_percentage_1 > 0 else "red"
@@ -53,7 +54,8 @@ def show_dashboard(daily_profit_1, daily_profit_2=None, hw_forecast_future_1=Non
         st.markdown(f"""
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                 <span style="font-size: 14px;">Total Laba Minggu Ini (Cabang 1)</span><br>
-                <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_1:,.2f}</span>
+                <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_1:,.2f}</span><br>
+                <span style="color:{color_1}; font-size: 14px;">{arrow_1} Prediksi Laba Minggu Depan: {total_predicted_profit_next_week_1:,.2f}</span>
             </div>
         """, unsafe_allow_html=True)
 
@@ -63,6 +65,7 @@ def show_dashboard(daily_profit_1, daily_profit_2=None, hw_forecast_future_1=Non
             profit_change_percentage_2 = ((predicted_profit_next_week_2 - last_week_profit_2) / last_week_profit_2) * 100 if last_week_profit_2 else 0
 
             total_profit_last_week_2 = last_week_profit_2 * 7
+            total_predicted_profit_next_week_2 = predicted_profit_next_week_2 * 7
 
             arrow_2 = "🡅" if profit_change_percentage_2 > 0 else "🡇"
             color_2 = "green" if profit_change_percentage_2 > 0 else "red"
@@ -70,7 +73,8 @@ def show_dashboard(daily_profit_1, daily_profit_2=None, hw_forecast_future_1=Non
             st.markdown(f"""
                 <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                     <span style="font-size: 14px;">Total Laba Minggu Ini (Cabang 2)</span><br>
-                    <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_2:,.2f}</span>
+                    <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_2:,.2f}</span><br>
+                    <span style="color:{color_2}; font-size: 14px;">{arrow_2} Prediksi Laba Minggu Depan: {total_predicted_profit_next_week_2:,.2f}</span>
                 </div>
             """, unsafe_allow_html=True)
 

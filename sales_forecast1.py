@@ -42,13 +42,21 @@ def show_dashboard(daily_profit_1=None, daily_profit_2=None, hw_forecast_1=None,
 
     if daily_profit_1 is not None:
         last_week_profit += daily_profit_1['LABA'].iloc[-1]
-        predicted_profit_next_week += hw_forecast_1.iloc[0]
+    
+        # Check if the forecast object is valid before accessing it
+        if hw_forecast_1 is not None:
+            predicted_profit_next_week += hw_forecast_1.iloc[0]
+
         total_profit_last_week += last_week_profit * 7
 
     if daily_profit_2 is not None:
         last_week_profit += daily_profit_2['LABA'].iloc[-1]
-        predicted_profit_next_week += hw_forecast_2.iloc[0]
-        total_profit_last_week += daily_profit_2['LABA'].iloc[-1] * 7
+    
+    # Check if the forecast object is valid before accessing it
+        if hw_forecast_2 is not None:
+            predicted_profit_next_week += hw_forecast_2.iloc[0]
+
+    total_profit_last_week += last_week_profit * 7
 
     profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
     arrow = "🡅" if profit_change_percentage > 0 else "🡇"

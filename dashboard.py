@@ -62,7 +62,6 @@ if st.session_state.page == "sales":
     daily_profit_combined = None
     hw_forecast_future_combined = None
 
-    #
 
     # In dashboard.py, change the section for loading and displaying data:
     if "Bobby Aquatic 1" in branch_selection:

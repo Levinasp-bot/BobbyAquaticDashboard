@@ -15,9 +15,14 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dataframes, ignore_index=True)
 
 @st.cache_data
-def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
+def forecast_profit(data, selected_year=None, seasonal_period=13, forecast_horizon=13):
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
+
+    # Mengembalikan filter berdasarkan tahun
+    if selected_year:
+        daily_profit = daily_profit[daily_profit['TANGGAL'].dt.year == selected_year]
+
     daily_profit = daily_profit.groupby('TANGGAL').sum()
     daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
 

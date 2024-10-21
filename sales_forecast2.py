@@ -26,21 +26,29 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
     train_size = int(len(daily_profit) * 0.9)
     train, test = daily_profit[:train_size], daily_profit[train_size:]
 
-    hw_model = ExponentialSmoothing(train, trend='add', seasonal='add', seasonal_periods=seasonal_period).fit()
+    hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
 
     hw_forecast_future = hw_model.forecast(forecast_horizon)
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_suffix=''):
+def show_dashboard(daily_profit_1=None, daily_profit_2=None, hw_forecast_future=None, forecast_horizon=50, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
     with col1:
-        last_week_profit = daily_profit['LABA'].iloc[-1]
+        # Jika kedua cabang dipilih, hitung metrik dari gabungan dua cabang
+        if daily_profit_1 is not None and daily_profit_2 is not None:
+            total_profit_1 = daily_profit_1['LABA'].sum()
+            total_profit_2 = daily_profit_2['LABA'].sum()
+            last_week_profit = (total_profit_1 + total_profit_2) / 2
+        elif daily_profit_1 is not None:
+            last_week_profit = daily_profit_1['LABA'].iloc[-1]
+        elif daily_profit_2 is not None:
+            last_week_profit = daily_profit_2['LABA'].iloc[-1]
+
         predicted_profit_next_week = hw_forecast_future.iloc[0]
         profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
-        # Total laba minggu ini (asumsi total untuk minggu terakhir diambil dari rata-rata * 7 hari)
         total_profit_last_week = last_week_profit * 7
 
         arrow = "🡅" if profit_change_percentage > 0 else "🡇"
@@ -63,37 +71,30 @@ def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=50, key_su
         """, unsafe_allow_html=True)
 
     with col2:
-        historical_years = daily_profit.index.year.unique()
-        # Get the forecasted years from the forecasted dates
-        last_actual_date = daily_profit.index[-1]
-        forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
-        forecast_years = forecast_dates.year.unique()
-
-        # Combine historical and forecasted years
-        all_years = sorted(set(historical_years) | set(forecast_years))
-        default_years = [2024] if 2024 in all_years else []
-
-        selected_years = st.multiselect(
-            "Pilih Tahun",
-            all_years,
-            default=default_years,
-            key=f"multiselect_{key_suffix}",
-            help="Pilih tahun yang ingin ditampilkan"
-        )
+        st.subheader('Data Historis dan Prediksi Rata - rata Laba Mingguan')
 
         fig = go.Figure()
-        if selected_years:
-            combined_data = daily_profit[daily_profit.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data['LABA'], mode='lines', name='Data Historis'))
 
-        combined_forecast = pd.concat([daily_profit.iloc[[-1]]['LABA'], hw_forecast_future])
-        fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
+        # Jika cabang 1 dipilih, tampilkan datanya di line chart
+        if daily_profit_1 is not None:
+            fig.add_trace(go.Scatter(x=daily_profit_1.index, y=daily_profit_1['LABA'], mode='lines', name='Cabang 1'))
+
+        # Jika cabang 2 dipilih, tampilkan datanya di line chart dengan warna berbeda
+        if daily_profit_2 is not None:
+            fig.add_trace(go.Scatter(x=daily_profit_2.index, y=daily_profit_2['LABA'], mode='lines', name='Cabang 2', line=dict(color='orange')))
+
+        # Jika forecast ada, tambahkan prediksi ke chart
+        if hw_forecast_future is not None:
+            forecast_dates = pd.date_range(start=daily_profit_1.index[-1] if daily_profit_1 is not None else daily_profit_2.index[-1], periods=forecast_horizon + 1, freq='W')
+            fig.add_trace(go.Scatter(x=forecast_dates, y=hw_forecast_future, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
         fig.update_layout(
-            title='Data Historis dan Prediksi Rata - rata Laba Mingguan',
             xaxis_title='Tanggal',
             yaxis_title='Laba',
-            hovermode='x'
+            hovermode='x',
+            margin=dict(t=18),
+            height=350
         )
 
         st.plotly_chart(fig)
+

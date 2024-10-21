@@ -33,27 +33,49 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     return daily_profit, hw_forecast_future
 
 def show_dashboard(daily_profit_1, daily_profit_2, hw_forecast_future_1, hw_forecast_future_2, forecast_horizon=12, key_suffix=''):
+    # Tambahkan filter tahun
     col1, col2 = st.columns([1, 3])
 
+    with col1:
+        st.subheader("Filter Tahun")
+        year_filter = st.multiselect('Pilih Tahun:', daily_profit_1.index.year.unique(), key=f'year_filter_{key_suffix}')
+
+    if year_filter:
+        daily_profit_1 = daily_profit_1[daily_profit_1.index.year.isin(year_filter)]
+        daily_profit_2 = daily_profit_2[daily_profit_2.index.year.isin(year_filter)]
+
+    # Tambahkan statistik summary seperti total laba, rata-rata, dll
+    with col1:
+        st.subheader("Metrik Cabang 1")
+        total_profit_1 = daily_profit_1['LABA'].sum()
+        avg_profit_1 = daily_profit_1['LABA'].mean()
+        st.metric("Total Laba Cabang 1", f"Rp {total_profit_1:,.0f}")
+        st.metric("Rata-rata Laba Cabang 1", f"Rp {avg_profit_1:,.0f}")
+
+        st.subheader("Metrik Cabang 2")
+        total_profit_2 = daily_profit_2['LABA'].sum()
+        avg_profit_2 = daily_profit_2['LABA'].mean()
+        st.metric("Total Laba Cabang 2", f"Rp {total_profit_2:,.0f}")
+        st.metric("Rata-rata Laba Cabang 2", f"Rp {avg_profit_2:,.0f}")
+
+    # Tampilkan chart data historis dan prediksi
     with col2:
         st.subheader('Data Historis dan Prediksi Rata - rata Laba Mingguan')
 
-        historical_years = daily_profit_1.index.year.unique()
         last_actual_date_1 = daily_profit_1.index[-1]
         forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W')
 
-        historical_years_2 = daily_profit_2.index.year.unique()
         last_actual_date_2 = daily_profit_2.index[-1]
         forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W')
 
         fig = go.Figure()
 
-        # Plot data for Bobby Aquatic 1
+        # Plot data untuk Bobby Aquatic 1
         fig.add_trace(go.Scatter(x=daily_profit_1.index, y=daily_profit_1['LABA'], mode='lines', name='Cabang 1'))
         combined_forecast_1 = pd.concat([daily_profit_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
         fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Cabang 1', line=dict(dash='dash')))
 
-        # Plot data for Bobby Aquatic 2
+        # Plot data untuk Bobby Aquatic 2
         fig.add_trace(go.Scatter(x=daily_profit_2.index, y=daily_profit_2['LABA'], mode='lines', name='Cabang 2'))
         combined_forecast_2 = pd.concat([daily_profit_2.iloc[[-1]]['LABA'], hw_forecast_future_2])
         fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Cabang 2', line=dict(dash='dash')))

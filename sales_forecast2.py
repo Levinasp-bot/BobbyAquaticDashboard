@@ -32,28 +32,38 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit_1=None, daily_profit_2=None, hw_forecast_future=None, forecast_horizon=50, key_suffix=''):
+def show_dashboard(daily_profit_1=None, daily_profit_2=None, hw_forecast_1=None, hw_forecast_2=None, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
+    # Combine the total, average, and forecast profits for both branches
+    total_profit_last_week = 0
+    last_week_profit = 0
+    predicted_profit_next_week = 0
+
+    if daily_profit_1 is not None:
+        last_week_profit += daily_profit_1['LABA'].iloc[-1]
+    
+        # Check if the forecast object is valid before accessing it
+        if hw_forecast_1 is not None:
+            predicted_profit_next_week += hw_forecast_1.iloc[0]
+
+        total_profit_last_week += last_week_profit * 7
+
+    if daily_profit_2 is not None:
+        last_week_profit += daily_profit_2['LABA'].iloc[-1]
+    
+    # Check if the forecast object is valid before accessing it
+        if hw_forecast_2 is not None:
+            predicted_profit_next_week += hw_forecast_2.iloc[0]
+
+    total_profit_last_week += last_week_profit * 7
+
+    profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
+    arrow = "🡅" if profit_change_percentage > 0 else "🡇"
+    color = "green" if profit_change_percentage > 0 else "red"
+
+    # Metrics display
     with col1:
-        # Jika kedua cabang dipilih, hitung metrik dari gabungan dua cabang
-        if daily_profit_1 is not None and daily_profit_2 is not None:
-            total_profit_1 = daily_profit_1['LABA'].sum()
-            total_profit_2 = daily_profit_2['LABA'].sum()
-            last_week_profit = (total_profit_1 + total_profit_2) / 2
-        elif daily_profit_1 is not None:
-            last_week_profit = daily_profit_1['LABA'].iloc[-1]
-        elif daily_profit_2 is not None:
-            last_week_profit = daily_profit_2['LABA'].iloc[-1]
-
-        predicted_profit_next_week = hw_forecast_future.iloc[0]
-        profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
-
-        total_profit_last_week = last_week_profit * 7
-
-        arrow = "🡅" if profit_change_percentage > 0 else "🡇"
-        color = "green" if profit_change_percentage > 0 else "red"
-
         st.markdown(f"""
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                 <span style="font-size: 14px;">Total Laba Minggu Ini</span><br>
@@ -70,23 +80,50 @@ def show_dashboard(daily_profit_1=None, daily_profit_2=None, hw_forecast_future=
             </div>
         """, unsafe_allow_html=True)
 
+    # Line chart for historical and forecast data
     with col2:
         st.subheader('Data Historis dan Prediksi Rata - rata Laba Mingguan')
 
         fig = go.Figure()
 
-        # Jika cabang 1 dipilih, tampilkan datanya di line chart
+        # Plotting for each branch separately
         if daily_profit_1 is not None:
-            fig.add_trace(go.Scatter(x=daily_profit_1.index, y=daily_profit_1['LABA'], mode='lines', name='Cabang 1'))
+            fig.add_trace(go.Scatter(
+                x=daily_profit_1.index,
+                y=daily_profit_1['LABA'],
+                mode='lines',
+                name='Cabang 1'
+            ))
 
-        # Jika cabang 2 dipilih, tampilkan datanya di line chart dengan warna berbeda
         if daily_profit_2 is not None:
-            fig.add_trace(go.Scatter(x=daily_profit_2.index, y=daily_profit_2['LABA'], mode='lines', name='Cabang 2', line=dict(color='orange')))
+            fig.add_trace(go.Scatter(
+                x=daily_profit_2.index,
+                y=daily_profit_2['LABA'],
+                mode='lines',
+                name='Cabang 2',
+                line=dict(color='orange')
+            ))
 
-        # Jika forecast ada, tambahkan prediksi ke chart
-        if hw_forecast_future is not None:
-            forecast_dates = pd.date_range(start=daily_profit_1.index[-1] if daily_profit_1 is not None else daily_profit_2.index[-1], periods=forecast_horizon + 1, freq='W')
-            fig.add_trace(go.Scatter(x=forecast_dates, y=hw_forecast_future, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
+        # Future prediction for both branches
+        if hw_forecast_1 is not None:
+            forecast_dates = pd.date_range(start=daily_profit_1.index[-1], periods=len(hw_forecast_1), freq='W')
+            fig.add_trace(go.Scatter(
+                x=forecast_dates,
+                y=hw_forecast_1,
+                mode='lines',
+                name='Prediksi Cabang 1',
+                line=dict(dash='dash')
+            ))
+
+        if hw_forecast_2 is not None:
+            forecast_dates = pd.date_range(start=daily_profit_2.index[-1], periods=len(hw_forecast_2), freq='W')
+            fig.add_trace(go.Scatter(
+                x=forecast_dates,
+                y=hw_forecast_2,
+                mode='lines',
+                name='Prediksi Cabang 2',
+                line=dict(dash='dash', color='orange')
+            ))
 
         fig.update_layout(
             xaxis_title='Tanggal',
@@ -97,4 +134,3 @@ def show_dashboard(daily_profit_1=None, daily_profit_2=None, hw_forecast_future=
         )
 
         st.plotly_chart(fig)
-

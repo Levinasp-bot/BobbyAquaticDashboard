@@ -32,60 +32,72 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit_1, daily_profit_2, hw_forecast_future_1, hw_forecast_future_2, forecast_horizon=12, key_suffix=''):
-    # Tambahkan filter tahun
+def show_dashboard(daily_profit, hw_forecast_future, forecast_horizon=12, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
     with col1:
-        st.subheader("Filter Tahun")
-        year_filter = st.multiselect('Pilih Tahun:', daily_profit_1.index.year.unique(), key=f'year_filter_{key_suffix}')
+        last_week_profit = daily_profit['LABA'].iloc[-1]
+        predicted_profit_next_week = hw_forecast_future.iloc[0]
+        profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
 
-    if year_filter:
-        daily_profit_1 = daily_profit_1[daily_profit_1.index.year.isin(year_filter)]
-        daily_profit_2 = daily_profit_2[daily_profit_2.index.year.isin(year_filter)]
+        total_profit_last_week = last_week_profit * 7
 
-    # Tambahkan statistik summary seperti total laba, rata-rata, dll
-    with col1:
-        st.subheader("Metrik Cabang 1")
-        total_profit_1 = daily_profit_1['LABA'].sum()
-        avg_profit_1 = daily_profit_1['LABA'].mean()
-        st.metric("Total Laba Cabang 1", f"Rp {total_profit_1:,.0f}")
-        st.metric("Rata-rata Laba Cabang 1", f"Rp {avg_profit_1:,.0f}")
+        arrow = "🡅" if profit_change_percentage > 0 else "🡇"
+        color = "green" if profit_change_percentage > 0 else "red"
 
-        st.subheader("Metrik Cabang 2")
-        total_profit_2 = daily_profit_2['LABA'].sum()
-        avg_profit_2 = daily_profit_2['LABA'].mean()
-        st.metric("Total Laba Cabang 2", f"Rp {total_profit_2:,.0f}")
-        st.metric("Rata-rata Laba Cabang 2", f"Rp {avg_profit_2:,.0f}")
+        st.markdown(f"""
+            <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                <span style="font-size: 14px;">Total Laba Minggu Ini</span><br>
+                <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week:,.2f}</span>
+            </div>
+            <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                <span style="font-size: 14px;">Rata - rata Laba Harian Minggu Ini</span><br>
+                <span style="font-size: 32px; font-weight: bold;">{last_week_profit:,.2f}</span>
+            </div>
+            <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                <span style="font-size: 14px;">Prediksi Rata - rata Laba Harian Minggu Depan</span><br>
+                <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week:,.2f}</span>
+                <br><span style='color:{color}; font-size:24px;'>{arrow} {profit_change_percentage:.2f}%</span>
+            </div>
+        """, unsafe_allow_html=True)
 
-    # Tampilkan chart data historis dan prediksi
     with col2:
         st.subheader('Data Historis dan Prediksi Rata - rata Laba Mingguan')
 
-        last_actual_date_1 = daily_profit_1.index[-1]
-        forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W')
+        historical_years = daily_profit.index.year.unique()
+        last_actual_date = daily_profit.index[-1]
+        forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
+        forecast_years = forecast_dates.year.unique()
 
-        last_actual_date_2 = daily_profit_2.index[-1]
-        forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W')
+        all_years = sorted(set(historical_years) | set(forecast_years))
+        default_years = [2024] if 2024 in all_years else []
+
+        selected_years = st.multiselect(
+            "Pilih Tahun",
+            all_years,
+            default=default_years,
+            key=f"multiselect_{key_suffix}",
+            help="Pilih tahun yang ingin ditampilkan"
+        )
 
         fig = go.Figure()
 
-        # Plot data untuk Bobby Aquatic 1
-        fig.add_trace(go.Scatter(x=daily_profit_1.index, y=daily_profit_1['LABA'], mode='lines', name='Cabang 1'))
-        combined_forecast_1 = pd.concat([daily_profit_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
-        fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Cabang 1', line=dict(dash='dash')))
+        # Only plot historical data if years are selected
+        if selected_years:
+            combined_data = daily_profit[daily_profit.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(x=combined_data.index, y=combined_data['LABA'], mode='lines', name='Data Historis'))
 
-        # Plot data untuk Bobby Aquatic 2
-        fig.add_trace(go.Scatter(x=daily_profit_2.index, y=daily_profit_2['LABA'], mode='lines', name='Cabang 2'))
-        combined_forecast_2 = pd.concat([daily_profit_2.iloc[[-1]]['LABA'], hw_forecast_future_2])
-        fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Cabang 2', line=dict(dash='dash')))
+            # Include forecast data only if any historical data is available for the selected years
+            if not combined_data.empty:
+                combined_forecast = pd.concat([combined_data.iloc[[-1]]['LABA'], hw_forecast_future])
+                fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast, mode='lines', name='Prediksi Masa Depan', line=dict(dash='dash')))
 
         fig.update_layout(
             xaxis_title='Tanggal',
             yaxis_title='Laba',
             hovermode='x',
-            margin=dict(t=18),
-            height=350
+            margin=dict(t=18),  # Mengurangi padding atas (t = top)
+            height=350  # Mengurangi tinggi chart
         )
 
         st.plotly_chart(fig)

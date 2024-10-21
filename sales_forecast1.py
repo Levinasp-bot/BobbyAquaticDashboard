@@ -171,7 +171,7 @@ def show_dashboard(daily_profit_1, hw_forecast_test_1, hw_forecast_future_1, dai
 
         # Plot data for Bobby Aquatic 2
         if selected_years and daily_profit_2 is not None:
-                        filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
+            filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
             fig.add_trace(go.Scatter(
                 x=filtered_data_2.index,
                 y=filtered_data_2['LABA'],

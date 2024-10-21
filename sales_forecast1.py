@@ -21,16 +21,25 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     daily_profit = daily_profit.groupby('TANGGAL').sum()
     daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
 
+    # Resample to weekly and interpolate missing data
     daily_profit = daily_profit.resample('W').mean().interpolate()
 
-    train_size = int(len(daily_profit) * 0.9)
-    train, test = daily_profit[:train_size], daily_profit[train_size:]
+    # Determine the cutoff point for one month before the last date
+    last_date = daily_profit.index[-1]
+    cutoff_date = last_date - pd.DateOffset(months=1)
 
+    # Split data: training includes everything up to cutoff_date, test includes the rest
+    train = daily_profit[:cutoff_date]
+    test = daily_profit[cutoff_date:]
+
+    # Fit the Holt-Winters model
     hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
 
-    hw_forecast_future = hw_model.forecast(forecast_horizon)
+    # Forecast from cutoff_date onward (starting from one month before the last date)
+    hw_forecast_future = hw_model.forecast(len(test) + forecast_horizon)
 
     return daily_profit, hw_forecast_future
+
 
 def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, forecast_horizon=12, key_suffix=''):
     col1, col2 = st.columns([1, 3])

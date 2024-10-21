@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1, show_dashboard  # Added show_dashboard import
+from sales_forecast1 import load_all_excel_files as load_data_1, forecast_profit as forecast_profit_1, show_dashboard
 from sales_forecast2 import load_all_excel_files as load_data_2, forecast_profit as forecast_profit_2
 from product_clustering import load_all_excel_files as load_cluster_data_1, show_dashboard as show_cluster_dashboard_1
 from product_clustering2 import load_all_excel_files as load_cluster_data_2, show_dashboard as show_cluster_dashboard_2
@@ -14,7 +14,7 @@ st.markdown("""
     .sidebar .sidebar-content {
         background-color: #f0f2f5;
         padding: 20px;
-        border-right: 2px solid #2A7B5C;  /* Added border for better visibility */
+        border-right: 2px solid #2A7B5C;
     }
     .header {
         font-size: 1.5em;
@@ -23,11 +23,11 @@ st.markdown("""
     .footer {
         font-size: 0.8em;
         color: #7D7D7D;
-        text-align: center;  /* Center the copyright text */
-        margin-top: 20px;  /* Added margin for spacing */
+        text-align: center;
+        margin-top: 20px;
     }
     .stTabs .stTabs-header {
-        justify-content: center;  /* Center tab headers */
+        justify-content: center;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -56,7 +56,7 @@ if st.session_state.page == "sales":
     branch_selection = st.multiselect(
         "Pilih cabang untuk ditampilkan:",
         options=["Bobby Aquatic 1", "Bobby Aquatic 2"],
-        default=["Bobby Aquatic 1", "Bobby Aquatic 2"]  # Default menampilkan kedua cabang
+        default=["Bobby Aquatic 1", "Bobby Aquatic 2"]
     )
 
     daily_profit_combined = None
@@ -89,13 +89,13 @@ if st.session_state.page == "sales":
     # Show dashboard based on selections
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
         # Show dashboard for the combined data
-        show_dashboard(daily_profit_combined, hw_forecast_future_combined, key_suffix='combined')
+        show_dashboard(daily_profit_1, daily_profit_2, hw_forecast_future_1, hw_forecast_future_2, key_suffix='combined')
     elif "Bobby Aquatic 1" in branch_selection:
         # Show dashboard for Bobby Aquatic 1
-        show_dashboard(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
+        show_dashboard(daily_profit_1, None, hw_forecast_future_1, None, key_suffix='cabang1')
     elif "Bobby Aquatic 2" in branch_selection:
         # Show dashboard for Bobby Aquatic 2
-        show_dashboard(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
+        show_dashboard(None, daily_profit_2, None, hw_forecast_future_2, key_suffix='cabang2')
 
 elif st.session_state.page == "product":
     st.header("🔍 Segmentasi Produk Bobby Aquatic")

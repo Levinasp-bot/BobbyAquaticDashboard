@@ -115,7 +115,7 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
             """, unsafe_allow_html=True)
 
 
-        with col2:
+    with col2:
         st.subheader('Data Historis dan Prediksi Rata-rata Laba Mingguan')
 
         historical_years_1 = daily_profit_1.index.year.unique() if daily_profit_1 is not None else []
@@ -195,3 +195,4 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
         )
 
         st.plotly_chart(fig, use_container_width=True)
+

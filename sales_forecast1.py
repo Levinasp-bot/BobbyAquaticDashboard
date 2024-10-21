@@ -40,19 +40,18 @@ def show_dashboard(daily_profit_1=None, daily_profit_2=None, hw_forecast_1=None,
     last_week_profit = 0
     predicted_profit_next_week = 0
 
-    if daily_profit_1 is not None:
-        last_week_profit += daily_profit_1['LABA'].iloc[-1]
+# Example of checking if 'LABA' is in daily_profit_1 before accessing it
+    if daily_profit_1 is not None and 'LABA' in daily_profit_1.columns:
+      last_week_profit += daily_profit_1['LABA'].iloc[-1]
     
-        # Check if the forecast object is valid before accessing it
         if hw_forecast_1 is not None:
             predicted_profit_next_week += hw_forecast_1.iloc[0]
 
         total_profit_last_week += last_week_profit * 7
 
-    if daily_profit_2 is not None:
+    if daily_profit_2 is not None and 'LABA' in daily_profit_2.columns:
         last_week_profit += daily_profit_2['LABA'].iloc[-1]
     
-    # Check if the forecast object is valid before accessing it
         if hw_forecast_2 is not None:
             predicted_profit_next_week += hw_forecast_2.iloc[0]
 

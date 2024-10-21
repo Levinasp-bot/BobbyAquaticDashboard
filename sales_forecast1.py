@@ -36,20 +36,18 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
     col1, col2 = st.columns([1, 3])
 
     with col1:
-        # Gabungkan tampilan statistik untuk kedua cabang
-        stats_html = ""
-
-        # Statistics for Bobby Aquatic 1
+        # Display statistics for Bobby Aquatic 1
         if daily_profit_1 is not None:
             last_week_profit_1 = daily_profit_1['LABA'].iloc[-1]
             predicted_profit_next_week_1 = hw_forecast_future_1.iloc[0]
             profit_change_percentage_1 = ((predicted_profit_next_week_1 - last_week_profit_1) / last_week_profit_1) * 100 if last_week_profit_1 else 0
+
             total_profit_last_week_1 = last_week_profit_1 * 7
 
             arrow_1 = "🡅" if profit_change_percentage_1 > 0 else "🡇"
             color_1 = "green" if profit_change_percentage_1 > 0 else "red"
 
-            stats_html += f"""
+            st.markdown(f"""
                 <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                     <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 1</span><br>
                     <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_1:,.2f}</span>
@@ -63,19 +61,20 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
                     <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_1:,.2f}</span>
                     <br><span style='color:{color_1}; font-size:24px;'>{arrow_1} {profit_change_percentage_1:.2f}%</span>
                 </div>
-            """
+            """, unsafe_allow_html=True)
 
-        # Statistics for Bobby Aquatic 2
+        # Display statistics for Bobby Aquatic 2
         if daily_profit_2 is not None:
             last_week_profit_2 = daily_profit_2['LABA'].iloc[-1]
             predicted_profit_next_week_2 = hw_forecast_future_2.iloc[0]
             profit_change_percentage_2 = ((predicted_profit_next_week_2 - last_week_profit_2) / last_week_profit_2) * 100 if last_week_profit_2 else 0
+
             total_profit_last_week_2 = last_week_profit_2 * 7
 
             arrow_2 = "🡅" if profit_change_percentage_2 > 0 else "🡇"
             color_2 = "green" if profit_change_percentage_2 > 0 else "red"
 
-            stats_html += f"""
+            st.markdown(f"""
                 <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                     <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 2</span><br>
                     <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_2:,.2f}</span>
@@ -89,11 +88,57 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
                     <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_2:,.2f}</span>
                     <br><span style='color:{color_2}; font-size:24px;'>{arrow_2} {profit_change_percentage_2:.2f}%</span>
                 </div>
-            """
-
-        # Tampilkan statistik gabungan
-        st.markdown(stats_html, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
     with col2:
         st.subheader('Data Historis dan Prediksi Rata-rata Laba Mingguan')
-        # Sisa kode untuk menampilkan grafik dan data historis tetap sama
+
+        historical_years_1 = daily_profit_1.index.year.unique() if daily_profit_1 is not None else []
+        historical_years_2 = daily_profit_2.index.year.unique() if daily_profit_2 is not None else []
+        
+        last_actual_date_1 = daily_profit_1.index[-1] if daily_profit_1 is not None else None
+        last_actual_date_2 = daily_profit_2.index[-1] if daily_profit_2 is not None else None
+
+        forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W') if last_actual_date_1 is not None else None
+        forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W') if last_actual_date_2 is not None else None
+
+        all_years = sorted(set(historical_years_1) | set(historical_years_2))
+        default_years = [2024] if 2024 in all_years else []
+
+        selected_years = st.multiselect(
+            "Pilih Tahun",
+            all_years,
+            default=default_years,
+            key=f"multiselect_{key_suffix}",
+            help="Pilih tahun yang ingin ditampilkan"
+        )
+
+        fig = go.Figure()
+        
+        # Plot data for Bobby Aquatic 1
+        if selected_years and daily_profit_1 is not None:
+            combined_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(x=combined_data_1.index, y=combined_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
+
+            if not combined_data_1.empty:
+                combined_forecast_1 = pd.concat([combined_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
+                fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dash')))
+
+        # Plot data for Bobby Aquatic 2
+        if selected_years and daily_profit_2 is not None:
+            combined_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(x=combined_data_2.index, y=combined_data_2['LABA'], mode='lines', name='Data Historis Cabang 2'))
+
+            if not combined_data_2.empty:
+                combined_forecast_2 = pd.concat([combined_data_2.iloc[[-1]]['LABA'], hw_forecast_future_2])
+                fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dash')))
+
+        fig.update_layout(
+            xaxis_title='Tanggal',
+            yaxis_title='Laba',
+            hovermode='x',
+            margin=dict(t=18),  # Mengurangi padding atas (t = top)
+            height=350  # Mengurangi tinggi chart
+        )
+
+        st.plotly_chart(fig)

@@ -171,4 +171,45 @@ def show_dashboard(daily_profit_1, hw_forecast_test_1, hw_forecast_future_1, dai
 
         # Plot data for Bobby Aquatic 2
         if selected_years and daily_profit_2 is not None:
-            filtered_data_2 = daily_profit_2[daily_profit_2.index.year.is
+                        filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(
+                x=filtered_data_2.index,
+                y=filtered_data_2['LABA'],
+                mode='lines',
+                name='Data Historis Cabang 2'
+            ))
+
+            # Plot the test predictions
+            if last_actual_date_2 is not None:
+                test_segment_2 = pd.Series(hw_forecast_test_2.values, index=hw_forecast_test_2.index)
+                fig.add_trace(go.Scatter(
+                    x=test_segment_2.index,
+                    y=test_segment_2.values,
+                    mode='lines',
+                    line=dict(dash='dash'),
+                    name='Hasil Test Cabang 2'
+                ))
+
+            # Plot the future forecasts
+            forecast_segment_2 = pd.Series(hw_forecast_future_2[:forecast_horizon].values, index=hw_forecast_future_2.index)
+            forecast_segment_2.index = pd.to_datetime(forecast_segment_2.index)
+            
+            fig.add_trace(go.Scatter(
+                x=forecast_segment_2.index,
+                y=forecast_segment_2.values,
+                mode='lines',
+                line=dict(dash='dash'),
+                name='Prediksi Cabang 2'
+            ))
+
+        # Set layout for the plot
+        fig.update_layout(
+            title='Data Historis, Hasil Test, dan Prediksi Laba Harian',
+            xaxis_title='Tanggal',
+            yaxis_title='Laba',
+            legend_title='Keterangan',
+            hovermode='x'
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+

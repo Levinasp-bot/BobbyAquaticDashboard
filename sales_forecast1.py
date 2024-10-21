@@ -61,6 +61,7 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
                     <br><span style='color:{combined_color}; font-size:24px;'>{combined_arrow} {combined_profit_change_percentage:.2f}%</span>
                 </div>
             """, unsafe_allow_html=True)
+
         # Show metrics for individual branches only if both branches are not selected
         elif daily_profit_1 is not None:
             # Metrics for Bobby Aquatic 1
@@ -114,56 +115,37 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
                 </div>
             """, unsafe_allow_html=True)
 
-
     with col2:
-        st.subheader('Data Historis dan Prediksi Rata-rata Laba Mingguan')
-
-        historical_years_1 = daily_profit_1.index.year.unique() if daily_profit_1 is not None else []
-        historical_years_2 = daily_profit_2.index.year.unique() if daily_profit_2 is not None else []
+        st.subheader('Data Historis Laba')
         
-        last_actual_date_1 = daily_profit_1.index[-1] if daily_profit_1 is not None else None
-        last_actual_date_2 = daily_profit_2.index[-1] if daily_profit_2 is not None else None
+        # Prepare data for plotting
+        dates_1 = daily_profit_1.index if daily_profit_1 is not None else []
+        values_1 = daily_profit_1['LABA'] if daily_profit_1 is not None else []
 
-        forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W') if last_actual_date_1 is not None else None
-        forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W') if last_actual_date_2 is not None else None
+        dates_2 = daily_profit_2.index if daily_profit_2 is not None else []
+        values_2 = daily_profit_2['LABA'] if daily_profit_2 is not None else []
 
-        all_years = sorted(set(historical_years_1) | set(historical_years_2))
-        default_years = [2024] if 2024 in all_years else []
-
-        selected_years = st.multiselect(
-            "Pilih Tahun",
-            all_years,
-            default=default_years,
-            key=f"multiselect_{key_suffix}",
-            help="Pilih tahun yang ingin ditampilkan"
-        )
-
+        # Create a line plot
         fig = go.Figure()
-        
-        # Plot data for Bobby Aquatic 1
-        if selected_years and daily_profit_1 is not None:
-            combined_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(x=combined_data_1.index, y=combined_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
+        if dates_1 and values_1:
+            fig.add_trace(go.Scatter(x=dates_1, y=values_1, mode='lines+markers', name='Cabang 1', line=dict(color='blue')))
+        if dates_2 and values_2:
+            fig.add_trace(go.Scatter(x=dates_2, y=values_2, mode='lines+markers', name='Cabang 2', line=dict(color='orange')))
+        if not hw_forecast_future_1.empty:
+            forecast_dates_1 = pd.date_range(start=daily_profit_1.index[-1] + pd.Timedelta(weeks=1), periods=forecast_horizon, freq='W')
+            fig.add_trace(go.Scatter(x=forecast_dates_1, y=hw_forecast_future_1, mode='lines+markers', name='Prediksi Cabang 1', line=dict(color='green', dash='dash')))
+        if not hw_forecast_future_2.empty:
+            forecast_dates_2 = pd.date_range(start=daily_profit_2.index[-1] + pd.Timedelta(weeks=1), periods=forecast_horizon, freq='W')
+            fig.add_trace(go.Scatter(x=forecast_dates_2, y=hw_forecast_future_2, mode='lines+markers', name='Prediksi Cabang 2', line=dict(color='red', dash='dash')))
 
-            if not combined_data_1.empty:
-                combined_forecast_1 = pd.concat([combined_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
-                fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dash')))
-
-        # Plot data for Bobby Aquatic 2
-        if selected_years and daily_profit_2 is not None:
-            combined_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(x=combined_data_2.index, y=combined_data_2['LABA'], mode='lines', name='Data Historis Cabang 2'))
-
-            if not combined_data_2.empty:
-                combined_forecast_2 = pd.concat([combined_data_2.iloc[[-1]]['LABA'], hw_forecast_future_2])
-                fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dash')))
-
+        # Update layout
         fig.update_layout(
+            title='Laba Harian dan Prediksi',
             xaxis_title='Tanggal',
             yaxis_title='Laba',
-            hovermode='x',
-            margin=dict(t=18),  # Mengurangi padding atas (t = top)
-            height=350  # Mengurangi tinggi chart
+            legend=dict(x=0, y=1, traceorder='normal'),
+            hovermode='closest'
         )
 
         st.plotly_chart(fig)
+

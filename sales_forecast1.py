@@ -32,7 +32,7 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, forecast_horizon=12, key_suffix=''):
+def show_dashboard(daily_profit_1, hw_forecast_test_1, hw_forecast_future_1, daily_profit_2, hw_forecast_test_2, hw_forecast_future_2, forecast_horizon=12, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
     with col1:
@@ -115,16 +115,13 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
             """, unsafe_allow_html=True)
 
     with col2:
-        st.subheader('Data Historis dan Prediksi Rata-rata Laba Mingguan')
+        st.subheader('Data Historis, Hasil Test, dan Prediksi Rata-rata Laba Harian')
 
         historical_years_1 = daily_profit_1.index.year.unique() if daily_profit_1 is not None else []
         historical_years_2 = daily_profit_2.index.year.unique() if daily_profit_2 is not None else []
         
         last_actual_date_1 = daily_profit_1.index[-1] if daily_profit_1 is not None else None
         last_actual_date_2 = daily_profit_2.index[-1] if daily_profit_2 is not None else None
-
-        forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W') if last_actual_date_1 is not None else None
-        forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W') if last_actual_date_2 is not None else None
 
         all_years = sorted(set(historical_years_1) | set(historical_years_2))
         default_years = [2024] if 2024 in all_years else []
@@ -149,7 +146,19 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
                 name='Data Historis Cabang 1'
             ))
 
-            forecast_segment_1 = pd.Series(hw_forecast_future_1[:forecast_horizon].values, index=forecast_dates_1[1:])
+            # Plot the test predictions
+            if last_actual_date_1 is not None:
+                test_segment_1 = pd.Series(hw_forecast_test_1.values, index=hw_forecast_test_1.index)
+                fig.add_trace(go.Scatter(
+                    x=test_segment_1.index,
+                    y=test_segment_1.values,
+                    mode='lines',
+                    line=dict(dash='dash'),
+                    name='Hasil Test Cabang 1'
+                ))
+
+            # Plot the future forecasts
+            forecast_segment_1 = pd.Series(hw_forecast_future_1[:forecast_horizon].values, index=hw_forecast_future_1.index)
             forecast_segment_1.index = pd.to_datetime(forecast_segment_1.index)
             
             fig.add_trace(go.Scatter(
@@ -162,32 +171,4 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
 
         # Plot data for Bobby Aquatic 2
         if selected_years and daily_profit_2 is not None:
-            filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(
-                x=filtered_data_2.index,
-                y=filtered_data_2['LABA'],
-                mode='lines',
-                name='Data Historis Cabang 2'
-            ))
-
-            forecast_segment_2 = pd.Series(hw_forecast_future_2[:forecast_horizon].values, index=forecast_dates_2[1:])
-            forecast_segment_2.index = pd.to_datetime(forecast_segment_2.index)
-            
-            fig.add_trace(go.Scatter(
-                x=forecast_segment_2.index,
-                y=forecast_segment_2.values,
-                mode='lines',
-                line=dict(dash='dash'),
-                name='Prediksi Cabang 2'
-            ))
-
-        # Update layout for better visualization
-        fig.update_layout(
-            title="Rata-rata Laba Harian",
-            xaxis_title="Tanggal",
-            yaxis_title="Laba Harian",
-            legend_title="Legenda",
-            template="plotly_white"
-        )
-
-        st.plotly_chart(fig)
+            filtered_data_2 = daily_profit_2[daily_profit_2.index.year.is

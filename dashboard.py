@@ -88,7 +88,6 @@ if st.session_state.page == "sales":
 
 # Show dashboard based on selections
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
-    # Show dashboard for the combined data
         show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, key_suffix='combined')
     elif "Bobby Aquatic 1" in branch_selection:
     # Show dashboard for Bobby Aquatic 1

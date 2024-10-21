@@ -32,36 +32,23 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
 
     return daily_profit, hw_forecast_future
 
-def show_dashboard(daily_profit_1=None, daily_profit_2=None, hw_forecast_1=None, hw_forecast_2=None, key_suffix=''):
+def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2=None, hw_forecast_future_2=None, forecast_horizon=12, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
-    # Combine the total, average, and forecast profits for both branches
-    total_profit_last_week = 0
-    last_week_profit = 0
-    predicted_profit_next_week = 0
-
-# Example of checking if 'LABA' is in daily_profit_1 before accessing it
-    if daily_profit_1 is not None and 'LABA' in daily_profit_1.columns:
-      last_week_profit += daily_profit_1['LABA'].iloc[-1]
-    
-        if hw_forecast_1 is not None:
-            predicted_profit_next_week += hw_forecast_1.iloc[0]
-
-        total_profit_last_week += last_week_profit * 7
-
-    if daily_profit_2 is not None and 'LABA' in daily_profit_2.columns:
-        last_week_profit += daily_profit_2['LABA'].iloc[-1]
-    
-        if hw_forecast_2 is not None:
-            predicted_profit_next_week += hw_forecast_2.iloc[0]
-
-    total_profit_last_week += last_week_profit * 7
+    # Combine profit metrics from both branches
+    if daily_profit_2 is not None:
+        last_week_profit = daily_profit_1['LABA'].iloc[-1] + daily_profit_2['LABA'].iloc[-1]
+        predicted_profit_next_week = hw_forecast_future_1.iloc[0] + hw_forecast_future_2.iloc[0]
+    else:
+        last_week_profit = daily_profit_1['LABA'].iloc[-1]
+        predicted_profit_next_week = hw_forecast_future_1.iloc[0]
 
     profit_change_percentage = ((predicted_profit_next_week - last_week_profit) / last_week_profit) * 100 if last_week_profit else 0
+    total_profit_last_week = last_week_profit * 7
+
     arrow = "🡅" if profit_change_percentage > 0 else "🡇"
     color = "green" if profit_change_percentage > 0 else "red"
 
-    # Metrics display
     with col1:
         st.markdown(f"""
             <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
@@ -79,57 +66,50 @@ def show_dashboard(daily_profit_1=None, daily_profit_2=None, hw_forecast_1=None,
             </div>
         """, unsafe_allow_html=True)
 
-    # Line chart for historical and forecast data
     with col2:
         st.subheader('Data Historis dan Prediksi Rata - rata Laba Mingguan')
 
+        historical_years = daily_profit_1.index.year.unique()
+        last_actual_date = daily_profit_1.index[-1]
+        forecast_dates = pd.date_range(start=last_actual_date, periods=forecast_horizon + 1, freq='W')
+        forecast_years = forecast_dates.year.unique()
+
+        all_years = sorted(set(historical_years) | set(forecast_years))
+        default_years = [2024] if 2024 in all_years else []
+
+        selected_years = st.multiselect(
+            "Pilih Tahun",
+            all_years,
+            default=default_years,
+            key=f"multiselect_{key_suffix}",
+            help="Pilih tahun yang ingin ditampilkan"
+        )
+
         fig = go.Figure()
 
-        # Plotting for each branch separately
-        if daily_profit_1 is not None:
-            fig.add_trace(go.Scatter(
-                x=daily_profit_1.index,
-                y=daily_profit_1['LABA'],
-                mode='lines',
-                name='Cabang 1'
-            ))
+        # Plot historical data for branch 1
+        if selected_years:
+            combined_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(x=combined_data_1.index, y=combined_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
 
+            # Plot forecast data for branch 1
+            combined_forecast_1 = pd.concat([combined_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
+            fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast_1, mode='lines', name='Prediksi Cabang 1', line=dict(dash='dash')))
+
+        # Plot historical data and forecast for branch 2 (if available)
         if daily_profit_2 is not None:
-            fig.add_trace(go.Scatter(
-                x=daily_profit_2.index,
-                y=daily_profit_2['LABA'],
-                mode='lines',
-                name='Cabang 2',
-                line=dict(color='orange')
-            ))
+            combined_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(x=combined_data_2.index, y=combined_data_2['LABA'], mode='lines', name='Data Historis Cabang 2', line=dict(color='orange')))
 
-        # Future prediction for both branches
-        if hw_forecast_1 is not None:
-            forecast_dates = pd.date_range(start=daily_profit_1.index[-1], periods=len(hw_forecast_1), freq='W')
-            fig.add_trace(go.Scatter(
-                x=forecast_dates,
-                y=hw_forecast_1,
-                mode='lines',
-                name='Prediksi Cabang 1',
-                line=dict(dash='dash')
-            ))
-
-        if hw_forecast_2 is not None:
-            forecast_dates = pd.date_range(start=daily_profit_2.index[-1], periods=len(hw_forecast_2), freq='W')
-            fig.add_trace(go.Scatter(
-                x=forecast_dates,
-                y=hw_forecast_2,
-                mode='lines',
-                name='Prediksi Cabang 2',
-                line=dict(dash='dash', color='orange')
-            ))
+            combined_forecast_2 = pd.concat([combined_data_2.iloc[[-1]]['LABA'], hw_forecast_future_2])
+            fig.add_trace(go.Scatter(x=forecast_dates, y=combined_forecast_2, mode='lines', name='Prediksi Cabang 2', line=dict(dash='dash', color='orange')))
 
         fig.update_layout(
             xaxis_title='Tanggal',
             yaxis_title='Laba',
             hovermode='x',
-            margin=dict(t=18),
-            height=350
+            margin=dict(t=18),  # Mengurangi padding atas (t = top)
+            height=350  # Mengurangi tinggi chart
         )
 
         st.plotly_chart(fig)

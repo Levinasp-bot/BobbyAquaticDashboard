@@ -86,16 +86,17 @@ if st.session_state.page == "sales":
         # Forecast profit based on combined data
         daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
 
-    # Show dashboard based on selections
+# Show dashboard based on selections
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
-        # Show dashboard for the combined data
-        show_dashboard(daily_profit_combined, hw_forecast_future_combined, key_suffix='combined')
+    # Show dashboard for the combined data
+        show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, key_suffix='combined')
     elif "Bobby Aquatic 1" in branch_selection:
-        # Show dashboard for Bobby Aquatic 1
-        show_dashboard(daily_profit_1, hw_forecast_future_1, key_suffix='cabang1')
+    # Show dashboard for Bobby Aquatic 1
+        show_dashboard(daily_profit_1, hw_forecast_future_1, None, None, key_suffix='cabang1')  # Pass None for second branch
     elif "Bobby Aquatic 2" in branch_selection:
-        # Show dashboard for Bobby Aquatic 2
-        show_dashboard(daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
+    # Show dashboard for Bobby Aquatic 2
+        show_dashboard(None, None, daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')  # Pass None for first branch
+
 
 elif st.session_state.page == "product":
     st.header("🔍 Segmentasi Produk Bobby Aquatic")

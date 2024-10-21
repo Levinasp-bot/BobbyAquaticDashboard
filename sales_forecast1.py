@@ -36,45 +36,73 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
     col1, col2 = st.columns([1, 3])
 
     with col1:
-        last_week_profit_1 = daily_profit_1['LABA'].iloc[-1]
-        predicted_profit_next_week_1 = hw_forecast_future_1.iloc[0]
-        profit_change_percentage_1 = ((predicted_profit_next_week_1 - last_week_profit_1) / last_week_profit_1) * 100 if last_week_profit_1 else 0
+        # Display statistics for Bobby Aquatic 1
+        if daily_profit_1 is not None:
+            last_week_profit_1 = daily_profit_1['LABA'].iloc[-1]
+            predicted_profit_next_week_1 = hw_forecast_future_1.iloc[0]
+            profit_change_percentage_1 = ((predicted_profit_next_week_1 - last_week_profit_1) / last_week_profit_1) * 100 if last_week_profit_1 else 0
 
-        total_profit_last_week_1 = last_week_profit_1 * 7
+            total_profit_last_week_1 = last_week_profit_1 * 7
 
-        arrow_1 = "🡅" if profit_change_percentage_1 > 0 else "🡇"
-        color_1 = "green" if profit_change_percentage_1 > 0 else "red"
+            arrow_1 = "🡅" if profit_change_percentage_1 > 0 else "🡇"
+            color_1 = "green" if profit_change_percentage_1 > 0 else "red"
 
-        st.markdown(f"""
-            <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 1</span><br>
-                <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_1:,.2f}</span>
-            </div>
-            <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                <span style="font-size: 14px;">Rata - rata Laba Harian Minggu Ini Cabang 1</span><br>
-                <span style="font-size: 32px; font-weight: bold;">{last_week_profit_1:,.2f}</span>
-            </div>
-            <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                <span style="font-size: 14px;">Prediksi Rata - rata Laba Harian Minggu Depan Cabang 1</span><br>
-                <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_1:,.2f}</span>
-                <br><span style='color:{color_1}; font-size:24px;'>{arrow_1} {profit_change_percentage_1:.2f}%</span>
-            </div>
-        """, unsafe_allow_html=True)
+            st.markdown(f"""
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 1</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_1:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Rata-rata Laba Harian Minggu Ini Cabang 1</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{last_week_profit_1:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Prediksi Rata-rata Laba Harian Minggu Depan Cabang 1</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_1:,.2f}</span>
+                    <br><span style='color:{color_1}; font-size:24px;'>{arrow_1} {profit_change_percentage_1:.2f}%</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+        # Display statistics for Bobby Aquatic 2
+        if daily_profit_2 is not None:
+            last_week_profit_2 = daily_profit_2['LABA'].iloc[-1]
+            predicted_profit_next_week_2 = hw_forecast_future_2.iloc[0]
+            profit_change_percentage_2 = ((predicted_profit_next_week_2 - last_week_profit_2) / last_week_profit_2) * 100 if last_week_profit_2 else 0
+
+            total_profit_last_week_2 = last_week_profit_2 * 7
+
+            arrow_2 = "🡅" if profit_change_percentage_2 > 0 else "🡇"
+            color_2 = "green" if profit_change_percentage_2 > 0 else "red"
+
+            st.markdown(f"""
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 2</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_2:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Rata-rata Laba Harian Minggu Ini Cabang 2</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{last_week_profit_2:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Prediksi Rata-rata Laba Harian Minggu Depan Cabang 2</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_2:,.2f}</span>
+                    <br><span style='color:{color_2}; font-size:24px;'>{arrow_2} {profit_change_percentage_2:.2f}%</span>
+                </div>
+            """, unsafe_allow_html=True)
 
     with col2:
-        st.subheader('Data Historis dan Prediksi Rata - rata Laba Mingguan')
+        st.subheader('Data Historis dan Prediksi Rata-rata Laba Mingguan')
 
-        historical_years_1 = daily_profit_1.index.year.unique()
-        historical_years_2 = daily_profit_2.index.year.unique()
-        last_actual_date_1 = daily_profit_1.index[-1]
-        last_actual_date_2 = daily_profit_2.index[-1]
-        forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W')
-        forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W')
+        historical_years_1 = daily_profit_1.index.year.unique() if daily_profit_1 is not None else []
+        historical_years_2 = daily_profit_2.index.year.unique() if daily_profit_2 is not None else []
+        
+        last_actual_date_1 = daily_profit_1.index[-1] if daily_profit_1 is not None else None
+        last_actual_date_2 = daily_profit_2.index[-1] if daily_profit_2 is not None else None
 
-        forecast_years_1 = forecast_dates_1.year.unique()
-        forecast_years_2 = forecast_dates_2.year.unique()
+        forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W') if last_actual_date_1 is not None else None
+        forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W') if last_actual_date_2 is not None else None
 
-        all_years = sorted(set(historical_years_1) | set(forecast_years_1) | set(historical_years_2) | set(forecast_years_2))
+        all_years = sorted(set(historical_years_1) | set(historical_years_2))
         default_years = [2024] if 2024 in all_years else []
 
         selected_years = st.multiselect(
@@ -86,23 +114,24 @@ def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_fore
         )
 
         fig = go.Figure()
-
-        # Only plot historical data if years are selected
-        if selected_years:
+        
+        # Plot data for Bobby Aquatic 1
+        if selected_years and daily_profit_1 is not None:
             combined_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
-            combined_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
-            
-            fig.add_trace(go.Scatter(x=combined_data_1.index, y=combined_data_1['LABA'], mode='lines', name='Cabang 1', line=dict(color='blue')))
-            fig.add_trace(go.Scatter(x=combined_data_2.index, y=combined_data_2['LABA'], mode='lines', name='Cabang 2', line=dict(color='orange')))
+            fig.add_trace(go.Scatter(x=combined_data_1.index, y=combined_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
 
-            # Include forecast data only if any historical data is available for the selected years
             if not combined_data_1.empty:
                 combined_forecast_1 = pd.concat([combined_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
-                fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Cabang 1', line=dict(dash='dash', color='blue')))
+                fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dash')))
+
+        # Plot data for Bobby Aquatic 2
+        if selected_years and daily_profit_2 is not None:
+            combined_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
+            fig.add_trace(go.Scatter(x=combined_data_2.index, y=combined_data_2['LABA'], mode='lines', name='Data Historis Cabang 2'))
 
             if not combined_data_2.empty:
                 combined_forecast_2 = pd.concat([combined_data_2.iloc[[-1]]['LABA'], hw_forecast_future_2])
-                fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Cabang 2', line=dict(dash='dash', color='orange')))
+                fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dash')))
 
         fig.update_layout(
             xaxis_title='Tanggal',

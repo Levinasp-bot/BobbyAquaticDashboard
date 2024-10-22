@@ -100,27 +100,17 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             """, unsafe_allow_html=True)
 
     with col2:
-        st.markdown(
-            """
-            <style>
-            .stSelectbox {
-                margin-bottom: 1px; /* Sesuaikan nilai ini untuk memperkecil jarak */
-            }
-            </style>
-            """, unsafe_allow_html=True
-        )
         st.markdown("<h3 style='font-size:20px;'>Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan</h3>", unsafe_allow_html=True)
 
         if daily_profit_1 is not None and daily_profit_2 is not None:
             # Combine the daily profits for both branches
             combined_daily_profit = pd.concat([daily_profit_1.assign(Cabang='Cabang 1'),
-                                            daily_profit_2.assign(Cabang='Cabang 2')])
+                                                daily_profit_2.assign(Cabang='Cabang 2')])
 
             # Get unique years from the combined historical data
             historical_years = combined_daily_profit.index.year.unique()
             selected_years = st.multiselect('Pilih Tahun untuk Semua Cabang', options=historical_years, default=historical_years)
-            st.write("")  # You can adjust or remove this empty space if needed
-
+            st.write("")
             # Filter historical data based on selected years
             filtered_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
 
@@ -134,6 +124,10 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
 
             # Initialize the plot
             fig = go.Figure()
+
+            fig.update_layout(
+                margin=dict(t=10)  # Adjust the 't' value (top padding) as needed
+            )
 
             # Plot filtered historical data for both branches
             for cabang in filtered_data['Cabang'].unique():

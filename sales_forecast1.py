@@ -33,6 +33,7 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     # Forecast the future values
     hw_forecast_future = hw_model.forecast(forecast_horizon)
 
+    test = hw_model.forecast(len(test))
     # Store fitted values (train predictions)
     fitted_values = hw_model.fittedvalues
 
@@ -45,7 +46,85 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, hw_forecast_future_1
 
     col1, col2 = st.columns([1, 3])
 
-    # (Same code as before for the metrics display...)
+    with col1:
+        # Show combined metrics if both branches are selected
+        if daily_profit_1 is not None and daily_profit_2 is not None:
+            combined_last_week_profit = (daily_profit_1['LABA'].iloc[-1] + daily_profit_2['LABA'].iloc[-1])
+            combined_predicted_profit_next_week = (hw_forecast_future_1.iloc[0] + hw_forecast_future_2.iloc[0])
+            combined_total_profit_last_week = combined_last_week_profit * 7
+            combined_profit_change_percentage = ((combined_predicted_profit_next_week - combined_last_week_profit) / combined_last_week_profit) * 100 if combined_last_week_profit else 0
+
+            combined_arrow = "🡅" if combined_profit_change_percentage > 0 else "🡇"
+            combined_color = "green" if combined_profit_change_percentage > 0 else "red"
+
+            st.markdown(f"""
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Total Laba Minggu Ini</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{combined_total_profit_last_week:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Rata-rata Laba Harian Minggu Ini</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{combined_last_week_profit:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Prediksi Rata-rata Laba Harian Minggu Depan</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{combined_predicted_profit_next_week:,.2f}</span>
+                    <br><span style='color:{combined_color}; font-size:24px;'>{combined_arrow} {combined_profit_change_percentage:.2f}%</span>
+                </div>
+            """, unsafe_allow_html=True)
+        # Show metrics for individual branches only if both branches are not selected
+        elif daily_profit_1 is not None:
+            # Metrics for Bobby Aquatic 1
+            last_week_profit_1 = daily_profit_1['LABA'].iloc[-1]
+            predicted_profit_next_week_1 = hw_forecast_future_1.iloc[0]
+            total_profit_last_week_1 = last_week_profit_1 * 7
+            profit_change_percentage_1 = ((predicted_profit_next_week_1 - last_week_profit_1) / last_week_profit_1) * 100 if last_week_profit_1 else 0
+
+            arrow_1 = "🡅" if profit_change_percentage_1 > 0 else "🡇"
+            color_1 = "green" if profit_change_percentage_1 > 0 else "red"
+
+            st.markdown(f"""
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 1</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_1:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Rata-rata Laba Harian Minggu Ini Cabang 1</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{last_week_profit_1:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Prediksi Rata-rata Laba Harian Minggu Depan Cabang 1</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_1:,.2f}</span>
+                    <br><span style='color:{color_1}; font-size:24px;'>{arrow_1} {profit_change_percentage_1:.2f}%</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+        elif daily_profit_2 is not None:
+            # Metrics for Bobby Aquatic 2
+            last_week_profit_2 = daily_profit_2['LABA'].iloc[-1]
+            predicted_profit_next_week_2 = hw_forecast_future_2.iloc[0]
+            total_profit_last_week_2 = last_week_profit_2 * 7
+            profit_change_percentage_2 = ((predicted_profit_next_week_2 - last_week_profit_2) / last_week_profit_2) * 100 if last_week_profit_2 else 0
+
+            arrow_2 = "🡅" if profit_change_percentage_2 > 0 else "🡇"
+            color_2 = "green" if profit_change_percentage_2 > 0 else "red"
+
+            st.markdown(f"""
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 2</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_2:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Rata-rata Laba Harian Minggu Ini Cabang 2</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{last_week_profit_2:,.2f}</span>
+                </div>
+                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
+                    <span style="font-size: 14px;">Prediksi Rata-rata Laba Harian Minggu Depan Cabang 2</span><br>
+                    <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_2:,.2f}</span>
+                    <br><span style='color:{color_2}; font-size:24px;'>{arrow_2} {profit_change_percentage_2:.2f}%</span>
+                </div>
+            """, unsafe_allow_html=True)
+
 
     with col2:
         st.subheader('Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan')

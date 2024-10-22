@@ -104,7 +104,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             """
             <style>
             .stSelectbox {
-                margin-bottom: 5px; /* Sesuaikan nilai ini untuk memperkecil jarak */
+                margin-bottom: 1px; /* Sesuaikan nilai ini untuk memperkecil jarak */
             }
             </style>
             """, unsafe_allow_html=True

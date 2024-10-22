@@ -99,33 +99,33 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 </div>
             """, unsafe_allow_html=True)
 
-with col2:
-    st.subheader('Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan')
+    with col2:
+        st.subheader('Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan')
 
     # Pastikan daily_profit_1 ada sebelum melanjutkan
-    if daily_profit_1 is not None:
-        historical_years_1 = daily_profit_1.index.year.unique()  # Mendapatkan tahun-tahun historis
-        selected_years_1 = st.multiselect('Pilih Tahun', options=historical_years_1, default=historical_years_1)
+        if daily_profit_1 is not None:
+            historical_years_1 = daily_profit_1.index.year.unique()  # Mendapatkan tahun-tahun historis
+            selected_years_1 = st.multiselect('Pilih Tahun', options=historical_years_1, default=historical_years_1)
 
         # Filter data berdasarkan tahun yang dipilih
-        filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years_1)]
+            filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years_1)]
 
-        last_actual_date_1 = daily_profit_1.index[-1]  # Tanggal terakhir pada data
-        forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W')
+            last_actual_date_1 = daily_profit_1.index[-1]  # Tanggal terakhir pada data
+            forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W')
 
-        fig = go.Figure()
+            fig = go.Figure()
 
         # Plot data historis yang difilter
-        fig.add_trace(go.Scatter(x=filtered_data_1.index, y=filtered_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
+            fig.add_trace(go.Scatter(x=filtered_data_1.index, y=filtered_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
 
         # Plot fitted values (training predictions)
-        fig.add_trace(go.Scatter(x=fitted_values_1.index, y=fitted_values_1, mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
+            fig.add_trace(go.Scatter(x=fitted_values_1.index, y=fitted_values_1, mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
 
         # Plot test forecasts (predictions for test set)
-        fig.add_trace(go.Scatter(x=test_1.index, y=test_forecast_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
+            fig.add_trace(go.Scatter(x=test_1.index, y=test_forecast_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
 
         # Plot future forecasts
-        combined_forecast_1 = pd.concat([filtered_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
-        fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dash')))
+            combined_forecast_1 = pd.concat([filtered_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
+            fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dash')))
         
-        st.plotly_chart(fig)
+            st.plotly_chart(fig)

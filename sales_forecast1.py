@@ -125,14 +125,18 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
         # Plot filtered historical data
             fig.add_trace(go.Scatter(x=filtered_data_1.index, y=filtered_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
 
-        # Plot filtered fitted values
-            fig.add_trace(go.Scatter(x=filtered_fitted_values_1.index, y=filtered_fitted_values_1, mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
+        # Combine the last point of the historical data with the first point of fitted values
+            if not filtered_fitted_values_1.empty:
+                combined_fitted_data_1 = pd.concat([filtered_data_1.iloc[[-1]], filtered_fitted_values_1])
+                fig.add_trace(go.Scatter(x=combined_fitted_data_1.index, y=combined_fitted_data_1['LABA'], mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
 
-        # Plot filtered test forecasts
-            fig.add_trace(go.Scatter(x=filtered_test_1.index, y=filtered_test_forecast_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
+        # Combine the last point of the fitted values with the first point of test forecasts
+            if not filtered_test_1.empty and not filtered_test_forecast_1.empty:
+                combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], filtered_test_forecast_1])
+                fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
 
-        # Plot future forecasts
-            combined_forecast_1 = pd.concat([filtered_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
+        # Combine the last point of the test forecast with the first point of future forecasts
+            combined_forecast_1 = pd.concat([filtered_test_forecast_1.iloc[[-1]], hw_forecast_future_1])
             fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dot')))
 
             st.plotly_chart(fig)

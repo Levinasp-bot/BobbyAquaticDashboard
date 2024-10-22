@@ -128,15 +128,36 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         # Mengategorikan RFM tanpa argumen tambahan
         rfm_category = categorize_rfm(rfm_category)
 
-        # Membuat legenda untuk setiap cluster menggunakan kategori linguistik
+        # Menghitung rata-rata RFM untuk setiap cluster
+        cluster_means = rfm_category.groupby('Cluster')[['Recency', 'Frequency', 'Monetary']].mean()
+
+        # Menghitung kuantile untuk menentukan kategori rata-rata RFM
+        recency_quartiles = rfm_category['Recency'].quantile([0.2, 0.4, 0.6, 0.8])
+        frequency_quartiles = rfm_category['Frequency'].quantile([0.2, 0.4, 0.6, 0.8])
+        monetary_quartiles = rfm_category['Monetary'].quantile([0.2, 0.4, 0.6, 0.8])
+
+        # Mendefinisikan fungsi untuk menentukan deskripsi berdasarkan kuantile yang disesuaikan
+        def determine_category(value, quartiles, labels):
+            if value <= quartiles[0.2]:
+                return labels[0]
+            elif value <= quartiles[0.4]:
+                return labels[1]
+            elif value <= quartiles[0.6]:
+                return labels[2]
+            elif value <= quartiles[0.8]:
+                return labels[3]
+            else:
+                return labels[4]
+
+        # Membuat legenda untuk setiap cluster berdasarkan rata-rata RFM
         custom_legends = {
-            cluster: f"{rfm_category[rfm_category['Cluster'] == cluster]['Recency_Category'].mode()[0]} Dibeli, "
-                     f"Frekuensi {rfm_category[rfm_category['Cluster'] == cluster]['Frequency_Category'].mode()[0]}, "
-                     f"dan Nilai Pembelian {rfm_category[rfm_category['Cluster'] == cluster]['Monetary_Category'].mode()[0]}"
-            for cluster in sorted(rfm_category['Cluster'].unique())
+            cluster: f"{determine_category(mean_values['Recency'], recency_quartiles, ['Baru Saja', 'Cukup Baru', 'Cukup Lama', 'Lama', 'Sangat Lama'])} Dibeli, "
+                     f"Frekuensi {determine_category(mean_values['Frequency'], frequency_quartiles, ['Sangat Jarang', 'Jarang', 'Cukup Sering', 'Sering', 'Sangat Sering'])}, "
+                     f"dan Nilai Pembelian {determine_category(mean_values['Monetary'], monetary_quartiles, ['Sangat Rendah', 'Rendah', 'Sedang', 'Tinggi', 'Sangat Tinggi'])}"
+            for cluster, mean_values in cluster_means.iterrows()
         }
 
-        col1, col2 = st.columns([1, 2])  
+        col1, col2 = st.columns([1, 2])
 
         with col1:
             # Mengurangi ukuran font untuk judul kategori terjual
@@ -163,7 +184,6 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
                         f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Monetary']:.2f}</span><br>"
                         f"<span style='font-size: 12px;'>Monetary</span></div>"
                         f"</div>", unsafe_allow_html=True)
-
 
         # Memilih cluster yang akan ditampilkan
         unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'

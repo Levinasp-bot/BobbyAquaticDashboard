@@ -67,26 +67,30 @@ if st.session_state.page == "sales":
         sheet_name_1 = 'Penjualan'
         penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
 
-        daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)  # Unpack two values
+    # Unpack three values from the forecast_profit_1 function
+        daily_profit_1, test_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)
 
     if "Bobby Aquatic 2" in branch_selection:
         folder_path_2 = "./data/Bobby Aquatic 2"
         sheet_name_2 = 'Penjualan'
         penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
-        daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)  # Unpack two values
+    # Unpack three values from the forecast_profit_2 function
+        daily_profit_2, test_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
 
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
         combined_penjualan_data = pd.concat([penjualan_data_1, penjualan_data_2], ignore_index=True)
 
-        daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)  # Unpack two values
+    # Unpack three values for combined data
+        daily_profit_combined, test_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
 
+# Pass the unpacked values to show_dashboard function accordingly
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
         show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, key_suffix='combined')
     elif "Bobby Aquatic 1" in branch_selection:
-        show_dashboard(daily_profit_1, hw_forecast_future_1, None, None, key_suffix='cabang1')  # Pass None for second branch
+        show_dashboard(daily_profit_1, hw_forecast_future_1, None, None, key_suffix='cabang1')
     elif "Bobby Aquatic 2" in branch_selection:
-        show_dashboard(None, None, daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')  # Pass None for first branch
+        show_dashboard(None, None, daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
 
 
 elif st.session_state.page == "product":

@@ -28,25 +28,18 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
 
     hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
 
-    # Forecast on test data
-    hw_forecast_test = hw_model.forecast(len(test))
-
-    # Forecast future data
     hw_forecast_future = hw_model.forecast(forecast_horizon)
 
-    # Combine test forecast and future forecast
-    combined_forecast = pd.concat([hw_forecast_test, hw_forecast_future])
+    return daily_profit, hw_forecast_future
 
-    return daily_profit, test, combined_forecast
-
-def show_dashboard(daily_profit_1, test_1, combined_forecast_1, daily_profit_2, test_2, combined_forecast_2, forecast_horizon=12, key_suffix=''):
+def show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, forecast_horizon=12, key_suffix=''):
     col1, col2 = st.columns([1, 3])
 
     with col1:
         # Show combined metrics if both branches are selected
         if daily_profit_1 is not None and daily_profit_2 is not None:
             combined_last_week_profit = (daily_profit_1['LABA'].iloc[-1] + daily_profit_2['LABA'].iloc[-1])
-            combined_predicted_profit_next_week = (combined_forecast_1.iloc[0] + combined_forecast_2.iloc[0])
+            combined_predicted_profit_next_week = (hw_forecast_future_1.iloc[0] + hw_forecast_future_2.iloc[0])
             combined_total_profit_last_week = combined_last_week_profit * 7
             combined_profit_change_percentage = ((combined_predicted_profit_next_week - combined_last_week_profit) / combined_last_week_profit) * 100 if combined_last_week_profit else 0
 
@@ -68,11 +61,11 @@ def show_dashboard(daily_profit_1, test_1, combined_forecast_1, daily_profit_2, 
                     <br><span style='color:{combined_color}; font-size:24px;'>{combined_arrow} {combined_profit_change_percentage:.2f}%</span>
                 </div>
             """, unsafe_allow_html=True)
-
         # Show metrics for individual branches only if both branches are not selected
         elif daily_profit_1 is not None:
+            # Metrics for Bobby Aquatic 1
             last_week_profit_1 = daily_profit_1['LABA'].iloc[-1]
-            predicted_profit_next_week_1 = combined_forecast_1.iloc[0]
+            predicted_profit_next_week_1 = hw_forecast_future_1.iloc[0]
             total_profit_last_week_1 = last_week_profit_1 * 7
             profit_change_percentage_1 = ((predicted_profit_next_week_1 - last_week_profit_1) / last_week_profit_1) * 100 if last_week_profit_1 else 0
 
@@ -96,8 +89,9 @@ def show_dashboard(daily_profit_1, test_1, combined_forecast_1, daily_profit_2, 
             """, unsafe_allow_html=True)
 
         elif daily_profit_2 is not None:
+            # Metrics for Bobby Aquatic 2
             last_week_profit_2 = daily_profit_2['LABA'].iloc[-1]
-            predicted_profit_next_week_2 = combined_forecast_2.iloc[0]
+            predicted_profit_next_week_2 = hw_forecast_future_2.iloc[0]
             total_profit_last_week_2 = last_week_profit_2 * 7
             profit_change_percentage_2 = ((predicted_profit_next_week_2 - last_week_profit_2) / last_week_profit_2) * 100 if last_week_profit_2 else 0
 
@@ -119,6 +113,7 @@ def show_dashboard(daily_profit_1, test_1, combined_forecast_1, daily_profit_2, 
                     <br><span style='color:{color_2}; font-size:24px;'>{arrow_2} {profit_change_percentage_2:.2f}%</span>
                 </div>
             """, unsafe_allow_html=True)
+
 
     with col2:
         st.subheader('Data Historis dan Prediksi Rata-rata Laba Mingguan')

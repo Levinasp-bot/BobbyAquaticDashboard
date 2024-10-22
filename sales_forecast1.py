@@ -136,10 +136,13 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                     fig.add_trace(go.Scatter(x=combined_fitted_data_1.index, y=combined_fitted_data_1['LABA'], mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
                     # Combine the last point of the fitted values with the first point of test forecasts
                     if not filtered_test_1.empty and not filtered_test_forecast_1.empty:
-                        combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], filtered_test_forecast_1])
+                        # Shift the test forecast by one period to the right
+                        shifted_test_forecast_1 = filtered_test_forecast_1.shift(1)
+                        combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], shifted_test_forecast_1])
                         fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
+                        
                         # Combine the last point of the test forecast with the first point of future forecasts
-                        combined_forecast_1 = pd.concat([filtered_test_forecast_1.iloc[[-1]], hw_forecast_future_1])
+                        combined_forecast_1 = pd.concat([shifted_test_forecast_1.iloc[[-1]], hw_forecast_future_1])
                         forecast_dates_1 = pd.date_range(start=cabang_data.index[-1], periods=forecast_horizon + 1, freq='W')
                         fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dot')))
 
@@ -148,11 +151,12 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                     fig.add_trace(go.Scatter(x=combined_fitted_data_2.index, y=combined_fitted_data_2['LABA'], mode='lines', name='Fitted Values Cabang 2', line=dict(dash='dot')))
                     # Combine the last point of the fitted values with the first point of test forecasts
                     if not filtered_test_2.empty and not filtered_test_forecast_2.empty:
-                        combined_test_data_2 = pd.concat([filtered_fitted_values_2.iloc[[-1]], filtered_test_forecast_2])
+                        shifted_test_forecast_2 = filtered_test_forecast_2.shift(1)
+                        combined_test_data_2 = pd.concat([filtered_fitted_values_2.iloc[[-1]], shifted_test_forecast_2])
                         fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', name='Prediksi Data Test Cabang 2', line=dict(dash='dot')))
-                        # Combine the last point of the test forecast with the first point of future forecasts
-                        combined_forecast_2 = pd.concat([filtered_test_forecast_2.iloc[[-1]], hw_forecast_future_2])
+                        
+                        combined_forecast_2 = pd.concat([shifted_test_forecast_2.iloc[[-1]], hw_forecast_future_2])
                         forecast_dates_2 = pd.date_range(start=cabang_data.index[-1], periods=forecast_horizon + 1, freq='W')
                         fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dot')))
-
+                        
             st.plotly_chart(fig)

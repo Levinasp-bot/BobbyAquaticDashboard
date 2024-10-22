@@ -29,13 +29,13 @@ def process_rfm(data):
     reference_date = data['TANGGAL'].max()
     
     # Mengelompokkan data berdasarkan KODE BARANG dan NAMA BARANG
-    rfm = data.groupby(['KODE BARANG', 'NAMA BARANG']).agg({
+    rfm = data.groupby(['NAMA BARANG']).agg({
         'TANGGAL': lambda x: (reference_date - x.max()).days,  # Recency
-        'NAMA BARANG': 'count',  # Frequency
+        'KODE BARANG': 'count',  # Frequency
         'TOTAL HR JUAL': 'sum'  # Monetary
     }).reset_index()
     
-    rfm.columns = ['KODE BARANG', 'NAMA BARANG', 'Recency', 'Frequency', 'Monetary']
+    rfm.columns = ['NAMA BARANG', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
 
@@ -117,7 +117,7 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     st.markdown(f"##### Daftar Produk yang {custom_label}", unsafe_allow_html=True)
     
     # Menampilkan kolom KODE BARANG dan NAMA BARANG, tanpa KATEGORI
-    cluster_data = rfm[rfm['Cluster'] == cluster_label][['KODE BARANG', 'NAMA BARANG', 'Recency', 'Frequency', 'Monetary']]
+    cluster_data = rfm[rfm['Cluster'] == cluster_label][['NAMA BARANG', 'Recency', 'Frequency', 'Monetary']]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):

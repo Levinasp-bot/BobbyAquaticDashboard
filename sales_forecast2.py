@@ -15,7 +15,7 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dataframes, ignore_index=True)
 
 @st.cache_data
-def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
+def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
     daily_profit = data[['TANGGAL', 'LABA']].copy()
     daily_profit['TANGGAL'] = pd.to_datetime(daily_profit['TANGGAL'])
     daily_profit = daily_profit.groupby('TANGGAL').sum()
@@ -28,7 +28,7 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     train, test = daily_profit[:train_size], daily_profit[train_size:]
 
     # Fit the model on the training data
-    hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
+    hw_model = ExponentialSmoothing(train, trend='add', seasonal='add', seasonal_periods=seasonal_period).fit()
 
     # Forecast the future values (including the test period)
     hw_forecast_future = hw_model.forecast(forecast_horizon)

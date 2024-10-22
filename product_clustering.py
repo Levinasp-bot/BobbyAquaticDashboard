@@ -35,7 +35,7 @@ def process_rfm(data):
         'TOTAL HR JUAL': 'sum'  # Monetary
     }).reset_index()
     
-    rfm.columns = ['NAMA BARANG', 'Recency', 'Frequency', 'Monetary']
+    rfm.columns = ['NAMA BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
 
 

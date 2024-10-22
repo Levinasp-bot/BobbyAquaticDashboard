@@ -67,25 +67,26 @@ if st.session_state.page == "sales":
         sheet_name_1 = 'Penjualan'
         penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
 
-        daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)  # Unpack two values
+        daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)
 
     if "Bobby Aquatic 2" in branch_selection:
         folder_path_2 = "./data/Bobby Aquatic 2"
         sheet_name_2 = 'Penjualan'
         penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
-        daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)  # Unpack two values
+        daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
 
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
         combined_penjualan_data = pd.concat([penjualan_data_1, penjualan_data_2], ignore_index=True)
 
-        daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)  # Unpack two values
+        daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
 
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
         show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, key_suffix='combined')
     elif "Bobby Aquatic 1" in branch_selection:
         show_dashboard(daily_profit_1, hw_forecast_future_1, None, None, key_suffix='cabang1')  # Pass None for second branch
     elif "Bobby Aquatic 2" in branch_selection:
+    # Show dashboard for Bobby Aquatic 2
         show_dashboard(None, None, daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')  # Pass None for first branch
 
 

@@ -85,18 +85,12 @@ if st.session_state.page == "sales":
         daily_profit_combined, test_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
 
 # Pass the unpacked values to show_dashboard function accordingly
-if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
-    show_dashboard(daily_profit_1, test_1, hw_forecast_future_1,
-                   daily_profit_2, test_2, hw_forecast_future_2,
-                   key_suffix='combined')
-
-elif "Bobby Aquatic 1" in branch_selection:
-    show_dashboard(daily_profit_1, test_1, hw_forecast_future_1,
-                   None, None, None, key_suffix='cabang1')
-
-elif "Bobby Aquatic 2" in branch_selection:
-    show_dashboard(None, None, None,
-                   daily_profit_2, test_2, hw_forecast_future_2, key_suffix='cabang2')
+    if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
+        show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, key_suffix='combined')
+    elif "Bobby Aquatic 1" in branch_selection:
+        show_dashboard(daily_profit_1, hw_forecast_future_1, None, None, key_suffix='cabang1')
+    elif "Bobby Aquatic 2" in branch_selection:
+        show_dashboard(None, None, daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')
 
 
 elif st.session_state.page == "product":

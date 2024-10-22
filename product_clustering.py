@@ -21,15 +21,12 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dfs, ignore_index=True)
 
 def process_rfm(data):
-    # Ensure columns are not duplicated
-    data = data.loc[:, ~data.columns.duplicated()]
-
     # Memproses data RFM
     data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])
     reference_date = data['TANGGAL'].max()
     
-    # Mengelompokkan data berdasarkan KODE BARANG dan NAMA BARANG
-    rfm = data.groupby(['NAMA BARANG']).agg({
+    # Mengelompokkan data berdasarkan KODE BARANG dan KATEGORI
+    rfm = data.groupby(['NAMA BARANG', 'KATEGORI']).agg({
         'TANGGAL': lambda x: (reference_date - x.max()).days,  # Recency
         'KODE BARANG': 'count',  # Frequency
         'TOTAL HR JUAL': 'sum'  # Monetary
@@ -37,7 +34,6 @@ def process_rfm(data):
     
     rfm.columns = ['NAMA BARANG', 'KATEGORI', 'Recency', 'Frequency', 'Monetary']
     return rfm
-
 
 def categorize_rfm(rfm):
     # Menghitung quintile (5 bagian) untuk Recency, Frequency, dan Monetary
@@ -72,6 +68,7 @@ def categorize_rfm(rfm):
     rfm['Monetary_Category'] = pd.cut(rfm['Monetary'], bins=monetary_bins, labels=monetary_labels)
 
     return rfm
+
 
 def cluster_rfm(rfm_scaled, n_clusters):
     # Melakukan clustering menggunakan KMeans
@@ -116,8 +113,7 @@ def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
     # Menampilkan tabel cluster
     st.markdown(f"##### Daftar Produk yang {custom_label}", unsafe_allow_html=True)
     
-    # Menampilkan kolom KODE BARANG dan NAMA BARANG, tanpa KATEGORI
-    cluster_data = rfm[rfm['Cluster'] == cluster_label][['NAMA BARANG', 'Recency', 'Frequency', 'Monetary']]
+    cluster_data = rfm[rfm['Cluster'] == cluster_label]
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
@@ -166,18 +162,51 @@ def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
         with col1:
             # Mengurangi ukuran font untuk judul kategori terjual
             st.markdown(f"<h4 style='font-size: 20px;'>Total {category_name} Terjual</h4>", unsafe_allow_html=True)
-            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 10px;'>", unsafe_allow_html=True)
-
-            # Mengurutkan clusters berdasarkan nama
-            available_clusters = sorted(rfm_category['Cluster'].unique())
-
-            for cluster_label in available_clusters:
-                show_cluster_table(rfm_category, cluster_label, custom_legends.get(cluster_label, f'Cluster {cluster_label}'), key_suffix)
+            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
+                        f"font-size: 32px; font-weight: bold; display: flex; justify-content: center; align-items: center; "
+                        f"height: 100px;'>"
+                        f"<strong>{rfm_category['Frequency'].sum()}</strong></div>", unsafe_allow_html=True)
 
         with col2:
-            st.markdown(f"<h4 style='font-size: 20px;'>Distribusi Cluster {category_name}</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='font-size: 20px;'>Rata - rata RFM</h4>", unsafe_allow_html=True)
+            average_rfm = rfm_category[['Recency', 'Frequency', 'Monetary']].mean()
+    
+            # Menyesuaikan jarak antar Recency, Frequency, dan Monetary agar lebih proporsional
+            st.markdown(f"<div style='border: 1px solid #d3d3d3; padding: 20px; border-radius: 5px; "
+                        f"display: flex; justify-content: space-around; align-items: center; height: 100px;'>"
+                        f"<div style='text-align: center;'>"
+                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Recency']:.2f}</span><br>"
+                        f"<span style='font-size: 12px;'>Recency</span></div>"
+                        f"<div style='text-align: center;'>"
+                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Frequency']:.2f}</span><br>"
+                        f"<span style='font-size: 12px;'>Frequency</span></div>"
+                        f"<div style='text-align: center;'>"
+                        f"<span style='font-size: 32px; font-weight: bold;'>{average_rfm['Monetary']:.2f}</span><br>"
+                        f"<span style='font-size: 12px;'>Monetary</span></div>"
+                        f"</div>", unsafe_allow_html=True)
+
+        # Memilih cluster yang akan ditampilkan
+        unique_key = f'selectbox_{category_name}_{key_suffix}_{str(hash(tuple(custom_legends.keys())))}'
+        selected_custom_label = st.selectbox(
+            f'Pilih Kelompok untuk {category_name}:',
+            options=[custom_legends[cluster] for cluster in sorted(custom_legends.keys())],
+            key=unique_key
+        )
+
+        selected_cluster_num = {v: k for k, v in custom_legends.items()}[selected_custom_label]
+        plot_key = f'plotly_chart_{category_name}_{key_suffix}'
+
+        # Menampilkan grafik dan tabel cluster
+        chart_col, table_col = st.columns(2)
+        with chart_col:
             fig = plot_interactive_pie_chart(rfm_category, cluster_labels, category_name, custom_legends)
-            st.plotly_chart(fig)
+            st.plotly_chart(fig, use_container_width=True, key=plot_key)
+
+        with table_col:
+            show_cluster_table(rfm_category, selected_cluster_num, selected_custom_label, key_suffix=f'{category_name.lower()}_{selected_cluster_num}')
+
+    else:
+        st.error(f"Tidak ada data yang valid untuk clustering di kategori {category_name}.")
 
 def get_optimal_k(data_scaled):
     model = KMeans(random_state=1)

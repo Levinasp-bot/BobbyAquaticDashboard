@@ -100,80 +100,80 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             """, unsafe_allow_html=True)
 
     with col2:
-    st.subheader('Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan')
+        st.subheader('Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan')
 
     # Branch 1
-    if daily_profit_1 is not None:
+        if daily_profit_1 is not None:
         # Get unique years from the historical data for Branch 1
-        historical_years_1 = daily_profit_1.index.year.unique()
-        selected_years_1 = st.multiselect('Pilih Tahun untuk Cabang 1', options=historical_years_1, default=historical_years_1)
+            historical_years_1 = daily_profit_1.index.year.unique()
+            selected_years_1 = st.multiselect('Pilih Tahun untuk Cabang 1', options=historical_years_1, default=historical_years_1)
 
         # Filter historical data based on selected years for Branch 1
-        filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years_1)]
+            filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years_1)]
 
         # Filter fitted values based on selected years for Branch 1
-        filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years_1)]
+            filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years_1)]
 
         # Filter test and test forecast based on selected years for Branch 1
-        filtered_test_1 = test_1[test_1.index.year.isin(selected_years_1)]
-        filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years_1)]
+            filtered_test_1 = test_1[test_1.index.year.isin(selected_years_1)]
+            filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years_1)]
 
-        last_actual_date_1 = daily_profit_1.index[-1]  # Last actual date for Branch 1
-        forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W')
+            last_actual_date_1 = daily_profit_1.index[-1]  # Last actual date for Branch 1
+            forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W')
 
-        fig = go.Figure()
+            fig = go.Figure()
 
         # Plot filtered historical data for Branch 1
-        fig.add_trace(go.Scatter(x=filtered_data_1.index, y=filtered_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
+            fig.add_trace(go.Scatter(x=filtered_data_1.index, y=filtered_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
 
         # Combine the last point of the historical data with the first point of fitted values for Branch 1
-        if not filtered_fitted_values_1.empty:
-            combined_fitted_data_1 = pd.concat([filtered_data_1.iloc[[-1]], filtered_fitted_values_1])
-            fig.add_trace(go.Scatter(x=combined_fitted_data_1.index, y=combined_fitted_data_1['LABA'], mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
+            if not filtered_fitted_values_1.empty:
+                combined_fitted_data_1 = pd.concat([filtered_data_1.iloc[[-1]], filtered_fitted_values_1])
+                fig.add_trace(go.Scatter(x=combined_fitted_data_1.index, y=combined_fitted_data_1['LABA'], mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
 
         # Combine the last point of the fitted values with the first point of test forecasts for Branch 1
-        if not filtered_test_1.empty and not filtered_test_forecast_1.empty:
-            combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], filtered_test_forecast_1])
-            fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
+            if not filtered_test_1.empty and not filtered_test_forecast_1.empty:
+                combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], filtered_test_forecast_1])
+                fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
 
         # Combine the last point of the test forecast with the first point of future forecasts for Branch 1
-        combined_forecast_1 = pd.concat([filtered_test_forecast_1.iloc[[-1]], hw_forecast_future_1])
-        fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dot')))
+            combined_forecast_1 = pd.concat([filtered_test_forecast_1.iloc[[-1]], hw_forecast_future_1])
+            fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dot')))
 
         # Now we will add the data for Branch 2
-        if daily_profit_2 is not None:
+            if daily_profit_2 is not None:
             # Get unique years from the historical data for Branch 2
-            historical_years_2 = daily_profit_2.index.year.unique()
-            selected_years_2 = st.multiselect('Pilih Tahun untuk Cabang 2', options=historical_years_2, default=historical_years_2)
+                historical_years_2 = daily_profit_2.index.year.unique()
+                selected_years_2 = st.multiselect('Pilih Tahun untuk Cabang 2', options=historical_years_2, default=historical_years_2)
 
             # Filter historical data based on selected years for Branch 2
-            filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years_2)]
+                filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years_2)]
 
             # Filter fitted values based on selected years for Branch 2
-            filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years_2)]
+                filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years_2)]
 
             # Filter test and test forecast based on selected years for Branch 2
-            filtered_test_2 = test_2[test_2.index.year.isin(selected_years_2)]
-            filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years_2)]
+                filtered_test_2 = test_2[test_2.index.year.isin(selected_years_2)]
+                filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years_2)]
 
-            last_actual_date_2 = daily_profit_2.index[-1]  # Last actual date for Branch 2
-            forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W')
+                last_actual_date_2 = daily_profit_2.index[-1]  # Last actual date for Branch 2
+                forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W')
 
             # Plot filtered historical data for Branch 2
-            fig.add_trace(go.Scatter(x=filtered_data_2.index, y=filtered_data_2['LABA'], mode='lines', name='Data Historis Cabang 2'))
+                fig.add_trace(go.Scatter(x=filtered_data_2.index, y=filtered_data_2['LABA'], mode='lines', name='Data Historis Cabang 2'))
 
             # Combine the last point of the historical data with the first point of fitted values for Branch 2
-            if not filtered_fitted_values_2.empty:
-                combined_fitted_data_2 = pd.concat([filtered_data_2.iloc[[-1]], filtered_fitted_values_2])
-                fig.add_trace(go.Scatter(x=combined_fitted_data_2.index, y=combined_fitted_data_2['LABA'], mode='lines', name='Fitted Values Cabang 2', line=dict(dash='dot')))
+                if not filtered_fitted_values_2.empty:
+                    combined_fitted_data_2 = pd.concat([filtered_data_2.iloc[[-1]], filtered_fitted_values_2])
+                    fig.add_trace(go.Scatter(x=combined_fitted_data_2.index, y=combined_fitted_data_2['LABA'], mode='lines', name='Fitted Values Cabang 2', line=dict(dash='dot')))
 
             # Combine the last point of the fitted values with the first point of test forecasts for Branch 2
-            if not filtered_test_2.empty and not filtered_test_forecast_2.empty:
-                combined_test_data_2 = pd.concat([filtered_fitted_values_2.iloc[[-1]], filtered_test_forecast_2])
-                fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', name='Prediksi Data Test Cabang 2', line=dict(dash='dot')))
+                if not filtered_test_2.empty and not filtered_test_forecast_2.empty:
+                    combined_test_data_2 = pd.concat([filtered_fitted_values_2.iloc[[-1]], filtered_test_forecast_2])
+                    fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', name='Prediksi Data Test Cabang 2', line=dict(dash='dot')))
 
             # Combine the last point of the test forecast with the first point of future forecasts for Branch 2
-            combined_forecast_2 = pd.concat([filtered_test_forecast_2.iloc[[-1]], hw_forecast_future_2])
-            fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dot')))
+                combined_forecast_2 = pd.concat([filtered_test_forecast_2.iloc[[-1]], hw_forecast_future_2])
+                fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dot')))
 
-        st.plotly_chart(fig)
+            st.plotly_chart(fig)

@@ -126,8 +126,8 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             fig = go.Figure()
 
             fig.update_layout(
-                margin=dict(t=8)
-                height=350  # Adjust the 't' value (top padding) as needed
+                margin=dict(t=8),
+                height=400  # Adjust the 't' value (top padding) as needed
             )
 
             # Plot filtered historical data for both branches

@@ -122,7 +122,7 @@ with col2:
         fig.add_trace(go.Scatter(x=fitted_values_1.index, y=fitted_values_1, mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
 
         # Plot test forecasts (predictions for test set)
-        fig.add_trace(go.Scatter(x=test_1.index, y=test_forecast_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dash')))
+        fig.add_trace(go.Scatter(x=test_1.index, y=test_forecast_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
 
         # Plot future forecasts
         combined_forecast_1 = pd.concat([filtered_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])

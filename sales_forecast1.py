@@ -137,7 +137,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                     # Combine the last point of the fitted values with the first point of test forecasts
                     if not filtered_test_1.empty and not filtered_test_forecast_1.empty:
                         # Shift the test forecast by one period to the right
-                        shifted_test_forecast_1 = filtered_test_forecast_1.shift(1)
+                        shifted_test_forecast_1 = filtered_test_forecast_1.shift(2)
                         combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], shifted_test_forecast_1])
                         fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
                         
@@ -151,7 +151,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                     fig.add_trace(go.Scatter(x=combined_fitted_data_2.index, y=combined_fitted_data_2['LABA'], mode='lines', name='Fitted Values Cabang 2', line=dict(dash='dot')))
                     # Combine the last point of the fitted values with the first point of test forecasts
                     if not filtered_test_2.empty and not filtered_test_forecast_2.empty:
-                        shifted_test_forecast_2 = filtered_test_forecast_2.shift(1)
+                        shifted_test_forecast_2 = filtered_test_forecast_2.shift(2)
                         combined_test_data_2 = pd.concat([filtered_fitted_values_2.iloc[[-1]], shifted_test_forecast_2])
                         fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', name='Prediksi Data Test Cabang 2', line=dict(dash='dot')))
                         

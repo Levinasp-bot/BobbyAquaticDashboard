@@ -21,6 +21,9 @@ def load_all_excel_files(folder_path, sheet_name):
     return pd.concat(dfs, ignore_index=True)
 
 def process_rfm(data):
+    # Ensure columns are not duplicated
+    data = data.loc[:, ~data.columns.duplicated()]
+
     # Memproses data RFM
     data['TANGGAL'] = pd.to_datetime(data['TANGGAL'])
     reference_date = data['TANGGAL'].max()
@@ -34,6 +37,7 @@ def process_rfm(data):
     
     rfm.columns = ['KODE BARANG', 'NAMA BARANG', 'Recency', 'Frequency', 'Monetary']
     return rfm
+
 
 def categorize_rfm(rfm):
     # Menghitung quintile (5 bagian) untuk Recency, Frequency, dan Monetary

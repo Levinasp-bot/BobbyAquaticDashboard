@@ -110,10 +110,15 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
     return fig
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
-    # Menampilkan tabel cluster
+    # Menampilkan tabel cluster tanpa kolom 'KATEGORI'
     st.markdown(f"##### Daftar Produk yang {custom_label}", unsafe_allow_html=True)
     
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
+    
+    # Menghapus kolom 'KATEGORI' sebelum menampilkan tabel
+    if 'KATEGORI' in cluster_data.columns:
+        cluster_data = cluster_data.drop(columns=['KATEGORI'])
+    
     st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
 
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):

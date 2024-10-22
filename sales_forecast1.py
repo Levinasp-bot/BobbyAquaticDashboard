@@ -100,7 +100,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             """, unsafe_allow_html=True)
 
     with col2:
-        st.subheader('Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan')
+        st.markdown("<h3 style='font-size:20px;'>Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan</h3>", unsafe_allow_html=True)
 
         if daily_profit_1 is not None and daily_profit_2 is not None:
             # Combine the daily profits for both branches
@@ -110,7 +110,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             # Get unique years from the combined historical data
             historical_years = combined_daily_profit.index.year.unique()
             selected_years = st.multiselect('Pilih Tahun untuk Semua Cabang', options=historical_years, default=historical_years)
-
+            st.write("")
             # Filter historical data based on selected years
             filtered_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
 

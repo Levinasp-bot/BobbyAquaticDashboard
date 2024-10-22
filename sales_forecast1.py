@@ -30,18 +30,18 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     # Fit the model on the training data
     hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
 
-    # Forecast the future values
+    # Forecast the future values (including the test period)
     hw_forecast_future = hw_model.forecast(forecast_horizon)
-
-    test = hw_model.forecast(len(test))
+    test_forecast = hw_model.forecast(len(test))  # Predict the test set
+    
     # Store fitted values (train predictions)
     fitted_values = hw_model.fittedvalues
 
-    return daily_profit, fitted_values, test, hw_forecast_future
+    return daily_profit, fitted_values, test, test_forecast, hw_forecast_future
 
 
-def show_dashboard(daily_profit_1, fitted_values_1, test_1, hw_forecast_future_1, 
-                   daily_profit_2, fitted_values_2, test_2, hw_forecast_future_2, 
+def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_forecast_future_1, 
+                   daily_profit_2, fitted_values_2, test_2, test_forecast_2, hw_forecast_future_2, 
                    forecast_horizon=12, key_suffix=''):
 
     col1, col2 = st.columns([1, 3])
@@ -72,9 +72,9 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, hw_forecast_future_1
                     <br><span style='color:{combined_color}; font-size:24px;'>{combined_arrow} {combined_profit_change_percentage:.2f}%</span>
                 </div>
             """, unsafe_allow_html=True)
+
         # Show metrics for individual branches only if both branches are not selected
         elif daily_profit_1 is not None:
-            # Metrics for Bobby Aquatic 1
             last_week_profit_1 = daily_profit_1['LABA'].iloc[-1]
             predicted_profit_next_week_1 = hw_forecast_future_1.iloc[0]
             total_profit_last_week_1 = last_week_profit_1 * 7
@@ -99,94 +99,27 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, hw_forecast_future_1
                 </div>
             """, unsafe_allow_html=True)
 
-        elif daily_profit_2 is not None:
-            # Metrics for Bobby Aquatic 2
-            last_week_profit_2 = daily_profit_2['LABA'].iloc[-1]
-            predicted_profit_next_week_2 = hw_forecast_future_2.iloc[0]
-            total_profit_last_week_2 = last_week_profit_2 * 7
-            profit_change_percentage_2 = ((predicted_profit_next_week_2 - last_week_profit_2) / last_week_profit_2) * 100 if last_week_profit_2 else 0
-
-            arrow_2 = "🡅" if profit_change_percentage_2 > 0 else "🡇"
-            color_2 = "green" if profit_change_percentage_2 > 0 else "red"
-
-            st.markdown(f"""
-                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                    <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 2</span><br>
-                    <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_2:,.2f}</span>
-                </div>
-                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                    <span style="font-size: 14px;">Rata-rata Laba Harian Minggu Ini Cabang 2</span><br>
-                    <span style="font-size: 32px; font-weight: bold;">{last_week_profit_2:,.2f}</span>
-                </div>
-                <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                    <span style="font-size: 14px;">Prediksi Rata-rata Laba Harian Minggu Depan Cabang 2</span><br>
-                    <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_2:,.2f}</span>
-                    <br><span style='color:{color_2}; font-size:24px;'>{arrow_2} {profit_change_percentage_2:.2f}%</span>
-                </div>
-            """, unsafe_allow_html=True)
-
-
     with col2:
         st.subheader('Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan')
 
         historical_years_1 = daily_profit_1.index.year.unique() if daily_profit_1 is not None else []
-        historical_years_2 = daily_profit_2.index.year.unique() if daily_profit_2 is not None else []
-
         last_actual_date_1 = daily_profit_1.index[-1] if daily_profit_1 is not None else None
-        last_actual_date_2 = daily_profit_2.index[-1] if daily_profit_2 is not None else None
-
         forecast_dates_1 = pd.date_range(start=last_actual_date_1, periods=forecast_horizon + 1, freq='W') if last_actual_date_1 is not None else None
-        forecast_dates_2 = pd.date_range(start=last_actual_date_2, periods=forecast_horizon + 1, freq='W') if last_actual_date_2 is not None else None
-
-        all_years = sorted(set(historical_years_1) | set(historical_years_2))
-        default_years = [2024] if 2024 in all_years else []
-
-        selected_years = st.multiselect(
-            "Pilih Tahun",
-            all_years,
-            default=default_years,
-            key=f"multiselect_{key_suffix}",
-            help="Pilih tahun yang ingin ditampilkan"
-        )
 
         fig = go.Figure()
 
-        # Plot data for Bobby Aquatic 1
-        if selected_years and daily_profit_1 is not None:
-            combined_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+        if daily_profit_1 is not None:
+            combined_data_1 = daily_profit_1[daily_profit_1.index.year.isin(historical_years_1)]
             fig.add_trace(go.Scatter(x=combined_data_1.index, y=combined_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
 
             # Plot fitted values (training predictions)
             fig.add_trace(go.Scatter(x=fitted_values_1.index, y=fitted_values_1, mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
 
-            # Plot test values (actual values from the test set)
-            fig.add_trace(go.Scatter(x=test_1.index, y=test_1['LABA'], mode='lines', name='Test Data Cabang 1', line=dict(dash='dash')))
+            # Plot test forecasts (predictions for test set)
+            fig.add_trace(go.Scatter(x=test_1.index, y=test_forecast_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dash')))
 
-            if not combined_data_1.empty:
-                combined_forecast_1 = pd.concat([combined_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
-                fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dash')))
-
-        # Plot data for Bobby Aquatic 2
-        if selected_years and daily_profit_2 is not None:
-            combined_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
-            fig.add_trace(go.Scatter(x=combined_data_2.index, y=combined_data_2['LABA'], mode='lines', name='Data Historis Cabang 2'))
-
-            # Plot fitted values (training predictions)
-            fig.add_trace(go.Scatter(x=fitted_values_2.index, y=fitted_values_2, mode='lines', name='Fitted Values Cabang 2', line=dict(dash='dot')))
-
-            # Plot test values (actual values from the test set)
-            fig.add_trace(go.Scatter(x=test_2.index, y=test_2['LABA'], mode='lines', name='Test Data Cabang 2', line=dict(dash='dash')))
-
-            if not combined_data_2.empty:
-                combined_forecast_2 = pd.concat([combined_data_2.iloc[[-1]]['LABA'], hw_forecast_future_2])
-                fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dash')))
-
-        fig.update_layout(
-            xaxis_title='Tanggal',
-            yaxis_title='Laba',
-            hovermode='x',
-            margin=dict(t=18),
-            height=350
-        )
-
+            # Plot future forecasts
+            combined_forecast_1 = pd.concat([combined_data_1.iloc[[-1]]['LABA'], hw_forecast_future_1])
+            fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dash')))
+        
         st.plotly_chart(fig)

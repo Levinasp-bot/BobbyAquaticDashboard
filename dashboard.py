@@ -62,11 +62,13 @@ if st.session_state.page == "sales":
     daily_profit_combined = None
     hw_forecast_future_combined = None
 
+    # Load sales data based on selected branches
     if "Bobby Aquatic 1" in branch_selection:
         folder_path_1 = "./data/Bobby Aquatic 1"
         sheet_name_1 = 'Penjualan'
         penjualan_data_1 = load_data_1(folder_path_1, sheet_name_1)
 
+        # Forecast profit based on the selected branch data
         daily_profit_1, hw_forecast_future_1 = forecast_profit_1(penjualan_data_1)
 
     if "Bobby Aquatic 2" in branch_selection:
@@ -74,21 +76,26 @@ if st.session_state.page == "sales":
         sheet_name_2 = 'Penjualan'
         penjualan_data_2 = load_data_2(folder_path_2, sheet_name_2)
 
+        # Forecast profit based on the selected branch data
         daily_profit_2, hw_forecast_future_2 = forecast_profit_2(penjualan_data_2)
 
+    # Combine profits if both branches are selected
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
         combined_penjualan_data = pd.concat([penjualan_data_1, penjualan_data_2], ignore_index=True)
 
+        # Forecast profit based on combined data
         daily_profit_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
 
+    # Show dashboard based on selections
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
-        show_dashboard(daily_profit_1, hw_forecast_future_1, daily_profit_2, hw_forecast_future_2, key_suffix='combined')
+        # Show dashboard for the combined data
+        show_dashboard(daily_profit_1, daily_profit_2, hw_forecast_future_1, hw_forecast_future_2, key_suffix='combined')
     elif "Bobby Aquatic 1" in branch_selection:
-        show_dashboard(daily_profit_1, hw_forecast_future_1, None, None, key_suffix='cabang1')  # Pass None for second branch
+        # Show dashboard for Bobby Aquatic 1
+        show_dashboard(daily_profit_1, None, hw_forecast_future_1, None, key_suffix='cabang1')
     elif "Bobby Aquatic 2" in branch_selection:
-    # Show dashboard for Bobby Aquatic 2
-        show_dashboard(None, None, daily_profit_2, hw_forecast_future_2, key_suffix='cabang2')  # Pass None for first branch
-
+        # Show dashboard for Bobby Aquatic 2
+        show_dashboard(None, daily_profit_2, None, hw_forecast_future_2, key_suffix='cabang2')
 
 elif st.session_state.page == "product":
     st.header("🔍 Segmentasi Produk Bobby Aquatic")

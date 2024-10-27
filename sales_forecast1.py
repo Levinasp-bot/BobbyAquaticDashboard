@@ -72,8 +72,8 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 </div>
             """, unsafe_allow_html=True)
 
-        elif daily_profit_1 is not None:
-            # Metrics for branch 1 only
+        # Show metrics for individual branches only if both branches are not selected
+        elif daily_profit_1 is not None and daily_profit_2 is None:
             last_week_profit_1 = daily_profit_1['LABA'].iloc[-1]
             predicted_profit_next_week_1 = hw_forecast_future_1.iloc[0]
             total_profit_last_week_1 = last_week_profit_1 * 7
@@ -98,67 +98,145 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 </div>
             """, unsafe_allow_html=True)
 
-        elif daily_profit_2 is not None:
-            # Metrics for branch 2 only
+        else:
             last_week_profit_2 = daily_profit_2['LABA'].iloc[-1]
             predicted_profit_next_week_2 = hw_forecast_future_2.iloc[0]
             total_profit_last_week_2 = last_week_profit_2 * 7
             profit_change_percentage_2 = ((predicted_profit_next_week_2 - last_week_profit_2) / last_week_profit_2) * 100 if last_week_profit_2 else 0
 
-            arrow_2 = "🡅" if profit_change_percentage_2 > 0 else "🡇"
-            color_2 = "green" if profit_change_percentage_2 > 0 else "red"
+            arrow_1 = "🡅" if profit_change_percentage_2 > 0 else "🡇"
+            color_1 = "green" if profit_change_percentage_2 > 0 else "red"
 
             st.markdown(f"""
                 <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                    <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 2</span><br>
+                    <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 1</span><br>
                     <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_2:,.2f}</span>
                 </div>
                 <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                    <span style="font-size: 14px;">Rata-rata Laba Harian Minggu Ini Cabang 2</span><br>
+                    <span style="font-size: 14px;">Rata-rata Laba Harian Minggu Ini Cabang 1</span><br>
                     <span style="font-size: 32px; font-weight: bold;">{last_week_profit_2:,.2f}</span>
                 </div>
                 <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
-                    <span style="font-size: 14px;">Prediksi Rata-rata Laba Harian Minggu Depan Cabang 2</span><br>
+                    <span style="font-size: 14px;">Prediksi Rata-rata Laba Harian Minggu Depan Cabang 1</span><br>
                     <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_2:,.2f}</span>
-                    <br><span style='color:{color_2}; font-size:24px;'>{arrow_2} {profit_change_percentage_2:.2f}%</span>
+                    <br><span style='color:{color_1}; font-size:24px;'>{arrow_1} {profit_change_percentage_2:.2f}%</span>
                 </div>
             """, unsafe_allow_html=True)
 
     with col2:
         st.markdown("<h3 style='font-size:20px;'>Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan</h3>", unsafe_allow_html=True)
+        
+        # Gabungkan data laba harian jika kedua cabang ada, untuk menentukan daftar tahun historis yang tersedia
+        combined_daily_profit = pd.concat([daily_profit_1.assign(Cabang='Cabang 1'),
+                                        daily_profit_2.assign(Cabang='Cabang 2')]) if daily_profit_1 is not None and daily_profit_2 is not None else daily_profit_1 if daily_profit_1 is not None else daily_profit_2
 
-        fig = go.Figure()
-        fig.update_layout(margin=dict(t=8), height=320)
+        # Definisikan tahun historis untuk filter
+        historical_years = combined_daily_profit.index.year.unique() if combined_daily_profit is not None else []
+        selected_years = st.multiselect('Pilih Tahun untuk Semua Cabang', options=historical_years, default=historical_years)
 
-        # Kondisi untuk kombinasi kedua cabang
         if daily_profit_1 is not None and daily_profit_2 is not None:
-            fig.add_trace(go.Scatter(x=daily_profit_1.index, y=daily_profit_1['LABA'], name="Data Historis Cabang 1", line=dict(color='skyblue', width=2)))
-            fig.add_trace(go.Scatter(x=fitted_values_1.index, y=fitted_values_1, name="Fitted Cabang 1", line=dict(color='blue', width=2, dash='dash')))
-            fig.add_trace(go.Scatter(x=test_1.index, y=test_1, name="Test Cabang 1", line=dict(color='purple', width=2)))
-            fig.add_trace(go.Scatter(x=test_forecast_1.index, y=test_forecast_1, name="Test Forecast Cabang 1", line=dict(color='pink', width=2)))
-            fig.add_trace(go.Scatter(x=hw_forecast_future_1.index, y=hw_forecast_future_1, name="Forecast Future Cabang 1", line=dict(color='black', width=2)))
+            # Filter data harian berdasarkan tahun yang dipilih
+            filtered_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
+            # Filter data fitted dan prediksi untuk kedua cabang
+            filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
+            filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years)]
+            filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
+            filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
+            filtered_test_2 = test_2[test_2.index.year.isin(selected_years)]
+            filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years)]
+
+            # Inisialisasi plot
+            fig = go.Figure()
+            fig.update_layout(margin=dict(t=8), height=320)
+
+            # Plot data historis untuk kedua cabang
+            for cabang in filtered_data['Cabang'].unique():
+                cabang_data = filtered_data[filtered_data['Cabang'] == cabang]
+                fig.add_trace(go.Scatter(x=cabang_data.index, y=cabang_data['LABA'], mode='lines', name=f'Data Historis {cabang}'))
+
+                # Combine the last point of the historical data with the first point of fitted values
+                if cabang == 'Cabang 1' and not filtered_fitted_values_1.empty:
+                    combined_fitted_data_1 = pd.concat([cabang_data.iloc[[-1]], filtered_fitted_values_1])
+                    fig.add_trace(go.Scatter(x=combined_fitted_data_1.index, y=combined_fitted_data_1['LABA'], mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
+                    # Combine the last point of the fitted values with the first point of test forecasts
+                    if not filtered_test_1.empty and not filtered_test_forecast_1.empty:
+                        # Shift the test forecast by one period to the right
+                        shifted_test_forecast_1 = filtered_test_forecast_1.shift(1)
+                        combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], shifted_test_forecast_1])
+                        fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
+                        
+                        # Combine the last point of the test forecast with the first point of future forecasts
+                        combined_forecast_1 = pd.concat([shifted_test_forecast_1.iloc[[-1]], hw_forecast_future_1])
+                        forecast_dates_1 = pd.date_range(start=cabang_data.index[-1], periods=forecast_horizon + 1, freq='W')
+                        fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dot')))
+
+                elif cabang == 'Cabang 2' and not filtered_fitted_values_2.empty:
+                    combined_fitted_data_2 = pd.concat([cabang_data.iloc[[-1]], filtered_fitted_values_2])
+                    fig.add_trace(go.Scatter(x=combined_fitted_data_2.index, y=combined_fitted_data_2['LABA'], mode='lines', name='Fitted Values Cabang 2', line=dict(dash='dot')))
+                    # Combine the last point of the fitted values with the first point of test forecasts
+                    if not filtered_test_2.empty and not filtered_test_forecast_2.empty:
+                        shifted_test_forecast_2 = filtered_test_forecast_2.shift(1)
+                        combined_test_data_2 = pd.concat([filtered_fitted_values_2.iloc[[-1]], shifted_test_forecast_2])
+                        fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', name='Prediksi Data Test Cabang 2', line=dict(dash='dot')))
+                        
+                        combined_forecast_2 = pd.concat([shifted_test_forecast_2.iloc[[-1]], hw_forecast_future_2])
+                        forecast_dates_2 = pd.date_range(start=cabang_data.index[-1], periods=forecast_horizon + 1, freq='W')
+                        fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dot')))
+                        
+            st.plotly_chart(fig, key="plot_1")
+
+        elif daily_profit_1 is not None:  # Only Cabang 1 is available
+            filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+            filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
+            filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
+            filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
+
+            fig = go.Figure()
+            fig.update_layout(margin=dict(t=8), height=320)
             
-            fig.add_trace(go.Scatter(x=daily_profit_2.index, y=daily_profit_2['LABA'], name="Data Historis Cabang 2", line=dict(color='lightgreen', width=2)))
-            fig.add_trace(go.Scatter(x=fitted_values_2.index, y=fitted_values_2, name="Fitted Cabang 2", line=dict(color='green', width=2, dash='dash')))
-            fig.add_trace(go.Scatter(x=test_2.index, y=test_2, name="Test Cabang 2", line=dict(color='purple', width=2)))
-            fig.add_trace(go.Scatter(x=test_forecast_2.index, y=test_forecast_2, name="Test Forecast Cabang 2", line=dict(color='pink', width=2)))
-            fig.add_trace(go.Scatter(x=hw_forecast_future_2.index, y=hw_forecast_future_2, name="Forecast Future Cabang 2", line=dict(color='black', width=2)))
+            # Plot for Cabang 1
+            fig.add_trace(go.Scatter(x=filtered_data_1.index, y=filtered_data_1['LABA'], mode='lines', name='Data Historis Cabang 1'))
 
-        elif daily_profit_1 is not None:
-            # Hanya Cabang 1
-            fig.add_trace(go.Scatter(x=daily_profit_1.index, y=daily_profit_1['LABA'], name="Data Historis Cabang 1", line=dict(color='skyblue', width=2)))
-            fig.add_trace(go.Scatter(x=fitted_values_1.index, y=fitted_values_1, name="Fitted Cabang 1", line=dict(color='blue', width=2, dash='dash')))
-            fig.add_trace(go.Scatter(x=test_1.index, y=test_1, name="Test Cabang 1", line=dict(color='purple', width=2)))
-            fig.add_trace(go.Scatter(x=test_forecast_1.index, y=test_forecast_1, name="Test Forecast Cabang 1", line=dict(color='pink', width=2)))
-            fig.add_trace(go.Scatter(x=hw_forecast_future_1.index, y=hw_forecast_future_1, name="Forecast Future Cabang 1", line=dict(color='black', width=2)))
+            # Fitted, Test, and Forecasts for Cabang 1
+            if not filtered_fitted_values_1.empty:
+                combined_fitted_data_1 = pd.concat([filtered_data_1.iloc[[-1]], filtered_fitted_values_1])
+                fig.add_trace(go.Scatter(x=combined_fitted_data_1.index, y=combined_fitted_data_1['LABA'], mode='lines', name='Fitted Values Cabang 1', line=dict(dash='dot')))
 
-        elif daily_profit_2 is not None:
-            # Hanya Cabang 2
-            fig.add_trace(go.Scatter(x=daily_profit_2.index, y=daily_profit_2['LABA'], name="Data Historis Cabang 2", line=dict(color='lightgreen', width=2)))
-            fig.add_trace(go.Scatter(x=fitted_values_2.index, y=fitted_values_2, name="Fitted Cabang 2", line=dict(color='green', width=2, dash='dash')))
-            fig.add_trace(go.Scatter(x=test_2.index, y=test_2, name="Test Cabang 2", line=dict(color='purple', width=2)))
-            fig.add_trace(go.Scatter(x=test_forecast_2.index, y=test_forecast_2, name="Test Forecast Cabang 2", line=dict(color='pink', width=2)))
-            fig.add_trace(go.Scatter(x=hw_forecast_future_2.index, y=hw_forecast_future_2, name="Forecast Future Cabang 2", line=dict(color='black', width=2)))
+                if not filtered_test_1.empty and not filtered_test_forecast_1.empty:
+                    shifted_test_forecast_1 = filtered_test_forecast_1.shift(1)
+                    combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], shifted_test_forecast_1])
+                    fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
+                    
+                    combined_forecast_1 = pd.concat([shifted_test_forecast_1.iloc[[-1]], hw_forecast_future_1])
+                    forecast_dates_1 = pd.date_range(start=filtered_data_1.index[-1], periods=forecast_horizon + 1, freq='W')
+                    fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dot')))
+            st.plotly_chart(fig, key="plot_2")
 
-        st.plotly_chart(fig, use_container_width=True)
+        elif daily_profit_2 is not None:  # Only Cabang 2 is available
+            filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
+            filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years)]
+            filtered_test_2 = test_2[test_2.index.year.isin(selected_years)]
+            filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years)]
+
+            fig = go.Figure()
+            fig.update_layout(margin=dict(t=8), height=320)
+            
+            # Plot for Cabang 2
+            fig.add_trace(go.Scatter(x=filtered_data_2.index, y=filtered_data_2['LABA'], mode='lines', name='Data Historis Cabang 2'))
+
+            # Fitted, Test, and Forecasts for Cabang 2
+            if not filtered_fitted_values_2.empty:
+                combined_fitted_data_2 = pd.concat([filtered_data_2.iloc[[-1]], filtered_fitted_values_2])
+                fig.add_trace(go.Scatter(x=combined_fitted_data_2.index, y=combined_fitted_data_2['LABA'], mode='lines', name='Fitted Values Cabang 2', line=dict(dash='dot')))
+
+                if not filtered_test_2.empty and not filtered_test_forecast_2.empty:
+                    shifted_test_forecast_2 = filtered_test_forecast_2.shift(1)
+                    combined_test_data_2 = pd.concat([filtered_fitted_values_2.iloc[[-1]], shifted_test_forecast_2])
+                    fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', name='Prediksi Data Test Cabang 2', line=dict(dash='dot')))
+                    
+                    combined_forecast_2 = pd.concat([shifted_test_forecast_2.iloc[[-1]], hw_forecast_future_2])
+                    forecast_dates_2 = pd.date_range(start=filtered_data_2.index[-1], periods=forecast_horizon + 1, freq='W')
+                    fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dot')))
+
+            st.plotly_chart(fig, key="plot_3")
 

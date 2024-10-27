@@ -125,14 +125,17 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
 
     with col2:
         st.markdown("<h3 style='font-size:20px;'>Data Historis, Fitted, Test, dan Prediksi Rata-rata Laba Mingguan</h3>", unsafe_allow_html=True)
-        
+
         # Gabungkan data laba harian jika kedua cabang ada, untuk menentukan daftar tahun historis yang tersedia
         combined_daily_profit = pd.concat([daily_profit_1.assign(Cabang='Cabang 1'),
-                                        daily_profit_2.assign(Cabang='Cabang 2')]) if daily_profit_1 is not None and daily_profit_2 is not None else daily_profit_1 if daily_profit_1 is not None else daily_profit_2
+                                            daily_profit_2.assign(Cabang='Cabang 2')]) if daily_profit_1 is not None and daily_profit_2 is not None else daily_profit_1 if daily_profit_1 is not None else daily_profit_2
 
         # Definisikan tahun historis untuk filter
         historical_years = combined_daily_profit.index.year.unique() if combined_daily_profit is not None else []
-        selected_years = st.multiselect('Pilih Tahun untuk Semua Cabang', options=historical_years, default=historical_years)
+        
+        # Set default selected years to 2024 if available
+        default_years = [2024] if 2024 in historical_years else []
+        selected_years = st.multiselect('Pilih Tahun untuk Semua Cabang', options=historical_years, default=default_years)
 
         if daily_profit_1 is not None and daily_profit_2 is not None:
             # Filter data harian berdasarkan tahun yang dipilih

@@ -74,7 +74,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             """, unsafe_allow_html=True)
 
         # Show metrics for individual branches only if both branches are not selected
-        elif daily_profit_1 is not None:
+        elif daily_profit_1 is not None and daily_profit_2 is None:
             last_week_profit_1 = daily_profit_1['LABA'].iloc[-1]
             predicted_profit_next_week_1 = hw_forecast_future_1.iloc[0]
             total_profit_last_week_1 = last_week_profit_1 * 7
@@ -99,7 +99,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 </div>
             """, unsafe_allow_html=True)
 
-        elif daily_profit_2 is not None:
+        else:
             last_week_profit_2 = daily_profit_1['LABA'].iloc[-1]
             predicted_profit_next_week_2 = hw_forecast_future_2.iloc[0]
             total_profit_last_week_2 = last_week_profit_2 * 7
@@ -111,16 +111,16 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             st.markdown(f"""
                 <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                     <span style="font-size: 14px;">Total Laba Minggu Ini Cabang 1</span><br>
-                    <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_1:,.2f}</span>
+                    <span style="font-size: 32px; font-weight: bold;">{total_profit_last_week_2:,.2f}</span>
                 </div>
                 <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                     <span style="font-size: 14px;">Rata-rata Laba Harian Minggu Ini Cabang 1</span><br>
-                    <span style="font-size: 32px; font-weight: bold;">{last_week_profit_1:,.2f}</span>
+                    <span style="font-size: 32px; font-weight: bold;">{last_week_profit_2:,.2f}</span>
                 </div>
                 <div style="border: 2px solid #dcdcdc; padding: 10px; margin-bottom: 10px; border-radius: 5px; text-align: center;">
                     <span style="font-size: 14px;">Prediksi Rata-rata Laba Harian Minggu Depan Cabang 1</span><br>
-                    <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_1:,.2f}</span>
-                    <br><span style='color:{color_1}; font-size:24px;'>{arrow_1} {profit_change_percentage_1:.2f}%</span>
+                    <span style="font-size: 32px; font-weight: bold;">{predicted_profit_next_week_2:,.2f}</span>
+                    <br><span style='color:{color_1}; font-size:24px;'>{arrow_1} {profit_change_percentage_2:.2f}%</span>
                 </div>
             """, unsafe_allow_html=True)
 

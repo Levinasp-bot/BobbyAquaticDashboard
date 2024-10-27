@@ -31,11 +31,11 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
     hw_model = ExponentialSmoothing(train, trend='add', seasonal='add', seasonal_periods=seasonal_period).fit()
 
     # Forecast the future values (including the test period)
-    hw_forecast_future = hw_model.forecast(forecast_horizon)
+    hw_forecast_future2 = hw_model.forecast(forecast_horizon)
     test_forecast = hw_model.forecast(len(test))  # Predict the test set
     
     # Store fitted values (train predictions)
     fitted_values = hw_model.fittedvalues
 
-    return daily_profit, fitted_values, test, test_forecast, hw_forecast_future
+    return daily_profit, fitted_values, test, test_forecast, hw_forecast_future2
 

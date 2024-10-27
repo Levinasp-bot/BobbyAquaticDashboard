@@ -56,7 +56,7 @@ if st.session_state.page == "sales":
     branch_selection = st.multiselect(
         "Pilih cabang untuk ditampilkan:",
         options=["Bobby Aquatic 1", "Bobby Aquatic 2"],
-        default=["Bobby Aquatic 1", "Bobby Aquatic 2"]
+        default=["Bobby Aquatic 1"]
     )
 
     # Inisialisasi variabel untuk setiap cabang

@@ -80,7 +80,7 @@ if st.session_state.page == "sales":
     show_dashboard(
         daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_forecast_future_1,
         daily_profit_2, fitted_values_2, test_2, test_forecast_2, hw_forecast_future_2,
-        key_suffix='combined' if len(branch_selection) == 2 else 'cabang1' if "Bobby Aquatic 1" in branch_selection else 'cabang2'
+        key_suffix='combined' if len(branch_selection) == 2 else 'Cabang 1' if "Bobby Aquatic 1" in branch_selection else 'Cabang 2'
     )
 
 elif st.session_state.page == "product":
@@ -99,7 +99,7 @@ elif st.session_state.page == "product":
         cluster_data_1 = load_cluster_data_1(folder_path_1, sheet_name_1)
 
         # Show cluster dashboard
-        show_cluster_dashboard_1(cluster_data_1, key_suffix='cabang1')
+        show_cluster_dashboard_1(cluster_data_1, key_suffix='Cabang 1')
 
     # Bobby Aquatic 2 clustering dashboard
     with tab2:
@@ -111,7 +111,7 @@ elif st.session_state.page == "product":
         cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name_2)
 
         # Show cluster dashboard
-        show_cluster_dashboard_2(cluster_data_2, key_suffix='cabang2')
+        show_cluster_dashboard_2(cluster_data_2, key_suffix='Cabang 2')
 
 # Footer section
 st.markdown("<div class='footer'>© 2024 Bobby Aquatic. All rights reserved.</div>", unsafe_allow_html=True)

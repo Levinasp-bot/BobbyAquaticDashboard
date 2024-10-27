@@ -91,11 +91,11 @@ if st.session_state.page == "sales":
     elif "Bobby Aquatic 1" in branch_selection:
         show_dashboard(
             daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_forecast_future_1, 
-            None, None, None, None, key_suffix='cabang1'
+            None, None, None, None, None, key_suffix='cabang1'
         )
     elif "Bobby Aquatic 2" in branch_selection:
         show_dashboard(
-            None, None, None, None, 
+            None, None, None, None, None,
             daily_profit_2, fitted_values_2, test_2, test_forecast_2, hw_forecast_future_2, 
             key_suffix='cabang2'
         )

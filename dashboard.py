@@ -99,7 +99,7 @@ elif st.session_state.page == "product":
         cluster_data_1 = load_cluster_data_1(folder_path_1, sheet_name_1)
 
         # Show cluster dashboard
-        show_cluster_dashboard_1(cluster_data_1, key_suffix='Cabang 1')
+        show_cluster_dashboard_1(cluster_data_1, key_suffix='cabang1')
 
     # Bobby Aquatic 2 clustering dashboard
     with tab2:
@@ -111,7 +111,7 @@ elif st.session_state.page == "product":
         cluster_data_2 = load_cluster_data_2(folder_path_2, sheet_name_2)
 
         # Show cluster dashboard
-        show_cluster_dashboard_2(cluster_data_2, key_suffix='Cabang 2')
+        show_cluster_dashboard_2(cluster_data_2, key_suffix='cabang2')
 
 # Footer section
 st.markdown("<div class='footer'>© 2024 Bobby Aquatic. All rights reserved.</div>", unsafe_allow_html=True)

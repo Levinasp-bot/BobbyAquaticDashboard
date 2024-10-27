@@ -47,7 +47,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
     col1, col2 = st.columns([1, 3])
 
     with col1:
-        # Show combined metrics if both branches are selected
+        # Display combined metrics if both branches have data
         if daily_profit_1 is not None and daily_profit_2 is not None:
             combined_last_week_profit = (daily_profit_1['LABA'].iloc[-1] + daily_profit_2['LABA'].iloc[-1])
             combined_predicted_profit_next_week = (hw_forecast_future_1.iloc[0] + hw_forecast_future_2.iloc[0])

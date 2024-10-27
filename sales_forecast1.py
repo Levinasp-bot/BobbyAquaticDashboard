@@ -100,7 +100,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             """, unsafe_allow_html=True)
 
         else:
-            last_week_profit_2 = daily_profit_1['LABA'].iloc[-1]
+            last_week_profit_2 = daily_profit_2['LABA'].iloc[-1]
             predicted_profit_next_week_2 = hw_forecast_future_2.iloc[0]
             total_profit_last_week_2 = last_week_profit_2 * 7
             profit_change_percentage_2 = ((predicted_profit_next_week_2 - last_week_profit_2) / last_week_profit_2) * 100 if last_week_profit_2 else 0

@@ -39,7 +39,6 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
 
     return daily_profit, fitted_values, test, test_forecast, hw_forecast_future
 
-
 def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_forecast_future_1, 
                    daily_profit_2, fitted_values_2, test_2, test_forecast_2, hw_forecast_future_2, 
                    forecast_horizon=12, key_suffix=''):
@@ -130,16 +129,14 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
         if daily_profit_1 is not None and daily_profit_2 is not None:
             # Combine the daily profits for both branches
             combined_daily_profit = pd.concat([daily_profit_1.assign(Cabang='Cabang 1'),
-                                                daily_profit_2.assign(Cabang='Cabang 2')])
+                                               daily_profit_2.assign(Cabang='Cabang 2')])
 
-            # Get unique years from the combined historical data
+            # Define historical years for filtering
             historical_years = combined_daily_profit.index.year.unique()
             selected_years = st.multiselect('Pilih Tahun untuk Semua Cabang', options=historical_years, default=historical_years)
-            st.write("")
-            # Filter historical data based on selected years
             filtered_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
 
-            # Create separate DataFrames for fitted values, tests, and forecasts for each branch
+            # Filtered fitted values and forecast data for both branches
             filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
             filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years)]
             filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
@@ -149,17 +146,12 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
 
             # Initialize the plot
             fig = go.Figure()
+            fig.update_layout(margin=dict(t=8), height=320)
 
-            fig.update_layout(
-                margin=dict(t=8),
-                height=320  # Adjust the 't' value (top padding) as needed
-            )
-
-            # Plot filtered historical data for both branches
+            # Plot historical data for both branches
             for cabang in filtered_data['Cabang'].unique():
                 cabang_data = filtered_data[filtered_data['Cabang'] == cabang]
                 fig.add_trace(go.Scatter(x=cabang_data.index, y=cabang_data['LABA'], mode='lines', name=f'Data Historis {cabang}'))
-
                 # Combine the last point of the historical data with the first point of fitted values
                 if cabang == 'Cabang 1' and not filtered_fitted_values_1.empty:
                     combined_fitted_data_1 = pd.concat([cabang_data.iloc[[-1]], filtered_fitted_values_1])

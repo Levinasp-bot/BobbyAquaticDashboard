@@ -135,7 +135,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
         
         # Set default selected years to 2024 if available
         default_years = [2024] if 2024 in historical_years else []
-        selected_years = st.multiselect('Pilih Tahun untuk Semua Cabang', options=historical_years, default=default_years)
+        selected_years = st.multiselect('Filter Tahun untuk Grafik', options=historical_years, default=default_years)
 
         if daily_profit_1 is not None and daily_profit_2 is not None:
             # Filter data harian berdasarkan tahun yang dipilih

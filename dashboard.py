@@ -82,7 +82,6 @@ if st.session_state.page == "sales":
         daily_profit_combined, fitted_values_combined, test_combined, test_forecast_combined, hw_forecast_future_combined = forecast_profit_1(combined_penjualan_data)
 
     # Show the forecast dashboard based on branch selection
-# Show the forecast dashboard based on branch selection
     if "Bobby Aquatic 1" in branch_selection and "Bobby Aquatic 2" in branch_selection:
         show_dashboard(
             daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_forecast_future_1, 
@@ -97,11 +96,10 @@ if st.session_state.page == "sales":
         )
     elif "Bobby Aquatic 2" in branch_selection:
         show_dashboard(
-            daily_profit_1=None, fitted_values_1=None, test_1=None, test_forecast_1=None, hw_forecast_future_1=None,
+            None, None, None, None, None,
             daily_profit_2, fitted_values_2, test_2, test_forecast_2, hw_forecast_future_2, 
             key_suffix='cabang2'
         )
-
 
 elif st.session_state.page == "product":
     st.header("🔍 Segmentasi Produk Bobby Aquatic")

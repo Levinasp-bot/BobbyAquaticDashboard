@@ -161,23 +161,23 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                         # Shift the test forecast by one period to the right
                         shifted_test_forecast_1 = filtered_test_forecast_1.shift(1)
                         combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], shifted_test_forecast_1])
-                        fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot', color='#FF8C00')))
+                        fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', line=dict(dash='dot', color='#FF8C00')))
                         
                         # Combine the last point of the test forecast with the first point of future forecasts
                         combined_forecast_1 = pd.concat([shifted_test_forecast_1.iloc[[-1]], hw_forecast_future_1])
                         forecast_dates_1 = pd.date_range(start=cabang_data.index[-1], periods=forecast_horizon + 1, freq='W')
-                        fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Masa Depan Cabang 1', line=dict(dash='dot', color='#FFD700')))
+                        fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Laba Cabang 1', line=dict(dash='dot', color='#FFD700')))
 
                 elif cabang == 'Cabang 2' and not filtered_fitted_values_2.empty:
                     # Combine the last point of the fitted values with the first point of test forecasts
                     if not filtered_test_2.empty and not filtered_test_forecast_2.empty:
                         shifted_test_forecast_2 = filtered_test_forecast_2.shift(1)
                         combined_test_data_2 = pd.concat([filtered_fitted_values_2.iloc[[-1]], shifted_test_forecast_2])
-                        fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', name='Prediksi Data Test Cabang 2', line=dict(dash='dot', color='#006400')))
+                        fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', line=dict(dash='dot', color='#006400')))
                         
                         combined_forecast_2 = pd.concat([shifted_test_forecast_2.iloc[[-1]], hw_forecast_future_2])
                         forecast_dates_2 = pd.date_range(start=cabang_data.index[-1], periods=forecast_horizon + 1, freq='W')
-                        fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Masa Depan Cabang 2', line=dict(dash='dot', color='#ADFF2F')))
+                        fig.add_trace(go.Scatter(x=forecast_dates_2, y=combined_forecast_2, mode='lines', name='Prediksi Laba Cabang 2', line=dict(dash='dot', color='#ADFF2F')))
                         
             st.plotly_chart(fig, key="plot_1")
 

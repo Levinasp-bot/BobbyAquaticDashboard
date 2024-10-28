@@ -161,7 +161,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                         # Shift the test forecast by one period to the right
                         shifted_test_forecast_1 = filtered_test_forecast_1.shift(1)
                         combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], shifted_test_forecast_1])
-                        fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')))
+                        fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot')), color='red')
                         
                         # Combine the last point of the test forecast with the first point of future forecasts
                         combined_forecast_1 = pd.concat([shifted_test_forecast_1.iloc[[-1]], hw_forecast_future_1])

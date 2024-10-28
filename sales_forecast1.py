@@ -199,7 +199,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 if not filtered_test_1.empty and not filtered_test_forecast_1.empty:
                     shifted_test_forecast_1 = filtered_test_forecast_1.shift(1)
                     combined_test_data_1 = pd.concat([filtered_fitted_values_1.iloc[[-1]], shifted_test_forecast_1])
-                    fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot'), showlegend=False))
+                    fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test_data_1, mode='lines', name='Prediksi Data Test Cabang 1', line=dict(dash='dot', color='blue'), showlegend=False))
                     
                     combined_forecast_1 = pd.concat([shifted_test_forecast_1.iloc[[-1]], hw_forecast_future_1])
                     forecast_dates_1 = pd.date_range(start=filtered_data_1.index[-1], periods=forecast_horizon + 1, freq='W')
@@ -223,7 +223,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 if not filtered_test_2.empty and not filtered_test_forecast_2.empty:
                     shifted_test_forecast_2 = filtered_test_forecast_2.shift(1)
                     combined_test_data_2 = pd.concat([filtered_fitted_values_2.iloc[[-1]], shifted_test_forecast_2])
-                    fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', name='Prediksi Data Test Cabang 2', line=dict(dash='dot'),  showlegend=False))
+                    fig.add_trace(go.Scatter(x=combined_test_data_2.index, y=combined_test_data_2, mode='lines', name='Prediksi Data Test Cabang 2', line=dict(dash='dot', color='orange'),  showlegend=False))
                     
                     combined_forecast_2 = pd.concat([shifted_test_forecast_2.iloc[[-1]], hw_forecast_future_2])
                     forecast_dates_2 = pd.date_range(start=filtered_data_2.index[-1], periods=forecast_horizon + 1, freq='W')

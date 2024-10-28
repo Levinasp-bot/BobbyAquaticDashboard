@@ -216,7 +216,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             fig.update_layout(margin=dict(t=8), height=320)
             
             # Plot for Cabang 2
-            fig.add_trace(go.Scatter(x=filtered_data_2.index, y=filtered_data_2['LABA'], mode='lines', name='Data Historis Laba Cabang 2', line=dict(color='red')))
+            fig.add_trace(go.Scatter(x=filtered_data_2.index, y=filtered_data_2['LABA'], mode='lines', name='Data Historis Laba Cabang 2', line=dict(color='pink')))
 
             if not filtered_fitted_values_2.empty:
 

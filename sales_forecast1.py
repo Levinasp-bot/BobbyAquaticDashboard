@@ -160,16 +160,34 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
 
                     combined_profit = filtered_combined_data.groupby(filtered_combined_data.index)['LABA'].sum()
                     fig.add_trace(go.Scatter(x=combined_profit.index, y=combined_profit, mode='lines', name='Penjualan Gabungan', line=dict(color='purple')))
-                    last_fitted_value_1 = filtered_fitted_values_1.iloc[[-1]]
-                    last_fitted_value_2 = filtered_fitted_values_2.iloc[[-1]]
 
-        # Combine last fitted values and shifted forecasts
-                    combined_test = pd.concat([last_fitted_value_1 + last_fitted_value_2, shifted_test_forecast_1 + shifted_test_forecast_2])
-                    fig.add_trace(go.Scatter(x=combined_test.index, y=combined_test, mode='lines', line=dict(dash='dot', color='purple'), showlegend=False))
-                            
-                    combined_forecast = hw_forecast_future_1 + hw_forecast_future_2
-                    forecast_dates_combined = pd.date_range(start=combined_profit.index[-1], periods=forecast_horizon + 1, freq='W')
-                    fig.add_trace(go.Scatter(x=forecast_dates_combined, y=combined_forecast, mode='lines', name='Prediksi Laba Gabungan', line=dict(dash='dot', color='purple')))
+                # Mengambil titik terakhir dari test untuk menyambungkan dengan forecast
+                combined_test = filtered_fitted_values_1.iloc[[-1]] + filtered_fitted_values_2.iloc[[-1]]
+
+                # Gabungkan titik terakhir test dengan hasil forecast yang telah di-shift
+                combined_test_forecast = pd.concat([combined_test, shifted_test_forecast_1 + shifted_test_forecast_2])
+
+                # Tambahkan garis test forecast pada plot
+                fig.add_trace(go.Scatter(
+                    x=combined_test_forecast.index,
+                    y=combined_test_forecast,
+                    mode='lines',
+                    line=dict(dash='dot', color='purple'),
+                    showlegend=False
+                ))
+
+                # Hasil forecast masa depan
+                combined_forecast = hw_forecast_future_1 + hw_forecast_future_2
+                forecast_dates_combined = pd.date_range(start=combined_test_forecast.index[-1], periods=forecast_horizon + 1, freq='W')
+
+                # Tambahkan garis forecast pada plot mulai dari akhir test forecast
+                fig.add_trace(go.Scatter(
+                    x=forecast_dates_combined,
+                    y=combined_forecast,
+                    mode='lines',
+                    name='Prediksi Laba Gabungan',
+                    line=dict(dash='dot', color='purple')
+                ))
 
                 st.plotly_chart(fig, key="plot")
 

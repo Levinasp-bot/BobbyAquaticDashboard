@@ -135,7 +135,10 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             default_years = [2024] if 2024 in historical_years else []
             selected_years = st.multiselect('Filter Tahun untuk Grafik', options=historical_years, default=default_years)
 
-            show_combined_sales = st.checkbox("Gabungkan Grafik")
+            # Tampilkan checkbox hanya jika kedua cabang tersedia
+            show_combined_sales = False
+            if daily_profit_1 is not None and daily_profit_2 is not None:
+                show_combined_sales = st.checkbox("Gabungkan Grafik")
 
             # Inisialisasi plot
             fig = go.Figure()

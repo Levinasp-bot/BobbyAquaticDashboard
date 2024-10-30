@@ -11,3 +11,4 @@ numpy
 plotly
 scikit-fuzzy
 plotly.express
+streamlit-aggrid==0.3.3

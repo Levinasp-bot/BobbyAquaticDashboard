@@ -6,6 +6,7 @@ from sklearn.cluster import KMeans
 import streamlit as st
 import plotly.graph_objects as go
 from yellowbrick.cluster import KElbowVisualizer
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 # Supaya Streamlit tidak menggunakan cache untuk fungsi yang melakukan clustering
 @st.cache_data
@@ -110,16 +111,26 @@ def plot_interactive_pie_chart(rfm, cluster_labels, category_name, custom_legend
     return fig
 
 def show_cluster_table(rfm, cluster_label, custom_label, key_suffix):
-    # Menampilkan tabel cluster tanpa kolom 'KATEGORI'
     st.markdown(f"##### Daftar Produk yang {custom_label}", unsafe_allow_html=True)
-    
+
+    # Menyaring data berdasarkan cluster yang dipilih dan menghapus kolom 'KATEGORI'
     cluster_data = rfm[rfm['Cluster'] == cluster_label]
-    
-    # Menghapus kolom 'KATEGORI' sebelum menampilkan tabel
     if 'KATEGORI' in cluster_data.columns:
         cluster_data = cluster_data.drop(columns=['KATEGORI'])
-    
-    st.dataframe(cluster_data, width=400, height=350, key=f"cluster_table_{cluster_label}_{key_suffix}")
+
+    # Mengonfigurasi opsi tampilan tabel agar dapat diurutkan
+    gb = GridOptionsBuilder.from_dataframe(cluster_data)
+    gb.configure_default_column(editable=False, sortable=True)
+    grid_options = gb.build()
+
+    # Menampilkan tabel dengan AgGrid
+    AgGrid(
+        cluster_data,
+        gridOptions=grid_options,
+        height=350,
+        width='100%',
+        key=f"cluster_table_{cluster_label}_{key_suffix}"
+    )
 
 def process_category(rfm_category, category_name, n_clusters, key_suffix=''):
     # Memproses kategori dan menampilkan hasil

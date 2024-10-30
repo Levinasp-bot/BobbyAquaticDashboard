@@ -143,29 +143,27 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
 
             # Jika toggle aktif, gabungkan data kedua cabang
             if show_combined_sales:
-                filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
-                filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
-                filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
-                filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
-
                 if daily_profit_1 is not None and daily_profit_2 is not None:
-                    # Filter data sesuai tahun yang dipilih
-                    filtered_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
-                    
-                    # Gabungkan laba dari kedua cabang
-                    combined_profit = filtered_data.groupby(filtered_data.index)['LABA'].sum()
+                    # Filter combined data for selected years
+                    filtered_combined_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
 
-                    # Plot data gabungan laba kedua cabang
+                    # Aggregate profits from both branches
+                    combined_profit = filtered_combined_data.groupby(filtered_combined_data.index)['LABA'].sum()
+
+                    # Plot historical combined profit
                     fig.add_trace(go.Scatter(x=combined_profit.index, y=combined_profit, mode='lines', name='Penjualan Gabungan', line=dict(color='purple')))
-                    
-                    # Plot prediksi laba gabungan
-                    combined_fitted = fitted_values_1 + fitted_values_2  # Gabungkan fitted values
-                    combined_forecast = hw_forecast_future_1 + hw_forecast_future_2  # Gabungkan forecast masa depan
-                    
+
+                    # Plot combined predictions for both branches
+                    combined_fitted = filtered_fitted_values_1 + filtered_fitted_values_2
+                    combined_forecast = hw_forecast_future_1 + hw_forecast_future_2
+
+                    # Add fitted values to plot
                     fig.add_trace(go.Scatter(x=combined_fitted.index, y=combined_fitted, mode='lines', line=dict(dash='dot', color='purple'), showlegend=False))
-                    
+
+                    # Add forecasted values to plot
                     forecast_dates_combined = pd.date_range(start=combined_profit.index[-1], periods=forecast_horizon + 1, freq='W')
                     fig.add_trace(go.Scatter(x=forecast_dates_combined, y=combined_forecast, mode='lines', name='Prediksi Laba Gabungan', line=dict(dash='dot', color='purple')))
+
                 st.plotly_chart(fig, key="plot")
             # Jika toggle tidak aktif, tampilkan kedua cabang secara terpisah
             elif daily_profit_1 is not None and daily_profit_2 is not None:

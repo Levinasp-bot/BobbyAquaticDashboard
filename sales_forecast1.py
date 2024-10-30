@@ -134,14 +134,6 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             historical_years = combined_daily_profit.index.year.unique() if combined_daily_profit is not None else []
             default_years = [2024] if 2024 in historical_years else []
             selected_years = st.multiselect('Filter Tahun untuk Grafik', options=historical_years, default=default_years)
-            filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
-            filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
-            filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
-            filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
-            filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
-            filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years)]
-            filtered_test_2 = test_2[test_2.index.year.isin(selected_years)]
-            filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years)]
 
             show_combined_sales = st.checkbox("Tampilkan Penjualan Gabungan Kedua Cabang")
 
@@ -172,6 +164,11 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                     
             # Jika toggle tidak aktif, tampilkan kedua cabang secara terpisah
             elif daily_profit_1 is not None and daily_profit_2 is not None:
+                filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+                filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
+                filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
+                filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
+
                 filtered_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
                 
                 for cabang in filtered_data['Cabang'].unique():
@@ -222,6 +219,10 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 st.plotly_chart(fig, key="plot_2")
 
             elif daily_profit_2 is not None:  # Only Cabang 2 is available
+                filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
+                filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years)]
+                filtered_test_2 = test_2[test_2.index.year.isin(selected_years)]
+                filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years)]
 
                 fig = go.Figure()
                 fig.update_layout(margin=dict(t=8), height=320)

@@ -123,6 +123,11 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             """, unsafe_allow_html=True)
 
         with col2:
+            filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+            filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
+            filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
+            filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
+
             st.markdown("<h3 style='font-size:20px;'>Data Historis dan Prediksi Rata-rata Laba Mingguan</h3>", unsafe_allow_html=True)
 
             # Gabungkan data laba harian jika kedua cabang ada, untuk menentukan daftar tahun historis yang tersedia
@@ -192,10 +197,6 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 st.plotly_chart(fig, key="plot_1")
 
             elif daily_profit_1 is not None:  # Only Cabang 1 is available
-                filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
-                filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
-                filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
-                filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
 
                 fig = go.Figure()
                 fig.update_layout(margin=dict(t=8), height=320)

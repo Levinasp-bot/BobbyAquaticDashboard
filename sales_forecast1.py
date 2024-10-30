@@ -166,7 +166,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                     
                     forecast_dates_combined = pd.date_range(start=combined_profit.index[-1], periods=forecast_horizon + 1, freq='W')
                     fig.add_trace(go.Scatter(x=forecast_dates_combined, y=combined_forecast, mode='lines', name='Prediksi Laba Gabungan', line=dict(dash='dot', color='purple')))
-                    
+                st.plotly_chart(fig, key="plot")
             # Jika toggle tidak aktif, tampilkan kedua cabang secara terpisah
             elif daily_profit_1 is not None and daily_profit_2 is not None:
                 filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]

@@ -143,6 +143,11 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
 
             # Jika toggle aktif, gabungkan data kedua cabang
             if show_combined_sales:
+                filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+                filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
+                filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
+                filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
+
                 if daily_profit_1 is not None and daily_profit_2 is not None:
                     # Filter data sesuai tahun yang dipilih
                     filtered_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
@@ -168,6 +173,10 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
                 filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
                 filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
+                filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
+                filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years)]
+                filtered_test_2 = test_2[test_2.index.year.isin(selected_years)]
+                filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years)]
 
                 filtered_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
                 
@@ -198,6 +207,10 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 st.plotly_chart(fig, key="plot_1")
 
             elif daily_profit_1 is not None:  # Only Cabang 1 is available
+                filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+                filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
+                filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
+                filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
 
                 fig = go.Figure()
                 fig.update_layout(margin=dict(t=8), height=320)

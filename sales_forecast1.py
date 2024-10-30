@@ -135,7 +135,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             default_years = [2024] if 2024 in historical_years else []
             selected_years = st.multiselect('Filter Tahun untuk Grafik', options=historical_years, default=default_years)
 
-            show_combined_sales = st.checkbox("Tampilkan Penjualan Gabungan Kedua Cabang")
+            show_combined_sales = st.checkbox("Gabungkan Grafik")
 
             # Inisialisasi plot
             fig = go.Figure()
@@ -153,20 +153,17 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years)]
 
                 if daily_profit_1 is not None and daily_profit_2 is not None:
-                    # Filter combined data for selected years
+ 
                     filtered_combined_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
 
-                    # Aggregate profits from both branches
                     combined_profit = filtered_combined_data.groupby(filtered_combined_data.index)['LABA'].sum()
 
-                    # Plot historical combined profit
                     fig.add_trace(go.Scatter(x=combined_profit.index, y=combined_profit, mode='lines', name='Penjualan Gabungan', line=dict(color='purple')))
 
-                    # Plot combined predictions for both branches
-                    combined_fitted = filtered_fitted_values_1 + filtered_fitted_values_2
+                    combined_test = pd.concat([filtered_fitted_values_1.iloc[[-1]], shifted_test_forecast_1])
+                    fig.add_trace(go.Scatter(x=combined_test_data_1.index, y=combined_test, mode='lines', line=dict(dash='dot', color='purple'), showlegend=False))
+                            
                     combined_forecast = hw_forecast_future_1 + hw_forecast_future_2
-
-                    # Add forecasted values to plot
                     forecast_dates_combined = pd.date_range(start=combined_profit.index[-1], periods=forecast_horizon + 1, freq='W')
                     fig.add_trace(go.Scatter(x=forecast_dates_combined, y=combined_forecast, mode='lines', name='Prediksi Laba Gabungan', line=dict(dash='dot', color='purple')))
 

@@ -166,9 +166,6 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                     combined_fitted = filtered_fitted_values_1 + filtered_fitted_values_2
                     combined_forecast = hw_forecast_future_1 + hw_forecast_future_2
 
-                    # Add fitted values to plot
-                    fig.add_trace(go.Scatter(x=combined_fitted.index, y=combined_fitted, mode='lines', line=dict(dash='dot', color='purple'), showlegend=False))
-
                     # Add forecasted values to plot
                     forecast_dates_combined = pd.date_range(start=combined_profit.index[-1], periods=forecast_horizon + 1, freq='W')
                     fig.add_trace(go.Scatter(x=forecast_dates_combined, y=combined_forecast, mode='lines', name='Prediksi Laba Gabungan', line=dict(dash='dot', color='purple')))

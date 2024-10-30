@@ -147,10 +147,6 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
                 filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
                 filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
-                filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
-                filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years)]
-                filtered_test_2 = test_2[test_2.index.year.isin(selected_years)]
-                filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years)]
 
                 if daily_profit_1 is not None and daily_profit_2 is not None:
                     shifted_test_forecast_1 = filtered_test_forecast_1.shift(1)

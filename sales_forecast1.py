@@ -153,7 +153,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 filtered_test_forecast_2 = test_forecast_2[test_forecast_2.index.year.isin(selected_years)]
 
                 if daily_profit_1 is not None and daily_profit_2 is not None:
- 
+                    shifted_test_forecast_1 = filtered_test_forecast_1.shift(1)
                     filtered_combined_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
 
                     combined_profit = filtered_combined_data.groupby(filtered_combined_data.index)['LABA'].sum()

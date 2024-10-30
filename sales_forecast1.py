@@ -123,10 +123,6 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             """, unsafe_allow_html=True)
 
         with col2:
-            filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
-            filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
-            filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
-            filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
 
             st.markdown("<h3 style='font-size:20px;'>Data Historis dan Prediksi Rata-rata Laba Mingguan</h3>", unsafe_allow_html=True)
 
@@ -138,6 +134,10 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             historical_years = combined_daily_profit.index.year.unique() if combined_daily_profit is not None else []
             default_years = [2024] if 2024 in historical_years else []
             selected_years = st.multiselect('Filter Tahun untuk Grafik', options=historical_years, default=default_years)
+            filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
+            filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
+            filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
+            filtered_test_forecast_1 = test_forecast_1[test_forecast_1.index.year.isin(selected_years)]
 
             show_combined_sales = st.checkbox("Tampilkan Penjualan Gabungan Kedua Cabang")
 

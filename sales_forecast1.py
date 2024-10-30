@@ -160,9 +160,11 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
 
                     combined_profit = filtered_combined_data.groupby(filtered_combined_data.index)['LABA'].sum()
                     fig.add_trace(go.Scatter(x=combined_profit.index, y=combined_profit, mode='lines', name='Penjualan Gabungan', line=dict(color='purple')))
+                    last_fitted_value_1 = filtered_fitted_values_1.iloc[[-1]]
+                    last_fitted_value_2 = filtered_fitted_values_2.iloc[[-1]]
 
-                    combined_test = filtered_fitted_values_1.iloc[[-1]] + filtered_fitted_values_2.iloc[[-1]]
-                    combined_test = pd.concat([combined_test, shifted_test_forecast_1 + shifted_test_forecast_2])
+        # Combine last fitted values and shifted forecasts
+                    combined_test = pd.concat([last_fitted_value_1 + last_fitted_value_2, shifted_test_forecast_1 + shifted_test_forecast_2])
                     fig.add_trace(go.Scatter(x=combined_test.index, y=combined_test, mode='lines', line=dict(dash='dot', color='purple'), showlegend=False))
                             
                     combined_forecast = hw_forecast_future_1 + hw_forecast_future_2

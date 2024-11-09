@@ -21,20 +21,16 @@ def forecast_profit(data, seasonal_period=13, forecast_horizon=13):
     daily_profit = daily_profit.groupby('TANGGAL').sum()
     daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
 
-    # Resample the data weekly and interpolate missing values
     daily_profit = daily_profit.resample('W').mean().interpolate()
 
     train_size = int(len(daily_profit) * 0.9)
     train, test = daily_profit[:train_size], daily_profit[train_size:]
 
-    # Fit the model on the training data
     hw_model = ExponentialSmoothing(train, trend='add', seasonal='mul', seasonal_periods=seasonal_period).fit()
 
-    # Forecast the future values (including the test period)
     hw_forecast_future = hw_model.forecast(forecast_horizon)
-    test_forecast = hw_model.forecast(len(test))  # Predict the test set
+    test_forecast = hw_model.forecast(len(test))  
     
-    # Store fitted values (train predictions)
     fitted_values = hw_model.fittedvalues
 
     return daily_profit, fitted_values, test, test_forecast, hw_forecast_future
@@ -46,7 +42,6 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
     col1, col2 = st.columns([1, 3])
 
     with col1:
-        # Display combined metrics if both branches have data
         if daily_profit_1 is not None and daily_profit_2 is not None:
             combined_last_week_profit = (daily_profit_1['LABA'].iloc[-1] + daily_profit_2['LABA'].iloc[-1])
             combined_predicted_profit_next_week = (hw_forecast_future_1.iloc[0] + hw_forecast_future_2.iloc[0])
@@ -126,25 +121,20 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
 
             st.markdown("<h3 style='font-size:20px;'>Data Historis dan Prediksi Rata-rata Laba Mingguan</h3>", unsafe_allow_html=True)
 
-            # Gabungkan data laba harian jika kedua cabang ada, untuk menentukan daftar tahun historis yang tersedia
             combined_daily_profit = pd.concat([daily_profit_1.assign(Cabang='Cabang 1'),
                                             daily_profit_2.assign(Cabang='Cabang 2')]) if daily_profit_1 is not None and daily_profit_2 is not None else daily_profit_1 if daily_profit_1 is not None else daily_profit_2
 
-            # Definisikan tahun historis untuk filter
             historical_years = combined_daily_profit.index.year.unique() if combined_daily_profit is not None else []
             default_years = [2024] if 2024 in historical_years else []
             selected_years = st.multiselect('Filter Tahun untuk Grafik', options=historical_years, default=default_years)
 
-            # Tampilkan checkbox hanya jika kedua cabang tersedia
             show_combined_sales = False
             if daily_profit_1 is not None and daily_profit_2 is not None:
                 show_combined_sales = st.checkbox("Gabungkan Grafik")
 
-            # Inisialisasi plot
             fig = go.Figure()
             fig.update_layout(margin=dict(t=8), height=320)
 
-            # Jika toggle aktif, gabungkan data kedua cabang
             if show_combined_sales:
                 if daily_profit_1 is not None:
                     filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
@@ -171,13 +161,11 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                     filtered_combined_data = combined_daily_profit[combined_daily_profit.index.year.isin(selected_years)]
 
                     combined_profit = filtered_combined_data.groupby(filtered_combined_data.index)['LABA'].sum()
-                    fig.add_trace(go.Scatter(x=combined_profit.index, y=combined_profit, mode='lines', name='Penjualan Gabungan', line=dict(color='purple')))
+                    fig.add_trace(go.Scatter(x=combined_profit.index, y=combined_profit, mode='lines', name='Penjualan Gabungan', line=dict(color='purple'), hovertemplate='Tanggal: %{x}<br>Laba: Rp%{y:,.0f}<extra></extra>'))
 
-                    # Mengambil titik terakhir dari test untuk menyambungkan dengan forecast
                     combined_test = filtered_fitted_values_1.iloc[[-1]] + filtered_fitted_values_2.iloc[[-1]]
                     combined_test_forecast = pd.concat([combined_test, shifted_test_forecast_1 + shifted_test_forecast_2])
 
-                    # Tambahkan garis untuk data test pada plot
                     fig.add_trace(go.Scatter(
                         x=combined_test_forecast.index,
                         y=combined_test_forecast,
@@ -186,14 +174,11 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                         showlegend=False
                     ))
 
-                    # Forecast masa depan dimulai dengan menyetel nilai pertama sesuai titik akhir dari test
                     combined_forecast = hw_forecast_future_1 + hw_forecast_future_2
                     combined_forecast.iloc[0] = combined_test_forecast.iloc[-1]
 
-                    # Tentukan rentang tanggal untuk forecast agar berkelanjutan
                     forecast_dates_combined = pd.date_range(start=combined_test_forecast.index[-1], periods=forecast_horizon + 1, freq='W')
 
-                    # Tambahkan garis forecast pada plot
                     fig.add_trace(go.Scatter(
                         x=forecast_dates_combined,
                         y=combined_forecast,
@@ -201,11 +186,8 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                         name='Prediksi Laba Gabungan',
                         line=dict(dash='dot', color='purple')
                     ))
-
-
                 st.plotly_chart(fig, key="plot")
 
-            # Jika toggle tidak aktif, tampilkan kedua cabang secara terpisah
             elif daily_profit_1 is not None and daily_profit_2 is not None:
                 if daily_profit_1 is not None:
                     filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
@@ -253,7 +235,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
             
                 st.plotly_chart(fig, key="plot_1")
 
-            elif daily_profit_1 is not None:  # Only Cabang 1 is available
+            elif daily_profit_1 is not None:  
                 filtered_data_1 = daily_profit_1[daily_profit_1.index.year.isin(selected_years)]
                 filtered_fitted_values_1 = fitted_values_1[fitted_values_1.index.year.isin(selected_years)]
                 filtered_test_1 = test_1[test_1.index.year.isin(selected_years)]
@@ -262,10 +244,8 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 fig = go.Figure()
                 fig.update_layout(margin=dict(t=8), height=320)
                 
-                # Plot for Cabang 1
                 fig.add_trace(go.Scatter(x=filtered_data_1.index, y=filtered_data_1['LABA'], mode='lines', name='Data Historis Laba Cabang 1', line=dict(color='dark blue')))
 
-                # Fitted, Test, and Forecasts for Cabang 1
                 if not filtered_fitted_values_1.empty:
 
                     if not filtered_test_1.empty and not filtered_test_forecast_1.empty:
@@ -278,7 +258,7 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                         fig.add_trace(go.Scatter(x=forecast_dates_1, y=combined_forecast_1, mode='lines', name='Prediksi Laba Cabang 1', line=dict(dash='dot', color='blue')))
                 st.plotly_chart(fig, key="plot_2")
 
-            elif daily_profit_2 is not None:  # Only Cabang 2 is available
+            elif daily_profit_2 is not None:  
                 filtered_data_2 = daily_profit_2[daily_profit_2.index.year.isin(selected_years)]
                 filtered_fitted_values_2 = fitted_values_2[fitted_values_2.index.year.isin(selected_years)]
                 filtered_test_2 = test_2[test_2.index.year.isin(selected_years)]
@@ -287,7 +267,6 @@ def show_dashboard(daily_profit_1, fitted_values_1, test_1, test_forecast_1, hw_
                 fig = go.Figure()
                 fig.update_layout(margin=dict(t=8), height=320)
                 
-                # Plot for Cabang 2
                 fig.add_trace(go.Scatter(x=filtered_data_2.index, y=filtered_data_2['LABA'], mode='lines', name='Data Historis Laba Cabang 2', line=dict(color='pink')))
 
                 if not filtered_fitted_values_2.empty:

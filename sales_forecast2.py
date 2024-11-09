@@ -2,7 +2,6 @@ import os
 import pandas as pd
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import streamlit as st
-import plotly.graph_objects as go
 
 @st.cache_data
 def load_all_excel_files(folder_path, sheet_name):
@@ -21,20 +20,16 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
     daily_profit = daily_profit.groupby('TANGGAL').sum()
     daily_profit = daily_profit[~daily_profit.index.duplicated(keep='first')]
 
-    # Resample the data weekly and interpolate missing values
     daily_profit = daily_profit.resample('W').mean().interpolate()
 
     train_size = int(len(daily_profit) * 0.9)
     train, test = daily_profit[:train_size], daily_profit[train_size:]
 
-    # Fit the model on the training data
     hw_model = ExponentialSmoothing(train, trend='add', seasonal='add', seasonal_periods=seasonal_period).fit()
 
-    # Forecast the future values (including the test period)
     hw_forecast_future2 = hw_model.forecast(forecast_horizon)
-    test_forecast = hw_model.forecast(len(test))  # Predict the test set
+    test_forecast = hw_model.forecast(len(test))  
     
-    # Store fitted values (train predictions)
     fitted_values = hw_model.fittedvalues
 
     return daily_profit, fitted_values, test, test_forecast, hw_forecast_future2

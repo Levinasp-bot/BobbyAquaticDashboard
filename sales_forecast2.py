@@ -25,7 +25,7 @@ def forecast_profit(data, seasonal_period=50, forecast_horizon=50):
     train_size = int(len(daily_profit) * 0.9)
     train, test = daily_profit[:train_size], daily_profit[train_size:]
 
-    hw_model = ExponentialSmoothing(train, trend='add', seasonal='add', seasonal_periods=seasonal_period).fit()
+    hw_model = ExponentialSmoothing(train, trend='mul', seasonal='add', seasonal_periods=seasonal_period).fit()
 
     hw_forecast_future2 = hw_model.forecast(forecast_horizon)
     test_forecast = hw_model.forecast(len(test))  
